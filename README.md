@@ -41,6 +41,27 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `src/app` contains route segments.
 - `src/components` contains reusable layout and UI components.
 - `src/lib` contains site configuration and typed shared constants.
+- `lib/aliexpress.js` contains the server-only AliExpress Affiliate API client.
+
+## AliExpress API
+
+Set these environment variables before calling live AliExpress endpoints:
+
+```bash
+ALIEXPRESS_APP_KEY=
+ALIEXPRESS_APP_SECRET=
+ALIEXPRESS_TRACKING_ID=
+ALIEXPRESS_API_URL=https://api-sg.aliexpress.com/sync
+```
+
+Server API routes:
+
+- `GET /api/aliexpress/search`
+- `GET /api/aliexpress/product`
+- `GET /api/aliexpress/hot`
+- `GET|POST /api/aliexpress/generate-link`
+
+Add `?verify=1` to any route for a local readiness response that does not call AliExpress or expose secrets.
 
 ## Notes
 
