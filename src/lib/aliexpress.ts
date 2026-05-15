@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 
 const DEFAULT_API_URL = "https://api-sg.aliexpress.com/sync";
 const API_VERSION = "2.0";
-const SIGN_METHOD = "sha256";
+const SIGN_METHOD = "md5";
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 export const ALIEXPRESS_METHODS = {
@@ -78,18 +78,24 @@ export function getAliExpressConfig() {
   };
 }
 
-export function signAliExpressRequest(method: AliExpressMethod, params: AliExpressParams, appSecret: string) {
+export function signAliExpressRequest(params: AliExpressParams, appSecret: string) {
+  const rawString = buildAliExpressSigningString(params, appSecret);
+
+  return crypto
+    .createHash("md5")
+    .update(rawString, "utf8")
+    .digest("hex")
+    .toUpperCase();
+}
+
+export function buildAliExpressSigningString(params: AliExpressParams, appSecret: string) {
   const sortedPayload = Object.keys(params)
     .filter((key) => key !== "sign" && params[key] !== undefined && params[key] !== null && params[key] !== "")
     .sort()
     .map((key) => `${key}${String(params[key])}`)
     .join("");
 
-  return crypto
-    .createHmac("sha256", appSecret)
-    .update(`${method}${sortedPayload}`, "utf8")
-    .digest("hex")
-    .toUpperCase();
+  return `${appSecret}${sortedPayload}${appSecret}`;
 }
 
 export async function searchProducts(input: AliExpressParams) {
@@ -174,7 +180,8 @@ async function callAliExpress(method: AliExpressMethod, input: AliExpressParams)
     ...input,
   });
 
-  const sign = signAliExpressRequest(method, params, config.appSecret);
+  const sign = signAliExpressRequest(params, config.appSecret);
+  logAliExpressSigningDebug(params, buildAliExpressSigningString(params, config.appSecret), sign);
   const body = new URLSearchParams({ ...stringifyParams(params), sign });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
@@ -229,6 +236,12 @@ async function callAliExpress(method: AliExpressMethod, input: AliExpressParams)
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function logAliExpressSigningDebug(params: Record<string, string | number | boolean>, rawString: string, sign: string) {
+  console.info("[AliExpress API debug] final params before signing", params);
+  console.info("[AliExpress API debug] raw signing string", rawString);
+  console.info("[AliExpress API debug] generated sign", sign);
 }
 
 function normalizeProducts(payload: unknown): NormalizedProduct[] {
@@ -325,19 +338,20 @@ function stringifyParams(params: Record<string, string | number | boolean>): Rec
 
 function formatAliExpressTimestamp(date: Date) {
   const pad = (value: number) => String(value).padStart(2, "0");
+  const gmt8Date = new Date(date.getTime() + 8 * 60 * 60 * 1000);
 
   return [
-    date.getUTCFullYear(),
+    gmt8Date.getUTCFullYear(),
     "-",
-    pad(date.getUTCMonth() + 1),
+    pad(gmt8Date.getUTCMonth() + 1),
     "-",
-    pad(date.getUTCDate()),
+    pad(gmt8Date.getUTCDate()),
     " ",
-    pad(date.getUTCHours()),
+    pad(gmt8Date.getUTCHours()),
     ":",
-    pad(date.getUTCMinutes()),
+    pad(gmt8Date.getUTCMinutes()),
     ":",
-    pad(date.getUTCSeconds()),
+    pad(gmt8Date.getUTCSeconds()),
   ].join("");
 }
 
@@ -483,4 +497,3 @@ function redactSensitive(value: unknown): unknown {
     return child;
   })) as unknown;
 }
-
