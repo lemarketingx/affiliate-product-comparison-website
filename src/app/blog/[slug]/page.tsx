@@ -13,14 +13,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <AppShell>
       <PageHeader
-        eyebrow="Article"
-        title={`Article: ${slug}`}
-        description="Dynamic blog article routing is in place without binding the app to a CMS or content API."
+        eyebrow="מאמר"
+        title={`מאמר: ${slug}`}
+        description="נתיב המאמר הדינמי מוכן לתוכן בעברית, מטא-דאטה ומבנה קריא למדריכי קנייה."
       />
       <Container className="py-10">
         <EmptyState
-          title="Article content is not connected"
-          description="Add content loading, metadata generation, and structured data once the editorial source is selected."
+          title="תוכן המאמר עדיין לא מחובר"
+          description="בהמשך ניתן לחבר מערכת תוכן, נתוני מטא וסכמת תוכן בלי לשנות את מבנה הנתיב."
         />
       </Container>
     </AppShell>

@@ -1,16 +1,16 @@
-# Affiliate Product Comparison Website
+# אתר השוואת מוצרים אפיליאייט
 
-A scalable affiliate website foundation built with Next.js, TypeScript, and Tailwind CSS.
+בסיס אתר השוואת מוצרים בעברית, בנוי עם Next.js, TypeScript ו-Tailwind CSS.
 
-## Scope
+## היקף
 
-- App Router architecture
-- Mobile-first responsive UI
-- Reusable layout and page primitives
-- RTL/LTR-ready document and spacing structure
-- Placeholder routes without API connections or fake product data
+- מבנה App Router
+- עיצוב רספונסיבי בגישת מובייל תחילה
+- רכיבי פריסה ותצוגה לשימוש חוזר
+- אתר עברי RTL
+- נתיבי בסיס ללא מוצרים מדומים וללא חיבורי API בחזית
 
-## Routes
+## נתיבים
 
 - `/`
 - `/deals`
@@ -20,9 +20,9 @@ A scalable affiliate website foundation built with Next.js, TypeScript, and Tail
 - `/blog/[slug]`
 - `/admin`
 
-## Getting Started
+## הרצה מקומית
 
-First, run the development server:
+להפעלת סביבת פיתוח:
 
 ```bash
 npm run dev
@@ -34,18 +34,18 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+פתחו את [http://localhost:3000](http://localhost:3000) בדפדפן.
 
-## Project Structure
+## מבנה הפרויקט
 
-- `src/app` contains route segments.
-- `src/components` contains reusable layout and UI components.
-- `src/lib` contains site configuration and typed shared constants.
-- `lib/aliexpress.js` contains the server-only AliExpress Affiliate API client.
+- `src/app` כולל את נתיבי האפליקציה.
+- `src/components` כולל רכיבי פריסה ותצוגה לשימוש חוזר.
+- `src/lib` כולל הגדרות אתר וקבועים משותפים.
+- `lib/aliexpress.js` כולל לקוח שרת עבור AliExpress Affiliate API.
 
 ## AliExpress API
 
-Set these environment variables before calling live AliExpress endpoints:
+יש להגדיר משתני סביבה לפני קריאות חיות ל-AliExpress:
 
 ```bash
 ALIEXPRESS_APP_KEY=
@@ -54,26 +54,15 @@ ALIEXPRESS_TRACKING_ID=
 ALIEXPRESS_API_URL=https://api-sg.aliexpress.com/sync
 ```
 
-Server API routes:
+נתיבי שרת:
 
 - `GET /api/aliexpress/search`
 - `GET /api/aliexpress/product`
 - `GET /api/aliexpress/hot`
 - `GET|POST /api/aliexpress/generate-link`
 
-Add `?verify=1` to any route for a local readiness response that does not call AliExpress or expose secrets.
+ניתן להוסיף `?verify=1` לכל נתיב כדי לקבל בדיקת מוכנות מקומית שאינה קוראת ל-AliExpress ואינה חושפת סודות.
 
-## Notes
+## הערות
 
-APIs, affiliate feeds, product records, authentication, and CMS integrations are intentionally not connected yet.
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+חיבורי API, פידים, מוצרי אמת, התחברות ומערכת תוכן אינם מחוברים בשלב הזה.

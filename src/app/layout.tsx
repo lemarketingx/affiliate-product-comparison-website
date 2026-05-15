@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Heebo } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const heebo = Heebo({
+  variable: "--font-heebo",
+  subsets: ["hebrew", "latin"],
 });
 
 const geistMono = Geist_Mono({
@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Affiliate Compare",
-    template: "%s | Affiliate Compare",
+    default: "השוואה חכמה",
+    template: "%s | השוואה חכמה",
   },
   description:
-    "A scalable affiliate product comparison website foundation built with Next.js and Tailwind CSS.",
+    "אתר השוואות אפיליאייט בעברית למציאת מוצרים, דילים ומדריכי קנייה בצורה ברורה ואמינה.",
 };
 
 export default function RootLayout({
@@ -28,9 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      dir="ltr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="he"
+      dir="rtl"
+      className={`${heebo.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">{children}</body>
     </html>

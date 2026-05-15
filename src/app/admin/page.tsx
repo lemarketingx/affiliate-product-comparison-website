@@ -7,14 +7,14 @@ export default function AdminPage() {
   return (
     <AppShell>
       <PageHeader
-        eyebrow="Admin"
-        title="Admin workspace shell."
-        description="This private-workflow route is scaffolded for future product, deal, category, and content management screens."
+        eyebrow="ניהול"
+        title="מעטפת ניהול מוכנה להמשך."
+        description="האזור שמור לניהול מוצרים, דילים, קטגוריות ותוכן לאחר הוספת הרשאות וחיבורי נתונים."
       />
       <Container className="py-10">
         <EmptyState
-          title="Admin tools are not implemented"
-          description="Authentication, permissions, forms, and API mutations should be added before this route manages production data."
+          title="כלי הניהול עדיין לא פעילים"
+          description="לפני שימוש אמיתי צריך להוסיף התחברות, הרשאות, טפסים מאובטחים ופעולות שרת."
         />
       </Container>
     </AppShell>

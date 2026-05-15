@@ -1,31 +1,46 @@
 export const siteConfig = {
-  name: "Affiliate Compare",
-  tagline: "Structured comparisons without API coupling.",
+  name: "השוואה חכמה",
+  tagline: "משווים לפני שקונים.",
   description:
-    "A clean, scalable foundation for affiliate deals, product comparisons, categories, blog content, and admin workflows.",
+    "מרכז השוואות בעברית שעוזר לבחור מוצרים ודילים בצורה ברורה, שקופה ונוחה.",
 };
 
 export const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/deals", label: "Deals" },
-  { href: "/blog", label: "Blog" },
-  { href: "/admin", label: "Admin" },
+  { href: "/", label: "ראשי" },
+  { href: "/deals", label: "דילים" },
+  { href: "/blog", label: "מדריכים" },
+  { href: "/admin", label: "ניהול" },
 ] as const;
 
-export const architectureCards = [
+export const categoryCards = [
   {
-    title: "Routing foundation",
-    description:
-      "Public, dynamic, blog, and admin routes are ready for future data sources.",
+    title: "גאדג׳טים וטכנולוגיה",
+    description: "מקום מסודר להשוואת מוצרים חכמים, אביזרים וציוד שימושי לבית.",
+    href: "/category/טכנולוגיה",
   },
   {
-    title: "Reusable UI shell",
-    description:
-      "Shared header, footer, containers, hero, and empty states keep screens consistent.",
+    title: "בית ומטבח",
+    description: "קטגוריה עתידית למוצרים לבית, אחסון, ניקיון וכלים יומיומיים.",
+    href: "/category/בית",
   },
   {
-    title: "RTL/LTR ready",
-    description:
-      "Logical spacing, document direction support, and copy-safe layout primitives are in place.",
+    title: "אופנה ואקססוריז",
+    description: "מסגרת להשוואת פריטים לפי מחיר, איכות, משלוח וביקורות.",
+    href: "/category/אופנה",
+  },
+] as const;
+
+export const howItWorks = [
+  {
+    title: "מחפשים מוצר או קטגוריה",
+    description: "המשתמש מתחיל מחיפוש ברור או מקטגוריה, בלי עומס ובלי רעש.",
+  },
+  {
+    title: "משווים נתונים חשובים",
+    description: "העמודים מוכנים למחירים, דירוגים, הזמנות וקישורי אפיליאייט.",
+  },
+  {
+    title: "יוצאים לרכישה בביטחון",
+    description: "בעתיד כל מעבר לחנות יוצג עם גילוי נאות וקישור מעקב תקין.",
   },
 ] as const;

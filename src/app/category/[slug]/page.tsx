@@ -13,14 +13,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <AppShell>
       <PageHeader
-        eyebrow="Category"
-        title={`Category: ${slug}`}
-        description="Dynamic category routing is ready for comparison groups, filters, and buying-guide content."
+        eyebrow="קטגוריה"
+        title={`קטגוריה: ${slug}`}
+        description="עמוד הקטגוריה מוכן להצגת השוואות, סינונים, מדריכים ודילים לפי תחום."
       />
       <Container className="py-10">
         <EmptyState
-          title="Category content is not connected"
-          description="Add category models, product queries, and filtering logic when the data layer is defined."
+          title="תוכן הקטגוריה עדיין לא מחובר"
+          description="לא נוספו מוצרים מדומים. בהמשך ניתן לחבר מודל קטגוריות, סינון ושאילתות מוצרים."
         />
       </Container>
     </AppShell>

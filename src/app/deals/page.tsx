@@ -7,14 +7,14 @@ export default function DealsPage() {
   return (
     <AppShell>
       <PageHeader
-        eyebrow="Deals"
-        title="Deal listing route ready for future feeds."
-        description="This page is intentionally data-free until affiliate sources, editorial rules, and tracking requirements are connected."
+        eyebrow="דילים"
+        title="מרכז הדילים מוכן לחיבור מקורות."
+        description="כאן יוצגו בהמשך מבצעים מסוננים, מחירים, דירוגים וקישורי אפיליאייט עם גילוי נאות ברור."
       />
       <Container className="py-10">
         <EmptyState
-          title="No deals connected yet"
-          description="Use this screen later for curated offers, price history, merchant metadata, and disclosure-safe affiliate links."
+          title="עדיין אין דילים מחוברים"
+          description="העמוד נשאר נקי ממוצרים מדומים עד לחיבור מקור נתונים אמיתי וכללי עריכה מסודרים."
         />
       </Container>
     </AppShell>

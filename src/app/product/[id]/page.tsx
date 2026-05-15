@@ -13,14 +13,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <AppShell>
       <PageHeader
-        eyebrow="Product"
-        title={`Product detail: ${id}`}
-        description="The product detail route is prepared for specs, merchant offers, pros and cons, disclosures, and related comparisons."
+        eyebrow="מוצר"
+        title={`עמוד מוצר: ${id}`}
+        description="עמוד המוצר מוכן למפרטים, מחירים, דירוגים, יתרונות וחסרונות, וקישורי אפיליאייט שקופים."
       />
       <Container className="py-10">
         <EmptyState
-          title="Product data is not connected"
-          description="Keep this route API-free until source-of-truth product and affiliate attribution rules are finalized."
+          title="נתוני המוצר עדיין לא מחוברים"
+          description="העמוד נשאר ללא נתונים מדומים עד להגדרת מקור אמת למוצרים וכללי שיוך אפיליאייט."
         />
       </Container>
     </AppShell>
