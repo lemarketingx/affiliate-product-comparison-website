@@ -1,4 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Affiliate Product Comparison Website
+
+A scalable affiliate website foundation built with Next.js, TypeScript, and Tailwind CSS.
+
+## Scope
+
+- App Router architecture
+- Mobile-first responsive UI
+- Reusable layout and page primitives
+- RTL/LTR-ready document and spacing structure
+- Placeholder routes without API connections or fake product data
+
+## Routes
+
+- `/`
+- `/deals`
+- `/category/[slug]`
+- `/product/[id]`
+- `/blog`
+- `/blog/[slug]`
+- `/admin`
 
 ## Getting Started
 
@@ -16,13 +36,15 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app` contains route segments.
+- `src/components` contains reusable layout and UI components.
+- `src/lib` contains site configuration and typed shared constants.
 
-## Learn More
+## Notes
 
-To learn more about Next.js, take a look at the following resources:
+APIs, affiliate feeds, product records, authentication, and CMS integrations are intentionally not connected yet.
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
