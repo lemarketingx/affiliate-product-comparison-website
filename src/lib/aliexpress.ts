@@ -35,6 +35,8 @@ export type NormalizedAffiliateLink = {
   affiliateUrl: string;
 };
 
+export type AliExpressTransport = "POST_FORM" | "GET_QUERY";
+
 export class AliExpressError extends Error {
   status: number;
   code: string;
@@ -50,10 +52,10 @@ export class AliExpressError extends Error {
 }
 
 export function getAliExpressConfig() {
-  const appKey = process.env.ALIEXPRESS_APP_KEY;
-  const appSecret = process.env.ALIEXPRESS_APP_SECRET;
-  const trackingId = process.env.ALIEXPRESS_TRACKING_ID;
-  const apiUrl = process.env.ALIEXPRESS_API_URL || DEFAULT_API_URL;
+  const appKey = process.env.ALIEXPRESS_APP_KEY?.trim();
+  const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  const trackingId = process.env.ALIEXPRESS_TRACKING_ID?.trim();
+  const apiUrl = process.env.ALIEXPRESS_API_URL?.trim() || DEFAULT_API_URL;
   const missing = [
     ["ALIEXPRESS_APP_KEY", appKey],
     ["ALIEXPRESS_APP_SECRET", appSecret],
@@ -79,7 +81,7 @@ export function getAliExpressConfig() {
 }
 
 export function signAliExpressRequest(params: AliExpressParams, appSecret: string) {
-  const rawString = buildAliExpressSigningString(params, appSecret);
+  const rawString = `${appSecret}${buildAliExpressSortedPayload(params)}${appSecret}`;
 
   return crypto
     .createHash("md5")
@@ -88,14 +90,67 @@ export function signAliExpressRequest(params: AliExpressParams, appSecret: strin
     .toUpperCase();
 }
 
-export function buildAliExpressSigningString(params: AliExpressParams, appSecret: string) {
-  const sortedPayload = Object.keys(params)
+export function getAliExpressSortedSignableParams(params: AliExpressParams): Record<string, string> {
+  return Object.fromEntries(
+    Object.keys(params)
     .filter((key) => key !== "sign" && params[key] !== undefined && params[key] !== null && params[key] !== "")
     .sort()
-    .map((key) => `${key}${String(params[key])}`)
-    .join("");
+      .map((key) => [key, String(params[key])]),
+  );
+}
 
-  return `${appSecret}${sortedPayload}${appSecret}`;
+export function buildAliExpressSortedPayload(params: AliExpressParams) {
+  return Object.entries(getAliExpressSortedSignableParams(params))
+    .map(([key, value]) => `${key}${value}`)
+    .join("");
+}
+
+export function createAliExpressSignedParams(method: AliExpressMethod, input: AliExpressParams = {}) {
+  const config = getAliExpressConfig();
+  const params = compactParams({
+    method,
+    app_key: config.appKey,
+    timestamp: formatAliExpressTimestamp(new Date()),
+    sign_method: SIGN_METHOD,
+    v: API_VERSION,
+    format: "json",
+    tracking_id: config.trackingId,
+    ...input,
+  });
+  const generatedSign = signAliExpressRequest(params, config.appSecret);
+
+  return {
+    apiUrl: config.apiUrl,
+    appKey: config.appKey,
+    appSecretLength: config.appSecret.length,
+    trackingId: config.trackingId,
+    params,
+    generatedSign,
+    sortedParamsWithoutSecret: getAliExpressSortedSignableParams(params),
+  };
+}
+
+export async function debugAliExpressMinimalProductQuery(keyword = "gaming") {
+  const signed = createAliExpressSignedParams(ALIEXPRESS_METHODS.PRODUCT_SEARCH, {
+    keywords: getString(keyword) || "gaming",
+  });
+  const attempts = await Promise.all([
+    callAliExpressSignedParams(signed.apiUrl, signed.params, signed.generatedSign, "POST_FORM"),
+    callAliExpressSignedParams(signed.apiUrl, signed.params, signed.generatedSign, "GET_QUERY"),
+  ]);
+
+  return {
+    hasAppKey: Boolean(signed.appKey),
+    appKeyLength: signed.appKey.length,
+    appSecretLength: signed.appSecretLength,
+    trackingId: signed.trackingId,
+    timestamp: String(signed.params.timestamp),
+    paramsWithoutSecret: signed.sortedParamsWithoutSecret,
+    generatedSign: signed.generatedSign,
+    requestMethodUsed: "POST form-urlencoded and GET querystring",
+    apiUrl: signed.apiUrl,
+    attempts,
+  };
 }
 
 export async function searchProducts(input: AliExpressParams) {
@@ -168,26 +223,15 @@ export async function generateAffiliateLinks(input: AliExpressParams & { urls?: 
 }
 
 async function callAliExpress(method: AliExpressMethod, input: AliExpressParams) {
-  const config = getAliExpressConfig();
-  const params = compactParams({
-    method,
-    app_key: config.appKey,
-    timestamp: formatAliExpressTimestamp(new Date()),
-    sign_method: SIGN_METHOD,
-    v: API_VERSION,
-    format: "json",
-    tracking_id: config.trackingId,
-    ...input,
-  });
+  const signed = createAliExpressSignedParams(method, input);
 
-  const sign = signAliExpressRequest(params, config.appSecret);
-  logAliExpressSigningDebug(params, buildAliExpressSigningString(params, config.appSecret), sign);
-  const body = new URLSearchParams({ ...stringifyParams(params), sign });
+  logAliExpressSigningDebug(signed.sortedParamsWithoutSecret, signed.generatedSign);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
   try {
-    const response = await fetch(config.apiUrl, {
+    const body = new URLSearchParams({ ...stringifyParams(signed.params), sign: signed.generatedSign });
+    const response = await fetch(signed.apiUrl, {
       method: "POST",
       headers: {
         "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
@@ -208,6 +252,7 @@ async function callAliExpress(method: AliExpressMethod, input: AliExpressParams)
 
     const apiError = findApiError(payload);
     if (apiError) {
+      console.error("[AliExpress API debug] raw AliExpress error", redactSensitive(payload));
       throw new AliExpressError(apiError.message, {
         status: 502,
         code: apiError.code,
@@ -238,9 +283,68 @@ async function callAliExpress(method: AliExpressMethod, input: AliExpressParams)
   }
 }
 
-function logAliExpressSigningDebug(params: Record<string, string | number | boolean>, rawString: string, sign: string) {
-  console.info("[AliExpress API debug] final params before signing", params);
-  console.info("[AliExpress API debug] raw signing string", rawString);
+async function callAliExpressSignedParams(
+  apiUrl: string,
+  params: Record<string, string | number | boolean>,
+  sign: string,
+  transport: AliExpressTransport,
+) {
+  const paramsWithSign = { ...stringifyParams(params), sign };
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+
+  try {
+    const response =
+      transport === "GET_QUERY"
+        ? await fetch(`${apiUrl}?${new URLSearchParams(paramsWithSign)}`, {
+            method: "GET",
+            signal: controller.signal,
+            cache: "no-store",
+          })
+        : await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+            },
+            body: new URLSearchParams(paramsWithSign),
+            signal: controller.signal,
+            cache: "no-store",
+          });
+    const payload = await parseResponse(response);
+    const apiError = findApiError(payload);
+
+    if (apiError) {
+      console.error(`[AliExpress API debug] ${transport} raw AliExpress error`, redactSensitive(payload));
+    }
+
+    return {
+      transport,
+      ok: response.ok && !apiError,
+      httpStatus: response.status,
+      aliExpressError: apiError,
+      elapsedMs: Date.now() - startedAt,
+      rawResponse: redactSensitive(payload),
+    };
+  } catch (error) {
+    return {
+      transport,
+      ok: false,
+      httpStatus: null,
+      aliExpressError: {
+        code: "REQUEST_FAILED",
+        message: error instanceof Error ? error.message : "AliExpress debug request failed.",
+      },
+      elapsedMs: Date.now() - startedAt,
+      rawResponse: null,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function logAliExpressSigningDebug(params: Record<string, string>, sign: string) {
+  console.info("[AliExpress API debug] sorted params without secret", params);
   console.info("[AliExpress API debug] generated sign", sign);
 }
 
