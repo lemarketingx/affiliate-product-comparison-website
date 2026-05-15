@@ -19,8 +19,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       />
       <Container className="py-10">
         <EmptyState
-          title="תוכן המאמר עדיין לא מחובר"
-          description="בהמשך ניתן לחבר מערכת תוכן, נתוני מטא וסכמת תוכן בלי לשנות את מבנה הנתיב."
+          title="מדריך קנייה יופיע כאן"
+          description="תוכן המאמר יתחבר בהמשך ממקור תוכן אמיתי, בלי לפרסם מדריכים מדומים."
         />
       </Container>
     </AppShell>

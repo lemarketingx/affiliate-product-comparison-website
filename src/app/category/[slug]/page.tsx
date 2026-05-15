@@ -1,7 +1,8 @@
 import { AppShell } from "@/components/app-shell";
 import { Container } from "@/components/container";
-import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { CategoryChips, ProductCard } from "@/components/shopping-ui";
+import { placeholderDeals } from "@/lib/site";
 
 type CategoryPageProps = {
   params: Promise<{ slug: string }>;
@@ -17,11 +18,19 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         title={`קטגוריה: ${slug}`}
         description="עמוד הקטגוריה מוכן להצגת השוואות, סינונים, מדריכים ודילים לפי תחום."
       />
-      <Container className="py-10">
-        <EmptyState
-          title="תוכן הקטגוריה עדיין לא מחובר"
-          description="לא נוספו מוצרים מדומים. בהמשך ניתן לחבר מודל קטגוריות, סינון ושאילתות מוצרים."
-        />
+      <Container className="py-7">
+        <CategoryChips />
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {placeholderDeals.map((deal) => (
+            <ProductCard
+              key={`${deal.badge}-${deal.tone}`}
+              badge={deal.badge}
+              title={deal.title}
+              description="בדיקת מוצר"
+              tone={deal.tone}
+            />
+          ))}
+        </div>
       </Container>
     </AppShell>
   );

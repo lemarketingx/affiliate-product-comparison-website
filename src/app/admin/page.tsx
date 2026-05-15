@@ -13,8 +13,8 @@ export default function AdminPage() {
       />
       <Container className="py-10">
         <EmptyState
-          title="כלי הניהול עדיין לא פעילים"
-          description="לפני שימוש אמיתי צריך להוסיף התחברות, הרשאות, טפסים מאובטחים ופעולות שרת."
+          title="אזור הניהול עדיין לא פעיל"
+          description="כלי עריכה, הרשאות וחיבורי נתונים יתווספו בהמשך בצורה מאובטחת."
         />
       </Container>
     </AppShell>

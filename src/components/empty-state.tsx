@@ -12,8 +12,8 @@ export function EmptyState({
   actionHref,
 }: EmptyStateProps) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-surface p-6 text-center shadow-sm sm:p-10">
-      <div className="mx-auto mb-5 grid size-12 place-items-center rounded-lg bg-accent-soft text-lg font-bold text-accent-strong">
+    <div className="rounded-3xl border border-dashed border-border bg-white p-6 text-center shadow-sm sm:p-10">
+      <div className="mx-auto mb-5 grid size-12 place-items-center rounded-2xl bg-accent-soft text-lg font-black text-accent-strong">
         +
       </div>
       <h2 className="text-xl font-bold text-navy">{title}</h2>
