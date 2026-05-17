@@ -1,12 +1,25 @@
 import Link from "next/link";
 import { categoryChips } from "@/lib/site";
 
+export type AliProduct = {
+  id: string | null;
+  title: string | null;
+  image: string | null;
+  price: string | null;
+  originalPrice: string | null;
+  rating: string | null;
+  orders: number | null;
+  productUrl: string | null;
+  affiliateUrl: string | null;
+};
+
 type ProductCardProps = {
   badge?: string;
   title?: string;
   description?: string;
   href?: string;
   tone?: "sage" | "dark" | "cream" | "silver";
+  product?: AliProduct;
 };
 
 const toneStyles = {
@@ -18,7 +31,7 @@ const toneStyles = {
 
 export function SearchPanel() {
   return (
-    <form className="rounded-2xl bg-white p-2 shadow-xl shadow-navy/10 ring-1 ring-border" role="search">
+    <form action="/deals" method="get" className="rounded-2xl bg-white p-2 shadow-xl shadow-navy/10 ring-1 ring-border" role="search">
       <label htmlFor="homepage-search" className="sr-only">
         חיפוש מוצר
       </label>
@@ -33,6 +46,12 @@ export function SearchPanel() {
           placeholder="חפשו מוצר, רעיון למתנה או גאדג׳ט מעניין..."
           className="min-h-11 flex-1 border-0 bg-transparent text-sm font-semibold text-navy outline-none placeholder:text-muted sm:text-base"
         />
+        <button
+          type="submit"
+          className="shrink-0 rounded-xl bg-accent px-4 py-2 text-sm font-black text-white transition hover:bg-accent-strong"
+        >
+          חיפוש
+        </button>
       </div>
     </form>
   );
@@ -66,22 +85,53 @@ export function ProductCard({
   description = "המחיר יתעדכן אוטומטית",
   href = "/product/placeholder",
   tone = "sage",
+  product,
 }: ProductCardProps) {
+  const displayTitle = product?.title ?? title;
+  const displayBadge = product?.rating ? `⭐ ${product.rating}` : badge;
+  const displayDescription = product?.price
+    ? product.originalPrice && product.originalPrice !== product.price
+      ? `$${product.price} (היה $${product.originalPrice})`
+      : `$${product.price}`
+    : description;
+  const cardHref = product?.id
+    ? `/product/${product.id}`
+    : product?.affiliateUrl ?? product?.productUrl ?? href;
+
   return (
     <Link
-      href={href}
+      href={cardHref}
+      target={product?.affiliateUrl && !product.id ? "_blank" : undefined}
+      rel={product?.affiliateUrl && !product.id ? "noopener noreferrer sponsored" : undefined}
       className="group flex min-h-[330px] flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-border transition hover:-translate-y-0.5 hover:shadow-xl hover:ring-accent/40"
     >
       <div className={`relative aspect-[4/5] bg-gradient-to-br ${toneStyles[tone]}`}>
+        {product?.image ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={product.image}
+            alt={displayTitle ?? "מוצר"}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <>
+            <div className="absolute inset-x-6 bottom-8 h-16 rounded-full bg-white/20 blur-xl" />
+            <div className="absolute inset-8 rounded-full border border-white/25 bg-white/10 shadow-inner" />
+          </>
+        )}
         <span className="absolute right-3 top-3 rounded-full bg-navy/85 px-3 py-1 text-xs font-black text-white">
-          {badge}
+          {displayBadge}
         </span>
-        <div className="absolute inset-x-6 bottom-8 h-16 rounded-full bg-white/20 blur-xl" />
-        <div className="absolute inset-8 rounded-full border border-white/25 bg-white/10 shadow-inner" />
+        {product?.orders ? (
+          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-black text-navy">
+            {product.orders.toLocaleString()} הזמנות
+          </span>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col p-4 text-center">
-        <h3 className="text-base font-black leading-6 text-navy">{title}</h3>
-        <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
+        <h3 className="line-clamp-2 text-base font-black leading-6 text-navy">{displayTitle}</h3>
+        <p className="mt-2 text-sm font-semibold leading-6 text-muted">{displayDescription}</p>
         <span className="mt-auto inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-4 text-sm font-black text-white transition group-hover:bg-accent-strong">
           בדיקת מוצר
         </span>

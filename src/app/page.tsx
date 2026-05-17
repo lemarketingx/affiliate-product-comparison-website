@@ -1,3 +1,5 @@
+export const revalidate = 3600; // refresh hot products every hour
+
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { Container } from "@/components/container";
@@ -16,8 +18,25 @@ import {
   trustItems,
   viralStories,
 } from "@/lib/site";
+import { getHotProducts, type NormalizedProduct } from "@/lib/aliexpress";
 
-export default function Home() {
+async function fetchHotProducts(): Promise<NormalizedProduct[]> {
+  try {
+    const products = await getHotProducts({ page_size: 4 });
+    console.info("[home] fetched", products.length, "hot products");
+    return products;
+  } catch (err) {
+    console.error("[home] hot products fetch failed:", err instanceof Error ? err.message : err);
+    return [];
+  }
+}
+
+const tones = ["sage", "dark", "cream", "silver"] as const;
+
+export default async function Home() {
+  const hotProducts = await fetchHotProducts();
+  const hasRealProducts = hotProducts.length > 0;
+
   return (
     <AppShell>
       <section className="bg-[#fbfaf9]">
@@ -51,15 +70,23 @@ export default function Home() {
             actionHref="/deals"
           />
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {placeholderDeals.map((deal) => (
-              <ProductCard
-                key={`${deal.badge}-${deal.tone}`}
-                badge={deal.badge}
-                title={deal.title}
-                description={deal.description}
-                tone={deal.tone}
-              />
-            ))}
+            {hasRealProducts
+              ? hotProducts.map((product, i) => (
+                  <ProductCard
+                    key={product.id ?? `hot-${i}`}
+                    tone={tones[i % tones.length]}
+                    product={product}
+                  />
+                ))
+              : placeholderDeals.map((deal) => (
+                  <ProductCard
+                    key={`${deal.badge}-${deal.tone}`}
+                    badge={deal.badge}
+                    title={deal.title}
+                    description={deal.description}
+                    tone={deal.tone}
+                  />
+                ))}
           </div>
         </Container>
       </section>
