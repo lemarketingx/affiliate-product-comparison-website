@@ -7,6 +7,8 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
+    // Kesher is an independent app with its own dependencies and checks.
+    "kesher/**",
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
