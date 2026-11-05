@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "node scripts/build-vercel-entry.mjs",
+  "outputDirectory": "vercel-output",
+  "redirects": [
+    {
+      "source": "/r/:path*",
+      "destination": "https://kesher-mortgage-partners-dorian.jollyoctet4.chatgpt.site/r/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/join",
+      "destination": "https://kesher-mortgage-partners-dorian.jollyoctet4.chatgpt.site/join",
+      "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://kesher-mortgage-partners-dorian.jollyoctet4.chatgpt.site/",
+      "permanent": false
+    }
+  ]
+}

@@ -1,87 +1,65 @@
-# אתר השוואת מוצרים אפיליאייט
+# קשר — מערכת שותפים ליועץ משכנתאות
 
-## מערכת קשר — שותפים ליועץ משכנתאות
+זהו הקוד המלא של מערכת קשר שבנינו. אתר השוואת המוצרים הוסר והמערכת הועברה לשורש המאגר.
 
-כל קוד מערכת **קשר** נמצא בתיקייה [`kesher/`](./kesher), כפרויקט עצמאי לצד אתר השוואת המוצרים.
-
-התיקייה כוללת את ממשק המנהל ואזור השותף, קליטת הפניות וקישורים אישיים, ניהול סטטוסים ועמלות, הגדרת מסד הנתונים והמיגרציה, הבדיקות, העיצוב והגופנים. העמלה מתחילה ללא סכום מוגדר.
-
-להרצת מערכת קשר:
+## הרצה מקומית
 
 ```bash
-cd kesher
 npm ci
 npm run dev
 ```
 
-הוראות ההפעלה, ההתחברות, מסד הנתונים והבדיקות מופיעות ב־[`kesher/README.md`](./kesher/README.md). המערכת משתמשת ב־Vinext וב־Cloudflare D1, ובהתחברות שמספקת Sites. הוספת הקוד למאגר אינה מחברת אוטומטית את GitHub לפרסום האתר החי.
+האפליקציה כוללת ממשק מנהל, אזור שותף, קישורי הפניה אישיים, טופס לקוח, מעקב טיפול ועמלות. סכום העמלה מתחיל ללא הגדרה.
 
-הפקודות משורש המאגר ממשיכות להשתייך לאתר השוואת המוצרים. מערכת קשר מופרדת מבדיקות TypeScript ו־ESLint של אתר זה.
+## הפרסום הפעיל
 
+המערכת המלאה פועלת בכתובת:
 
-בסיס אתר השוואת מוצרים בעברית, בנוי עם Next.js, TypeScript ו-Tailwind CSS.
+https://kesher-mortgage-partners-dorian.jollyoctet4.chatgpt.site
 
-## היקף
+האפליקציה, מסד D1 וההתחברות ממשיכים לפעול באותו פרסום. כללי הגישה שלו נשמרים.
 
-- מבנה App Router
-- עיצוב רספונסיבי בגישת מובייל תחילה
-- רכיבי פריסה ותצוגה לשימוש חוזר
-- אתר עברי RTL
-- נתיבי בסיס ללא מוצרים מדומים וללא חיבורי API בחזית
+הפרויקט הקיים ב־Vercel משמש כעת ככתובת כניסה שמפנה למערכת הפעילה. כללי ההפניה מופיעים ב־`vercel.json`; דפי הפניה אישיים והרשמה משמרים את הנתיב. קישורים ישנים של אתר המוצרים עוברים לעמוד הראשי של קשר.
 
-## נתיבים
+ב־Vercel התקנת התלויות מדולגת ומופעל `node scripts/build-vercel-entry.mjs` כדי לייצר דף כניסה חלופי בלבד. השרת של Vinext ו־D1 אינו נפרס ל־Vercel. שינוי בקוד האפליקציה מחייב פרסום דרך Sites כדי לעדכן את המערכת החיה; עדכון `vercel.json` נפרס דרך חיבור GitHub הקיים.
 
-- `/`
-- `/deals`
-- `/category/[slug]`
-- `/product/[id]`
-- `/blog`
-- `/blog/[slug]`
-- `/admin`
+הוראות האפליקציה המקוריות, הזהות ומסד הנתונים מפורטות בהמשך.
 
-## הרצה מקומית
+---
 
-להפעלת סביבת פיתוח:
+# Kesher | קשר — Mortgage referral partner portal
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Hebrew RTL partner portal for one mortgage advisory business. Built with Vinext/React and Cloudflare D1, hosted privately with Sites. The commission rule starts **unset**.
 
-פתחו את [http://localhost:3000](http://localhost:3000) בדפדפן.
+## Included
 
-## מבנה הפרויקט
+- Admin overview, source-based metrics, searchable/filterable referrals and CSV export.
+- Partner creation, registration approval, active/paused state and personal referral URLs.
+- Client intake with explicit consent, canonical Israeli phone deduplication, honeypot and rate limiting.
+- Server-authorized partner accounts with only their own referrals, masked phones, and no internal notes or collected advisor fees.
+- Lead status/history and collected-fee recording; separate commission amount, approval and payment-recording stages.
+- Fixed/percentage rules can be configured later. Rule changes never rewrite previously recorded commissions. An unset rule leaves the amount null.
+- Marketing copy templates and referral-page previews.
+- Isolated, explicitly labeled demo mode. Demo changes live in component state; real records live in D1. Only the UI mode preference uses localStorage.
 
-- `src/app` כולל את נתיבי האפליקציה.
-- `src/components` כולל רכיבי פריסה ותצוגה לשימוש חוזר.
-- `src/lib` כולל הגדרות אתר וקבועים משותפים.
-- `lib/aliexpress.js` כולל לקוח שרת עבור AliExpress Affiliate API.
+## Identity and first setup
 
-## AliExpress API
+The publication starts owner-private. The first authenticated `/api/portal` read creates the admin settings row, bound to that authenticated Sites user ID. **The owner must enter the real workspace before changing the Site audience.** Later users register at `/join` and need admin approval. Accounts created by the admin can be claimed by signing in with the matching verified ChatGPT email and completing registration.
 
-יש להגדיר משתני סביבה לפני קריאות חיות ל-AliExpress:
+Sites handles authentication and injects identity headers. Do not trust client-supplied identity headers if moving this app to another hosting platform. Never make the Worker reachable directly without an authentication gateway that removes/replaces those headers.
 
-```bash
-ALIEXPRESS_APP_KEY=
-ALIEXPRESS_APP_SECRET=
-ALIEXPRESS_TRACKING_ID=
-ALIEXPRESS_API_URL=https://api-sg.aliexpress.com/sync
-```
+Referral pages are anonymous-compatible in app code; the current private hosting gate limits all visitors to the owner. External use requires an explicit later sharing decision. The actual office name/contact details, partner terms and intake wording must be completed for the operating business before external launch. No email delivery or funds transfer is integrated; commission payments are recorded manually after payment outside the app.
 
-נתיבי שרת:
+The initially created admin is the account owner, not automatically the advisor. Role transfer and multiple administrators are outside the first release.
 
-- `GET /api/aliexpress/search`
-- `GET /api/aliexpress/product`
-- `GET /api/aliexpress/hot`
-- `GET|POST /api/aliexpress/generate-link`
+## Local development and verification
 
-ניתן להוסיף `?verify=1` לכל נתיב כדי לקבל בדיקת מוכנות מקומית שאינה קוראת ל-AliExpress ואינה חושפת סודות.
+Follow the Sites workflow for dependency installation, preview and publication. The hosting manifest declares D1 binding `DB`. Schema changes are generated by `npm run db:generate`; deployment applies the schema-only migrations under `drizzle/`. Never seed demo rows into the production database.
 
-## הערות
+Checks:
 
-חיבורי API, פידים, מוצרי אמת, התחברות ומערכת תוכן אינם מחוברים בשלב הזה.
+- `node node_modules/typescript/bin/tsc --noEmit`
+- `node --experimental-strip-types --test tests/domain.test.mjs`
+- `node tests/run-integration.mjs` after building and applying migrations locally, with the preview daemon stopped. This starts and stops one local test Worker; simulated identities are confined to local tests. It exercises auth, partner isolation, consent, duplicate prevention, attribution, notes, deferred commissions, approval/payment and paused partners.
+
+Production builds use the Sites `build-site.mjs` helper. Source, fonts, schema and migration metadata are retained in the project repository. Fonts are local Noto Sans Hebrew assets under the SIL Open Font License (see `public/fonts/OFL.txt`).
