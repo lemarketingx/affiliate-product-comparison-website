@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "קשר — שותפים להצלחה",
+  title: "מאי פיננסים — תוכנית השותפים",
   description: "מערכת השותפים שמחברת בין אנשים, הזדמנויות ומשכנתאות.",
   icons: {
     icon: "/favicon.svg",

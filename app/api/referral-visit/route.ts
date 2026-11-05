@@ -1,0 +1,2 @@
+import {requireClient,readJson,sameOrigin,apiFailure} from '../../../lib/portal-server';
+export async function POST(request:Request){try{sameOrigin(request);const {code}=await readJson(request,500);if(typeof code==='string'&&/^[a-z0-9]{6,32}$/.test(code)){const c=await requireClient();await c.rpc('record_referral_visit',{code});}return new Response(null,{status:204});}catch(e){return apiFailure(e);}}

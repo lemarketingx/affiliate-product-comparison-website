@@ -53,5 +53,15 @@ test('database isolates partners and enforces the commission ledger',async()=>{
  const info=(await db.query('select public.referral_info($1) as data',[second.code])).rows[0].data;assert.equal(info.settings.commission_value,undefined);
  await db.query('select public.submit_referral($1,$2::jsonb)',[second.code,JSON.stringify({name:'Public Client',phone:'0506666666',purpose:'refinance',consent:true})]);
  await asUser(p2);assert.equal((await snapshot()).leads.length,1);
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/campaign.sql',import.meta.url),'utf8'));
+ await asUser(p2);await assert.rejects(()=>db.query('select public.save_campaign($1::jsonb)',[JSON.stringify({})]),/ADMIN_ONLY/);
+ await asUser(owner);await db.query('select public.save_campaign($1::jsonb)',[JSON.stringify({websiteUrl:'https://mayfn.co.il/',headline:'מאי פיננסים',description:'ייעוץ משכנתאות וליווי אישי',benefits:'ליווי אישי',logoUrl:'',published:false})]);
+ await db.exec('reset role;set role anon');
+ let ci=(await db.query('select public.referral_info($1) as data',[second.code])).rows[0].data;assert.equal(ci.settings.campaign,null);
+ await db.query('select public.record_referral_visit($1)',[second.code]);
+ await assert.rejects(()=>db.query('select * from public.campaign'),/permission denied/);
+ await asUser(owner);await db.query('select public.save_campaign($1::jsonb)',[JSON.stringify({websiteUrl:'https://mayfn.co.il/',headline:'מאי פיננסים',description:'ייעוץ משכנתאות וליווי אישי',benefits:'ליווי אישי',logoUrl:'',published:true})]);
+ await db.exec('reset role;set role anon');ci=(await db.query('select public.referral_info($1) as data',[second.code])).rows[0].data;assert.equal(ci.settings.campaign.websiteUrl,'https://mayfn.co.il/');
  await db.close();
 });

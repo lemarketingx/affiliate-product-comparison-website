@@ -1,3 +1,4 @@
+import {MAY_CAMPAIGN} from "./may-brand.ts";
 export const STATUS = {
   new: "הפניה חדשה", contacted: "נוצר קשר", meeting: "נקבעה פגישה",
   signed: "נחתם הסכם", paid: "התקבל תשלום", lost: "לא הבשיל",
@@ -16,6 +17,7 @@ export type Lead = {
   commissionPaidAt?: number | null; consentAt: number; source: string; createdAt: number; updatedAt: number;
 };
 export type Settings = {
+  campaign?: {websiteUrl:string;headline:string;description:string;benefits:string;logoUrl:string;published:boolean};
   businessName: string; advisorName: string; contactEmail: string; contactPhone: string;
   commissionMode: "unset" | "fixed" | "percentage"; commissionValue: number | null;
 };
@@ -25,8 +27,9 @@ export type PortalData = {
   partners: Partner[]; leads: Lead[]; events: Activity[]; settings: Settings;
 };
 export const DEFAULT_SETTINGS: Settings = {
-  businessName: "קשר", advisorName: "משרד ייעוץ המשכנתאות",
-  contactEmail: "", contactPhone: "", commissionMode: "unset", commissionValue: null,
+  businessName: "מאי פיננסים", advisorName: "שי אשטמקר · מאי פיננסים",
+  campaign:MAY_CAMPAIGN,
+  contactEmail: "mayfn2021@gmail.com", contactPhone: "0508623360", commissionMode: "unset", commissionValue: null,
 };
 export function normalizePhone(input: string) {
   let phone = input.replace(/[\s()+.-]/g, "");

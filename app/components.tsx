@@ -4,8 +4,8 @@ import { X, Check, Copy, ArrowUpLeft, Link2 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { LeadStatus } from "../lib/domain";
 import { STATUS } from "../lib/domain";
-export function Brand({ light = false, name = "קשר" }: { light?: boolean; name?: string }) {
-  return <div className={"brand " + (light ? "brand-light" : "")}><span className="brand-symbol"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M7 24 16 14l8 8 9-11M7 32l9-10 8 8 9-11" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round"/></svg></span><span>{name}<small>שותפים להצלחה</small></span></div>;
+export function Brand({ light = false, name = "מאי פיננסים" }: { light?: boolean; name?: string }) {
+  return <div className={"brand may-brand " + (light ? "brand-light" : "")}><img src="https://mayfn.co.il/brand/LOGO-FIX-M.png" alt={name} width={164} height={70} referrerPolicy="no-referrer"/><small>תוכנית השותפים</small></div>;
 }
 export function Avatar({ name, index = 0, small = false }: { name: string; index?: number; small?: boolean }) {
   return <span className={"avatar avatar-" + index % 5 + (small ? " avatar-small" : "")} aria-hidden="true">{name.split(" ").map(w => w[0]).slice(0, 2).join("")}</span>;

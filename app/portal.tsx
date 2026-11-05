@@ -1,4 +1,5 @@
 "use client";
+import CampaignEditor from "./campaign-editor";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
@@ -151,7 +152,7 @@ export default function Portal({ signedIn }: { signedIn: boolean }) {
         <div className="sidebar-card"><span className="sidebar-card-icon"><Link2 size={20}/></span><h3>קשר קטן. הזדמנות גדולה.</h3><p>כל הפניה טובה מתחילה באדם שמכיר אדם.</p><button onClick={() => navigate("marketing")}>לכלי השיווק <ArrowUpLeft size={16}/></button></div>
         {admin && <button className={"nav-item " + (page === "settings" ? "nav-active" : "")} onClick={() => navigate("settings")}><Settings2 size={19}/><span>הגדרות המערכת</span></button>}
         <button className="nav-item" onClick={() => setModal("help")}><CircleHelp size={19}/><span>עזרה ומידע</span></button>
-        <div className="sidebar-footer"><span className="small-logo">קשר</span><span>מחברים אנשים להזדמנויות</span><i/></div>
+        <div className="sidebar-footer"><span className="small-logo">מאי פיננסים</span><span>מחברים אנשים להזדמנויות</span><i/></div>
       </div>
     </aside>
     <div className="main-shell">
@@ -225,8 +226,9 @@ export default function Portal({ signedIn }: { signedIn: boolean }) {
           </section>
         </>}
         {page === "marketing" && <Marketing partners={admin ? active : activePartner ? [activePartner] : []} link={link} notify={notify} settings={source.settings} demo={mode === "demo"}/>}
+        {page === "settings" && admin && <CampaignEditor/>}
         {page === "settings" && admin && <SettingsForm settings={source.settings} busy={busy} onSave={p => mutate("saveSettings", p)} notify={notify} origin={origin}/>}
-        <footer className="main-footer"><span><ShieldCheck size={14}/>קשר · מחברים אנשים להזדמנויות</span><span>{mode === "demo" ? "תצוגה להמחשה · פרטי האנשים בדויים" : "סביבת עבודה אישית"}<i/>גרסה ראשונה</span></footer>
+        <footer className="main-footer"><span><ShieldCheck size={14}/>מאי פיננסים · תוכנית השותפים</span><span>{mode === "demo" ? "תצוגה להמחשה · פרטי האנשים בדויים" : "סביבת עבודה אישית"}<i/>גרסה ראשונה</span></footer>
       </main>
     </div>
     {notice && <div className={"toast " + (notice.error ? "toast-error" : "")} role="status">{notice.error ? <CircleHelp size={18}/> : <CheckCircle2 size={18}/>}<span>{notice.message}</span><button onClick={() => setNotice(null)} aria-label="סגירת הודעה"><X size={15}/></button></div>}
