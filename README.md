@@ -1,65 +1,38 @@
-# קשר — מערכת שותפים ליועץ משכנתאות
+# קשר — מערכת שותפים לייעוץ משכנתאות
 
-זהו הקוד המלא של מערכת קשר שבנינו. אתר השוואת המוצרים הוסר והמערכת הועברה לשורש המאגר.
+Standalone Next.js app for Vercel with Supabase email/password authentication and Postgres persistence. No redirects to ChatGPT or Sites.
 
-## הרצה מקומית
+## Local development
 
-```bash
+Node.js 22 or newer:
+
+```sh
 npm ci
 npm run dev
 ```
 
-האפליקציה כוללת ממשק מנהל, אזור שותף, קישורי הפניה אישיים, טופס לקוח, מעקב טיפול ועמלות. סכום העמלה מתחיל ללא הגדרה.
+`npm test` checks phone normalization, commission calculations, CSV exports and a real local Postgres-compatible authorization flow using PGlite. `npm run typecheck` and `npm run build` check the application.
 
-## הפרסום הפעיל
+## Provisioning a dedicated Supabase project
 
-המערכת המלאה פועלת בכתובת:
+1. Create a dedicated project; do not apply `supabase/schema.sql` to an unrelated existing database.
+2. Apply the reviewed SQL schema using the Supabase migration tooling. Tables are private: RLS is enabled and direct anonymous/authenticated table privileges are revoked. Narrow RPCs enforce ownership, verified accounts, partner status and admin-only operations.
+3. Set the production Site URL to the Vercel production origin. Allow `/auth/callback` on that origin as an auth redirect. Configure email confirmation, recovery and production SMTP delivery. Supabase's built-in email service is not a general production mail service.
+4. Fill `supabase/project.json` with the project HTTPS URL and **publishable** key, or set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. These values are public by design. Never put secret/service-role keys in this repository or frontend.
+5. Generate a random one-time activation code with at least 32 random bytes. Store only its SHA-256 hash in `public.setup_state` at id 1. Give the plaintext code privately to the owner. After signup and email verification, the owner uses `/setup`. The first visitor never automatically receives administrator privileges. Do not commit the plaintext code.
+6. Deploy to Vercel using framework Next.js, installation `npm ci`, build `npm run build`, no output-directory override, and repository root as project root.
 
-https://kesher-mortgage-partners-dorian.jollyoctet4.chatgpt.site
+The app deliberately reports missing database setup (`503` from `/api/health`) rather than claiming data was saved. Public demo data is clearly marked and is separate from authenticated records.
 
-האפליקציה, מסד D1 וההתחברות ממשיכים לפעול באותו פרסום. כללי הגישה שלו נשמרים.
+## Functionality
 
-הפרויקט הקיים ב־Vercel משמש כעת ככתובת כניסה שמפנה למערכת הפעילה. כללי ההפניה מופיעים ב־`vercel.json`; דפי הפניה אישיים והרשמה משמרים את הנתיב. קישורים ישנים של אתר המוצרים עוברים לעמוד הראשי של קשר.
+- Admin dashboard, partners, leads, pipeline, events and settings.
+- Partner signup, approval, suspension and personal referral links.
+- Public referral intake with consent, normalized phone duplicate prevention and transactional audit records.
+- Partners only receive their own leads; phone numbers are masked and internal notes/fees are removed server-side.
+- Commission remains unset until the advisor selects a rule. Recording payment snapshots that rule; changing the rule does not rewrite past commissions. Commission payout requires prior approval of the exact amount and cannot be edited after payout.
+- Ordinary email/password login, email verification, reset password, POST logout and one-time secure administrator activation.
 
-ב־Vercel התקנת התלויות מדולגת ומופעל `node scripts/build-vercel-entry.mjs` כדי לייצר דף כניסה חלופי בלבד. השרת של Vinext ו־D1 אינו נפרס ל־Vercel. שינוי בקוד האפליקציה מחייב פרסום דרך Sites כדי לעדכן את המערכת החיה; עדכון `vercel.json` נפרס דרך חיבור GitHub הקיים.
+## Rollout status
 
-הוראות האפליקציה המקוריות, הזהות ומסד הנתונים מפורטות בהמשך.
-
----
-
-# Kesher | קשר — Mortgage referral partner portal
-
-Hebrew RTL partner portal for one mortgage advisory business. Built with Vinext/React and Cloudflare D1, hosted privately with Sites. The commission rule starts **unset**.
-
-## Included
-
-- Admin overview, source-based metrics, searchable/filterable referrals and CSV export.
-- Partner creation, registration approval, active/paused state and personal referral URLs.
-- Client intake with explicit consent, canonical Israeli phone deduplication, honeypot and rate limiting.
-- Server-authorized partner accounts with only their own referrals, masked phones, and no internal notes or collected advisor fees.
-- Lead status/history and collected-fee recording; separate commission amount, approval and payment-recording stages.
-- Fixed/percentage rules can be configured later. Rule changes never rewrite previously recorded commissions. An unset rule leaves the amount null.
-- Marketing copy templates and referral-page previews.
-- Isolated, explicitly labeled demo mode. Demo changes live in component state; real records live in D1. Only the UI mode preference uses localStorage.
-
-## Identity and first setup
-
-The publication starts owner-private. The first authenticated `/api/portal` read creates the admin settings row, bound to that authenticated Sites user ID. **The owner must enter the real workspace before changing the Site audience.** Later users register at `/join` and need admin approval. Accounts created by the admin can be claimed by signing in with the matching verified ChatGPT email and completing registration.
-
-Sites handles authentication and injects identity headers. Do not trust client-supplied identity headers if moving this app to another hosting platform. Never make the Worker reachable directly without an authentication gateway that removes/replaces those headers.
-
-Referral pages are anonymous-compatible in app code; the current private hosting gate limits all visitors to the owner. External use requires an explicit later sharing decision. The actual office name/contact details, partner terms and intake wording must be completed for the operating business before external launch. No email delivery or funds transfer is integrated; commission payments are recorded manually after payment outside the app.
-
-The initially created admin is the account owner, not automatically the advisor. Role transfer and multiple administrators are outside the first release.
-
-## Local development and verification
-
-Follow the Sites workflow for dependency installation, preview and publication. The hosting manifest declares D1 binding `DB`. Schema changes are generated by `npm run db:generate`; deployment applies the schema-only migrations under `drizzle/`. Never seed demo rows into the production database.
-
-Checks:
-
-- `node node_modules/typescript/bin/tsc --noEmit`
-- `node --experimental-strip-types --test tests/domain.test.mjs`
-- `node tests/run-integration.mjs` after building and applying migrations locally, with the preview daemon stopped. This starts and stops one local test Worker; simulated identities are confined to local tests. It exercises auth, partner isolation, consent, duplicate prevention, attribution, notes, deferred commissions, approval/payment and paused partners.
-
-Production builds use the Sites `build-site.mjs` helper. Source, fonts, schema and migration metadata are retained in the project repository. Fonts are local Noto Sans Hebrew assets under the SIL Open Font License (see `public/fonts/OFL.txt`).
+The source conversion and local tests are prepared. Production rollout requires the dedicated project, configured public connection values, auth URLs/email delivery and deployment verification. The previous deployment must be replaced; a local build does not prove the live site is updated.

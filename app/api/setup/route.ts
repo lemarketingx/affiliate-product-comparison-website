@@ -1,0 +1,2 @@
+import {sameOrigin,readJson,requireClient,rpcError,apiFailure,ApiError} from '../../../lib/portal-server';
+export async function POST(request:Request){try{sameOrigin(request);const {token}=await readJson(request,1000);if(typeof token!=='string'||token.length<32||token.length>256)throw new ApiError(400,'קוד ההפעלה אינו תקין.');const c=await requireClient();const {error}=await c.rpc('claim_admin',{token});if(error)rpcError(error);return Response.json({ok:true});}catch(e){return apiFailure(e);}}

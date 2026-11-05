@@ -1,7 +1,4 @@
-import Portal from "./portal";
-import { getChatGPTUser } from "./chatgpt-auth";
-export const dynamic = "force-dynamic";
-export default async function Home() {
-  const user = await getChatGPTUser();
-  return <Portal signedIn={!!user} />;
-}
+import Portal from './portal';
+import { getCurrentUser } from '../lib/supabase/server';
+export const dynamic='force-dynamic';
+export default async function Home(){return <Portal signedIn={!!await getCurrentUser()}/>;}

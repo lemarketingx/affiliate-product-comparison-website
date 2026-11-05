@@ -1,7 +1,4 @@
-import Join from "./join";
-import { getChatGPTUser } from "../chatgpt-auth";
-export const dynamic = "force-dynamic";
-export default async function JoinPage() {
-  const user = await getChatGPTUser();
-  return <Join user={user ? { name: user.fullName ?? "", email: user.email } : null}/>;
-}
+import Join from './join';
+import { getCurrentUser } from '../../lib/supabase/server';
+export const dynamic='force-dynamic';
+export default async function JoinPage(){const u=await getCurrentUser();return <Join user={u?{name:'',email:u.email||''}:null}/>;}
