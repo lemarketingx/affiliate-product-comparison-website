@@ -57,7 +57,7 @@ export default function Portal({ signedIn }: { signedIn: boolean }) {
   const link = (p?: Partner) => p ? origin + "/r/" + p.code + (mode === "demo" ? "?demo=1&name=" + encodeURIComponent(p.name) : "") : "";
   const notify = (message: string, error = false) => setNotice({ message, error });
   function navigate(next: Page) { setPage(next); setMobileOpen(false); setSearch(""); setStatus("all"); setPartnerFilter("all"); }
-  useEffect(() => { setOrigin(window.location.origin); try { if (signedIn && localStorage.getItem("kesher-mode") === "live") void loadLive(); } catch {} }, []);
+  useEffect(() => { setOrigin(window.location.origin); const testRole=new URLSearchParams(window.location.search).get("test"); if(testRole){setMode("demo");setPreviewPartner(testRole==="partner"?demo.partners.find(p=>p.status==="active")?.id||"":"");}else{try { if (signedIn && localStorage.getItem("kesher-mode") === "live") void loadLive(); } catch {}} }, []);
   useEffect(() => { if (notice) { const t = setTimeout(() => setNotice(null), 4500); return () => clearTimeout(t); } }, [notice]);
   async function loadLive() {
     setBusy(true);
@@ -173,6 +173,7 @@ export default function Portal({ signedIn }: { signedIn: boolean }) {
         </div>
       </div>
       <main className="main-content">
+        <section className="test-access"><div><strong>בדיקת המערכת ללא סיסמה</strong><p>בחרו תפקיד והתנסו בהפניות, בקישורים ובעמלות עם נתוני הדגמה.</p></div><div className="button-row"><button className={"btn "+(mode==="demo"&&admin?"btn-primary":"btn-light")} onClick={()=>{setMode("demo");setPreviewPartner("");setPage("overview");}}>כניסה כמנהל לבדיקה</button><button className={"btn "+(mode==="demo"&&!admin?"btn-primary":"btn-light")} onClick={()=>{setMode("demo");setPreviewPartner(demo.partners.find(p=>p.status==="active")?.id||"");setPage("overview");}}>כניסה כשותף לבדיקה</button></div></section>
         {partnerPending && <div className="callout"><Clock3 size={20}/><div><strong>בקשת ההצטרפות ממתינה לאישור</strong><p>הקישור האישי יופעל לאחר אישור מנהל המערכת.</p></div></div>}
         <div className="page-heading">
           <div><div className="eyebrow">{admin ? "בונים הצלחה, ביחד" : "השותפות שלך מתחילה כאן"}<span/></div><h1>{page === "overview" ? admin ? "כל הקשרים. תמונה אחת." : "ההפניות שלך, בדרך להצלחה." : PAGE_LABEL[page]}</h1><p>{page === "overview" ? "מבט ברור על ההפניות, השותפים וההזדמנויות שבדרך." : page === "leads" ? "מהשיחה הראשונה ועד ללקוח הבא. הכול מתועד כאן." : page === "partners" ? "האנשים שמחברים את העסק שלך להזדמנות הבאה." : page === "commissions" ? "מעקב מסודר אחרי זכאות, אישור ורישום תשלומים לשותפים." : page === "marketing" ? "הקישור, המילים והכלים שיעזרו לקשר הבא לקרות." : "הפרטים והכללים שמתאימים את המערכת לעסק שלך."}</p></div>
