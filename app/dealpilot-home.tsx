@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowUpLeft, Bot, CheckCircle2, ChevronDown, CirclePause, ClipboardCheck, ExternalLink, Filter, Globe2, Instagram, LayoutDashboard, Link2, Megaphone, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingBag, Sparkles, TrendingUp, X, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Bot, CheckCircle2, ChevronDown, CirclePause, ClipboardCheck, ExternalLink, Filter, Globe2, Camera, LayoutDashboard, Link2, Megaphone, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingBag, Sparkles, TrendingUp, X, Zap } from "lucide-react";
 import "./dealpilot.css";
 
 type Category = "הכול" | "בית ומטבח" | "רכב" | "גאדג׳טים" | "סדר וארגון";
@@ -19,7 +19,7 @@ const channels = [
   {name:"אתר הדילים",label:"ממשק התצוגה פעיל",kind:"ready",icon:Globe2},
   {name:"Telegram",label:"ממתין לחיבור Bot API",kind:"pending",icon:Send},
   {name:"Facebook",label:"ממתין להרשאות Meta",kind:"pending",icon:Megaphone},
-  {name:"Instagram",label:"ממתין להרשאות Meta",kind:"pending",icon:Instagram},
+  {name:"Camera",label:"ממתין להרשאות Meta",kind:"pending",icon:Camera},
   {name:"TikTok / YouTube",label:"חיבור בשלב מתקדם",kind:"later",icon:Zap},
   {name:"Pinterest",label:"כפוף להרשאות ואישור תוכן",kind:"later",icon:ShoppingBag},
 ] as const;
