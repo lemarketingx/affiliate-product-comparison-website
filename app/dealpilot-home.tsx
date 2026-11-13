@@ -19,7 +19,7 @@ const channels = [
   {name:"אתר הדילים",label:"ממשק התצוגה פעיל",kind:"ready",icon:Globe2},
   {name:"Telegram",label:"ממתין לחיבור Bot API",kind:"pending",icon:Send},
   {name:"Facebook",label:"ממתין להרשאות Meta",kind:"pending",icon:Megaphone},
-  {name:"Camera",label:"ממתין להרשאות Meta",kind:"pending",icon:Camera},
+  {name:"Instagram",label:"ממתין להרשאות Meta",kind:"pending",icon:Camera},
   {name:"TikTok / YouTube",label:"חיבור בשלב מתקדם",kind:"later",icon:Zap},
   {name:"Pinterest",label:"כפוף להרשאות ואישור תוכן",kind:"later",icon:ShoppingBag},
 ] as const;
