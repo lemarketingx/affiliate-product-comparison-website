@@ -1,4 +1,5 @@
-import Portal from './portal';
-import { getCurrentUser } from '../lib/supabase/server';
-export const dynamic='force-dynamic';
-export default async function Home(){return <Portal signedIn={!!await getCurrentUser()}/>;}
+import DealPilotHome from './dealpilot-home';
+
+export default function HomePage() {
+  return <DealPilotHome />;
+}
