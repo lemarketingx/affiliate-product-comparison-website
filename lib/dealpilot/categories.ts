@@ -1,15 +1,39 @@
 export const categories = [
   {
-    slug: "home",
-    label: "בית ומטבח",
-    term: "home kitchen",
-    description: "פריטים שימושיים למרחב שבו הכול מתחיל.",
+    slug: "fashion",
+    label: "אופנה ואביזרים",
+    term: "fashion accessories",
+    description: "תיקים, צעיפים ואביזרים קטנים להשלמת ההופעה.",
   },
   {
     slug: "tech",
     label: "גאדג׳טים וטכנולוגיה",
-    term: "phone accessories",
-    description: "תוספות קטנות ליום מחובר ונוח יותר.",
+    term: "computer accessories",
+    description: "אביזרים שימושיים למחשב, לטלפון ולשולחן העבודה.",
+  },
+  {
+    slug: "home",
+    label: "בית ומטבח",
+    term: "kitchen tools",
+    description: "פריטים שימושיים למרחב שבו הכול מתחיל.",
+  },
+  {
+    slug: "beauty",
+    label: "אביזרי טיפוח",
+    term: "makeup brushes",
+    description: "מברשות, תיקי איפור ואביזרים לשגרת הטיפוח.",
+  },
+  {
+    slug: "games",
+    label: "משחקים ופנאי",
+    term: "board games",
+    description: "רעיונות לערב משחקים ולזמן פנוי ביחד.",
+  },
+  {
+    slug: "sport",
+    label: "ספורט וטיולים",
+    term: "fitness accessories",
+    description: "אביזרים לאימון, להליכה וליציאה מהבית.",
   },
   {
     slug: "car",

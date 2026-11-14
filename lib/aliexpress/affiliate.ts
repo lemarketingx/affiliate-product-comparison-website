@@ -166,9 +166,13 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
       const id = text(p.product_id);
       const title = text(p.product_title);
       if (!id || !/^\d{4,24}$/.test(id) || !title) return null;
-      const price = text(p.target_sale_price) ?? text(p.sale_price);
-      const currency =
-        text(p.target_sale_price_currency) ?? text(p.sale_price_currency);
+      // Keep amount and currency from the same provider quote. Never label a
+      // fallback USD amount as ILS because only one target field was returned.
+      const targetPrice = text(p.target_sale_price);
+      const targetCurrency = text(p.target_sale_price_currency);
+      const useTarget = Boolean(targetPrice && targetCurrency);
+      const price = useTarget ? targetPrice : text(p.sale_price);
+      const currency = useTarget ? targetCurrency : text(p.sale_price_currency);
       const image = safeUrl(p.product_main_image_url, "image");
       const productUrl = safeUrl(p.product_detail_url, "product");
       // Do not confuse a product URL with an affiliate URL.
@@ -249,6 +253,7 @@ export async function queryAffiliateProducts(
     sort: "LAST_VOLUME_DESC",
     ship_to_country: "IL",
     target_language: "HE",
+    target_currency: "ILS",
   };
   // Each option, then their combination, passed the bounded live Preview probe
   // on 2026-11-14. Country-specific search is not delivery verification.

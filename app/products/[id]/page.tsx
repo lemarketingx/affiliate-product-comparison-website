@@ -111,7 +111,7 @@ export default async function Product({
               {formatMoney(p.price, p.currency)}
             </div>
             <p>
-              מחיר במטבע שהתקבל מהספק. המחיר הסופי, המסים והמשלוח נבדקים
+              מחיר בשקלים שהתקבל מהספק. המחיר הסופי, המסים והמשלוח נבדקים
               ב־AliExpress.
             </p>
             {p.affiliateUrl ? (

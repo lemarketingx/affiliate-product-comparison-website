@@ -40,7 +40,7 @@ export default function DealPilotHome({
               <em>מוצאים דילים טובים.</em>
             </h1>
             <p>
-              משהו קטן לבית, רעיון לשולחן העבודה, או גאדג׳ט שפשוט כיף להכיר.
+              אביזר להופעה, משהו לבית, רעיון לאימון או גאדג׳ט שכיף להכיר.
               בואו למצוא את הדברים שמתאימים ליום־יום שלכם.
             </p>
             <div className="dp-actions">
@@ -52,7 +52,7 @@ export default function DealPilotHome({
               </Link>
             </div>
             <div className="dp-hero-caption">
-              <ShieldCheck size={17} /> מידע מהספק · המחיר הסופי ב־AliExpress
+              <ShieldCheck size={17} /> מחירים בשקלים · המחיר הסופי ב־AliExpress
             </div>
           </div>
           <div className="dp-hero-visual">

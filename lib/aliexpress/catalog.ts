@@ -24,7 +24,7 @@ const fetchBatch = unstable_cache(
     fetchedAt: new Date().toISOString(),
   }),
   [
-    "dealpilot-catalog-he-il-v3",
+    "dealpilot-catalog-he-il-ils-v4",
     process.env.DEALPILOT_CACHE_NAMESPACE ?? "default",
   ],
   { revalidate: 21600 },
@@ -40,19 +40,25 @@ export async function getDiscoveredCatalog(): Promise<CatalogSnapshot> {
   responses.forEach((response, index) => {
     if (response.status !== "fulfilled") return;
     timestamps.push(response.value.fetchedAt);
-    response.value.products.forEach((product) => {
-      if (!unique.has(product.id))
-        unique.set(product.id, {
-          ...product,
-          category: categories[index].label,
-          categorySlug: categories[index].slug,
-        });
-    });
   });
+  // Interleave categories so one high-volume query cannot fill the first screen.
+  const maxRows = Math.max(0, ...responses.map((r) =>
+    r.status === "fulfilled" ? r.value.products.length : 0,
+  ));
+  for (let row = 0; row < maxRows; row++) {
+    responses.forEach((response, index) => {
+      if (response.status !== "fulfilled") return;
+      const product = response.value.products[row];
+      if (!product || unique.has(product.id)) return;
+      unique.set(product.id, {
+        ...product,
+        category: categories[index].label,
+        categorySlug: categories[index].slug,
+      });
+    });
+  }
   return {
-    items: [...unique.values()].sort(
-      (a, b) => (b.orders ?? -1) - (a.orders ?? -1),
-    ),
+    items: [...unique.values()],
     fetchedAt: timestamps.sort()[0] ?? null,
     available: timestamps.length > 0,
     partial: timestamps.length > 0 && timestamps.length < categories.length,
@@ -68,7 +74,7 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
     // while missing quality evidence is disclosed on every public product.
     items: snapshot.items.filter((p) => {
       const { blockers } = evaluateEligibility(p);
-      return !blockers.some((code) =>
+      return p.currency === "ILS" && !blockers.some((code) =>
         ["orders", "hebrew", "product_data"].includes(code),
       );
     }),

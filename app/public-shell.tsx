@@ -9,6 +9,10 @@ import {
   Headphones,
   Car,
   Boxes,
+  ShoppingBag,
+  Brush,
+  Gamepad2,
+  Dumbbell,
 } from "lucide-react";
 import { categories } from "../lib/dealpilot/categories";
 export function Brand() {
@@ -112,14 +116,15 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
   );
 }
 export function CategoryLinks() {
-  const icons = [House, Headphones, Car, Boxes];
+  const icons = { home: House, tech: Headphones, car: Car, organization: Boxes,
+    fashion: ShoppingBag, beauty: Brush, games: Gamepad2, sport: Dumbbell };
   return (
     <div className="dp-category-grid">
       {categories.map((c, i) => {
-        const Icon = icons[i];
+        const Icon = icons[c.slug];
         return (
           <Link
-            className={"dp-category-tile tone-" + i}
+            className={"dp-category-tile tone-" + (i % 4)}
             href={"/categories/" + c.slug}
             key={c.slug}
           >

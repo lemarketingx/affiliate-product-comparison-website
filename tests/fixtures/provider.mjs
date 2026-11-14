@@ -30,7 +30,8 @@ globalThis.fetch = async function (input, init) {
   if (
     params.get("target_language") !== "HE" ||
     params.get("ship_to_country") !== "IL" ||
-    params.get("sort") !== "LAST_VOLUME_DESC"
+    params.get("sort") !== "LAST_VOLUME_DESC" ||
+    params.get("target_currency") !== "ILS"
   )
     throw new Error("Hebrew/Israel discovery profile missing");
   const products = [
@@ -38,7 +39,7 @@ globalThis.fetch = async function (input, init) {
       product_id: "1005001234567",
       product_title: "TEST FIXTURE — מארגן כבלים לבדיקה בלבד",
       target_sale_price: "12.50",
-      target_sale_price_currency: "USD",
+      target_sale_price_currency: "ILS",
       lastest_volume: 1200,
       commission_rate: "5%",
       // Deliberately unsupported fields must not grant publication eligibility.
@@ -59,6 +60,17 @@ globalThis.fetch = async function (input, init) {
       product_detail_url: "https://www.aliexpress.com/item/1005007654321.html",
     },
   ];
+  products.push({
+    ...products[0],
+    product_id: "1005001111111",
+    product_title: "TEST FIXTURE — מחיר דולר שאסור להציג כשקלים",
+    target_sale_price: undefined,
+    target_sale_price_currency: "ILS",
+    sale_price: "3.50",
+    sale_price_currency: "USD",
+    product_detail_url: "https://www.aliexpress.com/item/1005001111111.html",
+    promotion_link: "https://s.click.aliexpress.com/e/TEST_USD_FIXTURE_ONLY",
+  });
   const custom = {
     ...products[0],
     product_id: "1005003333333",
