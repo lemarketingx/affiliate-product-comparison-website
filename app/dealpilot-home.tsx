@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowUpLeft, Bot, CheckCircle2, ChevronDown, CirclePause, Cl
 import "./dealpilot.css";
 import AliExpressTester from "./aliexpress-tester";
 import LiveCatalog from "./live-catalog";
+import ClickStats from "./click-stats";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 import { assessProduct } from "../lib/aliexpress/scoring";
 
@@ -104,6 +105,7 @@ export default function DealPilotHome({snapshot}:{snapshot: CatalogSnapshot}) {
       {view==="explore" ? <LiveCatalog snapshot={snapshot}/> : <section className="dp-section dp-container" id="products">
         <div className="dp-section-heading"><div><span className="dp-kicker">MISSION CONTROL</span><h2>מרכז השליטה <span>✳</span></h2><p>מבט ברור על המערכת, חיבורים והמשימות הבאות. כל הנתונים למטה מייצגים מצב פיתוח, לא פעילות חיה.</p></div><button className="dp-primary dp-small" onClick={()=>setShowAdd(true)}><Plus size={17}/> הוספת מועמד</button></div>
         <AliExpressTester/>
+        <ClickStats/>
         <div className="dp-panel" style={{marginBottom:20}}>
           <div className="dp-panel-heading"><h3><TrendingUp size={20}/> מועמדים מומלצים לבדיקה</h3><span>דירוג נתונים, לא תחזית רווח</span></div>
           {snapshot.items.length ? [...snapshot.items].sort((a,b)=>assessProduct(b).score-assessProduct(a).score).slice(0,5).map(item=>{
