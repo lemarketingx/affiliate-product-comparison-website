@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowUpLeft, Bot, CheckCircle2, ChevronDown, CirclePause, ClipboardCheck, ExternalLink, Filter, Globe2, Camera, LayoutDashboard, Link2, Megaphone, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingBag, Sparkles, TrendingUp, X, Zap } from "lucide-react";
 import "./dealpilot.css";
 import AliExpressTester from "./aliexpress-tester";
+import LiveCatalog from "./live-catalog";
+import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 
 type Category = "הכול" | "בית ומטבח" | "רכב" | "גאדג׳טים" | "סדר וארגון";
 type Candidate = { id: string; name: string; category: Exclude<Category,"הכול">; emoji: string; tint: string; reason: string; status: "demo" | "unverified"; url?: string; };
@@ -36,7 +38,7 @@ function safeAliUrl(raw: string): string | null {
   } catch { return null; }
 }
 
-export default function DealPilotHome() {
+export default function DealPilotHome({snapshot}:{snapshot: CatalogSnapshot}) {
   const [view,setView] = useState<"explore"|"control">("explore");
   const [category,setCategory] = useState<Category>("הכול");
   const [query,setQuery] = useState("");
@@ -92,26 +94,17 @@ export default function DealPilotHome() {
       </section>
 
       <section className="dp-stats-strip"><div className="dp-container dp-stats-grid">
-        <div><PackageSearch size={20}/><span>קטלוג הדגמה</span><strong>{examples.length} דוגמאות</strong></div>
+        <div><PackageSearch size={20}/><span>קטלוג API</span><strong>{snapshot.items.length} מוצרים</strong></div>
         <div><Bot size={20}/><span>AI אוטומטי</span><strong>טרם חובר</strong></div>
         <div><Megaphone size={20}/><span>ערוצי פרסום</span><strong>בהכנה</strong></div>
-        <div><ShieldCheck size={20}/><span>קישורי שותפים</span><strong>טרם אומתו</strong></div>
+        <div><ShieldCheck size={20}/><span>קישורי קידום</span><strong>{snapshot.items.filter(p=>Boolean(p.affiliateUrl)).length} קישורים</strong></div>
       </div></section>
 
-      {view==="explore" ? <section className="dp-section dp-container" id="products">
-        <div className="dp-section-heading"><div><span className="dp-kicker">THE DISCOVERY ZONE</span><h2>מוצרים שכדאי להכיר <span>✳</span></h2><p>קטלוג המחשה לבדיקת העיצוב והסינון. עדיין אין כאן מוצרים מאומתים או מחירי אמת.</p></div><button className="dp-text-link" onClick={()=>setView("control")}>איך נבחרים המוצרים? <ArrowLeft size={17}/></button></div>
-        <div className="dp-filter-bar"><div className="dp-categories">{categories.map(c=><button key={c} className={category===c?"selected":""} onClick={()=>setCategory(c)}>{c}</button>)}</div><label className="dp-search"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="מחפשים רעיון למוצר?" aria-label="חיפוש מוצרים"/></label></div>
-        <div className="dp-products">{filtered.map(p=><article className="dp-product" key={p.id}>
-          <div className={`dp-product-visual ${p.tint}`}><span className="dp-product-emoji" aria-hidden="true">{p.emoji}</span><span className="dp-demo-label">{p.status==="demo"?"המחשה":"ממתין לאימות"}</span></div>
-          <div className="dp-product-content"><div className="dp-product-category">{p.category}</div><h3>{p.name}</h3><p>{p.reason}</p><div className="dp-product-bottom"><span className="dp-no-price">מחיר יופיע לאחר חיבור נתונים</span>{p.url?<a href={p.url} target="_blank" rel="noopener noreferrer" className="dp-product-arrow" aria-label="פתיחת מוצר לצורך בדיקה"><ExternalLink size={18}/></a>:<span className="dp-product-arrow disabled"><ArrowUpLeft size={18}/></span>}</div></div>
-        </article>)}</div>
-        {!filtered.length&&<div className="dp-empty"><Filter size={30}/><h3>לא נמצאו מוצרים בסינון הזה</h3><p>אפשר לנסות קטגוריה אחרת או חיפוש קצר יותר.</p></div>}
-        <p className="dp-disclosure">גילוי נאות: בהמשך עשויים להופיע באתר קישורי שותפים שמזכים אותנו בעמלה על רכישה. כרגע מדובר בקטלוג הדגמה בלבד, ללא המלצות קנייה מאומתות.</p>
-      </section> : <section className="dp-section dp-container" id="products">
+      {view==="explore" ? <LiveCatalog snapshot={snapshot}/> : <section className="dp-section dp-container" id="products">
         <div className="dp-section-heading"><div><span className="dp-kicker">MISSION CONTROL</span><h2>מרכז השליטה <span>✳</span></h2><p>מבט ברור על המערכת, חיבורים והמשימות הבאות. כל הנתונים למטה מייצגים מצב פיתוח, לא פעילות חיה.</p></div><button className="dp-primary dp-small" onClick={()=>setShowAdd(true)}><Plus size={17}/> הוספת מועמד</button></div>
         <AliExpressTester/>
         <div className="dp-control-grid"><div className="dp-panel dp-wide"><div className="dp-panel-heading"><h3><PackageSearch size={20}/> תור בדיקת מוצרים</h3><span>{unverified} ממתינים לאימות</span></div>{unverified===0?<div className="dp-blank"><ClipboardCheck size={35}/><strong>אין כרגע מועמדים לבדיקה</strong><p>הוסיפו קישור מוצר ראשון כדי לבחון את תהליך העבודה.</p></div>:candidates.filter(p=>p.status==="unverified").map(p=><div className="dp-queue-row" key={p.id}><span>📦</span><div><strong>{p.name}</strong><small>{p.category} · נוסף בדפדפן זה בלבד, ללא שמירה בשרת</small></div><span className="dp-pill amber">דורש אימות</span></div>)}</div>
-        <div className="dp-panel"><div className="dp-panel-heading"><h3><Bot size={20}/> מצב הסוכנים</h3></div><div className="dp-agent-row"><PackageSearch/><div><strong>Product Scout</strong><small>ממתין ל-AliExpress API</small></div><CirclePause size={18}/></div><div className="dp-agent-row"><Sparkles/><div><strong>Content Studio</strong><small>ממתין לנתוני מוצרים</small></div><CirclePause size={18}/></div><div className="dp-agent-row"><TrendingUp/><div><strong>Growth Analyst</strong><small>ממתין לנתוני ביצועים</small></div><CirclePause size={18}/></div></div></div>
+        <div className="dp-panel"><div className="dp-panel-heading"><h3><Bot size={20}/> מצב הסוכנים</h3></div><div className="dp-agent-row"><PackageSearch/><div><strong>Product Scout</strong><small>API מחובר לבדיקה · תהליך אוטומטי טרם הופעל</small></div><CirclePause size={18}/></div><div className="dp-agent-row"><Sparkles/><div><strong>Content Studio</strong><small>ממתין לנתוני מוצרים</small></div><CirclePause size={18}/></div><div className="dp-agent-row"><TrendingUp/><div><strong>Growth Analyst</strong><small>ממתין לנתוני ביצועים</small></div><CirclePause size={18}/></div></div></div>
         <div className="dp-panel"><div className="dp-panel-heading"><h3><Megaphone size={20}/> ערוצי הפצה</h3><span>ללא פרסום אוטומטי</span></div><div className="dp-channel-grid">{channels.map(c=>{const Icon=c.icon;return <div className="dp-channel" key={c.name}><div className="dp-channel-icon"><Icon size={21}/></div><div><strong>{c.name}</strong><small>{c.label}</small></div><span className={`dp-status ${c.kind}`}>{c.kind==="ready"?"תצוגה":c.kind==="later"?"בהמשך":"לא מחובר"}</span></div>})}</div></div>
         <div className="dp-honesty"><ShieldCheck size={20}/><div><strong>מצב בטוח: אין פרסומים או עסקאות אוטומטיים.</strong><p>אימות מוצר, יצירת קישור שותפים, שמירה בשרת וחיבור ערוצים יופעלו רק לאחר הגדרה ובדיקה. מועמדים שמוסיפים כאן נשמרים רק בזיכרון העמוד.</p></div></div>
       </section>}
