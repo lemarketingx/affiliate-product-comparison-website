@@ -34,7 +34,7 @@ export default function LiveCatalog({snapshot}:Props) {
       <label className="dp-search" style={{minWidth:170}}><span className="dp-sr-only">סידור מוצרים</span><select aria-label="סידור מוצרים" value={sort} onChange={event=>setSort(event.target.value as "recommended"|"original")} style={{border:0,background:"transparent",width:"100%"}}><option value="recommended">דירוג מוכנות לבדיקה</option><option value="original">סדר מקורי</option></select></label>
     </div>
     <div className="dp-products">{filtered.map(item=>{
-      const link=item.affiliateUrl ?? item.productUrl;
+      const link=item.affiliateUrl ? "/go/"+encodeURIComponent(item.id)+"?source=catalog" : item.productUrl;
       const amount=formatMoney(item.price,item.currency);
       const assessment=assessProduct(item);
       return <article className="dp-product" key={item.id}>
@@ -50,12 +50,12 @@ export default function LiveCatalog({snapshot}:Props) {
           <div className="dp-product-bottom">
             <div><strong style={{display:"block",fontSize:17}}>{amount ?? "המחיר אינו זמין"}</strong>
             <small style={{display:"block",color:"#8493a1",fontSize:10}}>{item.affiliateUrl ? "קישור שהוחזר כקישור קידום · ייחוס עמלה טרם נבדק" : "לא הוחזר קישור שותפים"}</small></div>
-            {link ? <a href={link} target="_blank" rel="noopener noreferrer sponsored" className="dp-product-arrow" aria-label={item.affiliateUrl?"פתיחת קישור הקידום":"פתיחת עמוד מוצר, ללא קישור שותפים"}><ExternalLink size={18}/></a> : <span className="dp-product-arrow disabled"><ArrowUpLeft size={18}/></span>}
+            {link ? <a href={link} target="_blank" rel="noopener noreferrer sponsored" className="dp-product-arrow" aria-label={item.affiliateUrl?"פתיחת קישור קידום דרך האתר":"פתיחת עמוד מוצר, ללא קישור שותפים"}><ExternalLink size={18}/></a> : <span className="dp-product-arrow disabled"><ArrowUpLeft size={18}/></span>}
           </div>
         </div>
       </article>;
     })}</div>
     {filtered.length===0&&<div className="dp-empty"><ShieldCheck size={28}/><h3>{snapshot.items.length?"לא נמצאו מוצרים בסינון הזה":"אין כרגע מוצרים להצגה"}</h3><p>{snapshot.available?"נסו חיפוש אחר או קטגוריה אחרת.":"אפשר לנסות שוב מאוחר יותר אחרי בדיקת ה־API."}</p></div>}
-    <p className="dp-disclosure">גילוי נאות: קישורי קידום עשויים לזכות אותנו בעמלה ללא עלות נוספת עבורך. מחירים ומוצרים מבוססים על תשובת API וטרם אומתו ידנית; יש לבדוק מחיר, משלוח וזמינות באתר AliExpress לפני רכישה. הציון הוא מדד שלמות נתונים וסימני עניין בלבד, לא הבטחה לרווחיות ולא דירוג איכות של המוכר. משלוח לישראל וייחוס עמלות טרם אומתו.</p>
+    <p className="dp-disclosure">גילוי נאות: קישורי קידום עשויים לזכות אותנו בעמלה ללא עלות נוספת עבורך. לחיצות על קישורי קידום עשויות להימדד באופן מצרפי כאשר מערכת המדידה מופעלת, ללא זיהוי אישי. מחירים ומוצרים מבוססים על תשובת API וטרם אומתו ידנית; יש לבדוק מחיר, משלוח וזמינות באתר AliExpress לפני רכישה. הציון הוא מדד שלמות נתונים וסימני עניין בלבד, לא הבטחה לרווחיות ולא דירוג איכות של המוכר. משלוח לישראל וייחוס עמלות טרם אומתו.</p>
   </section>;
 }
