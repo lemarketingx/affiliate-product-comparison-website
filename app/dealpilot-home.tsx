@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowUpLeft, Bot, CheckCircle2, ChevronDown, CirclePause, ClipboardCheck, ExternalLink, Filter, Globe2, Camera, LayoutDashboard, Link2, Megaphone, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingBag, Sparkles, TrendingUp, X, Zap } from "lucide-react";
 import "./dealpilot.css";
+import AliExpressTester from "./aliexpress-tester";
 
 type Category = "הכול" | "בית ומטבח" | "רכב" | "גאדג׳טים" | "סדר וארגון";
 type Candidate = { id: string; name: string; category: Exclude<Category,"הכול">; emoji: string; tint: string; reason: string; status: "demo" | "unverified"; url?: string; };
@@ -108,6 +109,7 @@ export default function DealPilotHome() {
         <p className="dp-disclosure">גילוי נאות: בהמשך עשויים להופיע באתר קישורי שותפים שמזכים אותנו בעמלה על רכישה. כרגע מדובר בקטלוג הדגמה בלבד, ללא המלצות קנייה מאומתות.</p>
       </section> : <section className="dp-section dp-container" id="products">
         <div className="dp-section-heading"><div><span className="dp-kicker">MISSION CONTROL</span><h2>מרכז השליטה <span>✳</span></h2><p>מבט ברור על המערכת, חיבורים והמשימות הבאות. כל הנתונים למטה מייצגים מצב פיתוח, לא פעילות חיה.</p></div><button className="dp-primary dp-small" onClick={()=>setShowAdd(true)}><Plus size={17}/> הוספת מועמד</button></div>
+        <AliExpressTester/>
         <div className="dp-control-grid"><div className="dp-panel dp-wide"><div className="dp-panel-heading"><h3><PackageSearch size={20}/> תור בדיקת מוצרים</h3><span>{unverified} ממתינים לאימות</span></div>{unverified===0?<div className="dp-blank"><ClipboardCheck size={35}/><strong>אין כרגע מועמדים לבדיקה</strong><p>הוסיפו קישור מוצר ראשון כדי לבחון את תהליך העבודה.</p></div>:candidates.filter(p=>p.status==="unverified").map(p=><div className="dp-queue-row" key={p.id}><span>📦</span><div><strong>{p.name}</strong><small>{p.category} · נוסף בדפדפן זה בלבד, ללא שמירה בשרת</small></div><span className="dp-pill amber">דורש אימות</span></div>)}</div>
         <div className="dp-panel"><div className="dp-panel-heading"><h3><Bot size={20}/> מצב הסוכנים</h3></div><div className="dp-agent-row"><PackageSearch/><div><strong>Product Scout</strong><small>ממתין ל-AliExpress API</small></div><CirclePause size={18}/></div><div className="dp-agent-row"><Sparkles/><div><strong>Content Studio</strong><small>ממתין לנתוני מוצרים</small></div><CirclePause size={18}/></div><div className="dp-agent-row"><TrendingUp/><div><strong>Growth Analyst</strong><small>ממתין לנתוני ביצועים</small></div><CirclePause size={18}/></div></div></div>
         <div className="dp-panel"><div className="dp-panel-heading"><h3><Megaphone size={20}/> ערוצי הפצה</h3><span>ללא פרסום אוטומטי</span></div><div className="dp-channel-grid">{channels.map(c=>{const Icon=c.icon;return <div className="dp-channel" key={c.name}><div className="dp-channel-icon"><Icon size={21}/></div><div><strong>{c.name}</strong><small>{c.label}</small></div><span className={`dp-status ${c.kind}`}>{c.kind==="ready"?"תצוגה":c.kind==="later"?"בהמשך":"לא מחובר"}</span></div>})}</div></div>
