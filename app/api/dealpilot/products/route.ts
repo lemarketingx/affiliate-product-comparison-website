@@ -1,33 +1,89 @@
-import { adminReady, AffiliateError, configured, queryAffiliateProducts, validAdminToken } from "../../../../lib/aliexpress/affiliate";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-const headers = {"Cache-Control":"no-store, max-age=0", "X-Content-Type-Options":"nosniff"};
-
+import { adminSession } from "../../../../lib/dealpilot/auth";
+import {
+  configured,
+  AffiliateError,
+  queryAffiliateProducts,
+} from "../../../../lib/aliexpress/affiliate";
+import { allowRequest } from "../../../../lib/dealpilot/rate-limit";
+import { unstable_cache } from "next/cache";
+import { sameRequestOrigin } from "../../../../lib/dealpilot/request-origin";
+const cachedSearch = unstable_cache(
+  async (term: string) => ({
+    products: await queryAffiliateProducts(term, 10),
+    fetchedAt: new Date().toISOString(),
+  }),
+  ["private-scout-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
+  { revalidate: 21600 },
+);
 export async function POST(request: Request) {
-  // This is a private diagnostic endpoint, never a public search API.
-  if (!adminReady()) return Response.json({ok:false,code:"ADMIN_TOKEN_NOT_CONFIGURED"},{status:503,headers});
-  if (!validAdminToken(request.headers.get("x-dealpilot-admin-token")))
-    return Response.json({ok:false,code:"UNAUTHORIZED"},{status:401,headers});
-  if (!configured()) return Response.json({ok:false,code:"CREDENTIALS_MISSING"},{status:503,headers});
-  if (Number(request.headers.get("content-length") || 0) > 2048)
-    return Response.json({ok:false,code:"PAYLOAD_TOO_LARGE"},{status:413,headers});
-  let body:unknown;
-  try { body = await request.json(); } catch {
-    return Response.json({ok:false,code:"INVALID_JSON"},{status:400,headers});
-  }
-  if (!body || typeof body !== "object" || Array.isArray(body))
-    return Response.json({ok:false,code:"INVALID_BODY"},{status:400,headers});
-  const input = body as Record<string,unknown>;
-  const keywords = typeof input.keywords === "string" ? input.keywords.trim() : "";
-  if (keywords.length < 2 || keywords.length > 60 || /[\x00-\x1f]/.test(keywords))
-    return Response.json({ok:false,code:"INVALID_KEYWORDS"},{status:400,headers});
+  const headers = {
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (!(await adminSession()))
+    return Response.json(
+      { ok: false, code: "UNAUTHORIZED" },
+      { status: 401, headers },
+    );
+  if (!sameRequestOrigin(request))
+    return Response.json(
+      { ok: false, code: "INVALID_ORIGIN" },
+      { status: 403, headers },
+    );
+  if (!allowRequest("scout-search", 5))
+    return Response.json(
+      { ok: false, code: "RATE_LIMITED" },
+      { status: 429, headers },
+    );
+  if (!configured())
+    return Response.json(
+      { ok: false, code: "CREDENTIALS_MISSING" },
+      { status: 503, headers },
+    );
+  const text = await request.text();
+  if (text.length > 2048)
+    return Response.json(
+      { ok: false, code: "TOO_LARGE" },
+      { status: 413, headers },
+    );
+  let body;
   try {
-    const products = await queryAffiliateProducts(keywords,10);
-    return Response.json({ok:true,source:"aliexpress_affiliate_api",products,count:products.length,affiliateTrackingConfigured:Boolean(process.env.ALIEXPRESS_TRACKING_ID?.trim())},{headers});
-  } catch (err) {
-    const code=err instanceof AffiliateError?err.code:"INTERNAL_ERROR";
-    const status=err instanceof AffiliateError?err.status:500;
-    return Response.json({ok:false,code},{status,headers});
+    body = JSON.parse(text);
+  } catch {
+    return Response.json(
+      { ok: false, code: "INVALID_JSON" },
+      { status: 400, headers },
+    );
+  }
+  const keywords =
+    typeof body?.keywords === "string" ? body.keywords.trim() : "";
+  if (
+    keywords.length < 2 ||
+    keywords.length > 60 ||
+    /[\x00-\x1f]/.test(keywords)
+  )
+    return Response.json(
+      { ok: false, code: "INVALID_KEYWORDS" },
+      { status: 400, headers },
+    );
+  try {
+    const result = await cachedSearch(keywords);
+    return Response.json(
+      {
+        ok: true,
+        source: "aliexpress_affiliate_api",
+        ...result,
+        count: result.products.length,
+      },
+      { headers },
+    );
+  } catch (error) {
+    return Response.json(
+      {
+        ok: false,
+        code: error instanceof AffiliateError ? error.code : "UNAVAILABLE",
+      },
+      { status: 503, headers },
+    );
   }
 }
