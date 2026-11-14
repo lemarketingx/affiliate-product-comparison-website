@@ -14,7 +14,7 @@ export type AliProduct = {
   affiliateUrl: string | null;
   commissionRate: string | null;
   orders: number | null;
-  shipTo: "IL";
+  shipTo: null;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -118,7 +118,7 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
       id,title,price,currency,image,productUrl,affiliateUrl,
       commissionRate:text(p.commission_rate),
       orders: p.lastest_volume == null || !Number.isFinite(orders) ? null : orders,
-      shipTo:"IL" as const,
+      shipTo:null,
     };
   }).filter((p):p is AliProduct=>p !== null);
 }
