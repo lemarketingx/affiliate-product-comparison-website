@@ -1,23 +1,33 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./dealpilot.css";
+import "./welcoming.css";
 
 export const metadata: Metadata = {
-  title: "מאי פיננסים — תוכנית השותפים",
-  description: "מערכת השותפים שמחברת בין אנשים, הזדמנויות ומשכנתאות.",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+  title: "DealPilot | מוצרים חכמים והזדמנויות שוות",
+  description:
+    "מוצרים שימושיים, גאדג׳טים והפתעות מ־AliExpress. מגלים מוצרים חכמים, עם נתוני ספק וגילוי שותפים ברור.",
+  metadataBase: new URL(
+    process.env.DEALPILOT_SITE_URL ||
+      (process.env.VERCEL_URL
+        ? "https://" + process.env.VERCEL_URL
+        : "http://localhost:3100"),
+  ),
+  openGraph: {
+    title: "DealPilot | מגלים מוצרים חכמים",
+    description: "קצת סקרנות. הרבה שימושיות. מוצרים מ־AliExpress במקום אחד.",
+    locale: "he_IL",
+    type: "website",
   },
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="he" dir="rtl">
-      <body className="antialiased">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
