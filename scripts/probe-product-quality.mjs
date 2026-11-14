@@ -25,6 +25,11 @@ async function call(label,method,input){
   return String(dto?.resp_code)==='200'?products:null;
  } catch {log({label,errorCode:'PROVIDER_UNREACHABLE_OR_INVALID_JSON'});return null;}
 }
+if(process.argv.includes('--details')) {
+ remaining=2;
+ await call('detail-baseline','aliexpress.affiliate.productdetail.get',{product_ids:'1005010089214259'});
+ await call('detail-israel','aliexpress.affiliate.productdetail.get',{product_ids:'1005010089214259',country:'IL'});
+} else {
 const method='aliexpress.affiliate.product.query';const base={keywords:'phone accessories',page_no:'1',page_size:'10'};
 const baseline=await call('baseline',method,base);
 const sorted=await call('sort-only',method,{...base,sort:'LAST_VOLUME_DESC'});
@@ -33,3 +38,5 @@ const translated=await call('hebrew-only',method,{...base,target_language:'HE'})
 if(sorted&&country&&translated)await call('combined',method,{...base,sort:'LAST_VOLUME_DESC',ship_to_country:'IL',target_language:'HE'});
 const candidate=(sorted??baseline??[]).find(p=>Number(p.lastest_volume)>500)??(baseline??[])[0];
 if(candidate){const product_id=String(candidate.product_id);await call('israel-reviews','aliexpress.social.product.evaluation.query',{product_id,country_code:'IL',page:'1',page_size:'20'});await call('global-reviews','aliexpress.social.product.evaluation.query',{product_id,page:'1',page_size:'20'});}
+
+}
