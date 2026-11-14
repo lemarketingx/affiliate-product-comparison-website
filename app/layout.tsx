@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./dealpilot.css";
+import "./welcoming.css";
 
 export const metadata: Metadata = {
   title: "DealPilot | מוצרים חכמים והזדמנויות שוות",

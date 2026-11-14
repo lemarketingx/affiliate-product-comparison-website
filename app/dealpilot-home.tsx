@@ -5,25 +5,34 @@ import {
   Compass,
   Layers3,
   ShieldCheck,
-  Search,
+  Sparkles,
+  Headphones,
+  Coffee,
+  LampDesk,
 } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 import { PublicShell, CategoryLinks } from "./public-shell";
-import { ProductCard } from "./product-card";
 import LiveCatalog from "./live-catalog";
 export default function DealPilotHome({
   snapshot,
 }: {
   snapshot: CatalogSnapshot;
 }) {
-  const images = snapshot.items.filter((p) => p.image).slice(0, 3);
+  const seenCategories = new Set<string>();
+  const images = snapshot.items
+    .filter((p) => {
+      if (!p.image || seenCategories.has(p.categorySlug)) return false;
+      seenCategories.add(p.categorySlug);
+      return true;
+    })
+    .slice(0, 3);
   return (
     <PublicShell>
       <main id="main">
         <section className="dp-hero dp-container">
           <div className="dp-hero-copy">
             <span className="dp-eyebrow">
-              <span /> קצת סקרנות. הרבה שימושיות.
+              <Sparkles size={16} /> איזה כיף לגלות משהו חדש
             </span>
             <h1>
               מגלים מוצרים חכמים.
@@ -31,8 +40,8 @@ export default function DealPilotHome({
               <em>מוצאים דילים טובים.</em>
             </h1>
             <p>
-              מוצרים שימושיים, גאדג׳טים והפתעות שוות מ־AliExpress, במקום אחד.
-              בשביל הבית, בשביל היום־יום, ובשבילכם.
+              משהו קטן לבית, רעיון לשולחן העבודה, או גאדג׳ט שפשוט כיף להכיר.
+              בואו למצוא את הדברים שמתאימים ליום־יום שלכם.
             </p>
             <div className="dp-actions">
               <Link className="dp-btn" href="/deals">
@@ -48,7 +57,9 @@ export default function DealPilotHome({
           </div>
           <div className="dp-hero-visual">
             <div className="dp-visual-grid" />
-            <span className="dp-art-label">THE EVERYDAY EDIT / 01</span>
+            <span className="dp-art-label">
+              <Sparkles size={15} /> קצת השראה ליום־יום
+            </span>
             {images.length ? (
               <div className="dp-hero-products">
                 {images.map((p, i) => (
@@ -67,24 +78,27 @@ export default function DealPilotHome({
             ) : (
               <div
                 className="dp-original-art"
-                aria-label="איור מקורי של מצפן גילוי"
+                aria-label="איור של אוזניות, כוס ומנורה להשראה יומיומית"
               >
-                <div className="dp-compass-ring">
-                  <Compass size={130} strokeWidth={1} />
+                <div className="dp-illustration-tile illustration-main">
+                  <Headphones size={91} strokeWidth={1.2} />
+                  <span>רגע לעצמכם</span>
                 </div>
-                <span className="dp-art-chip chip-a">
-                  <Search size={21} /> לגלות משהו חדש
-                </span>
-                <span className="dp-art-chip chip-b">
-                  <Layers3 size={21} /> למצוא מקום ביום־יום
-                </span>
+                <div className="dp-illustration-tile illustration-coffee">
+                  <Coffee size={55} strokeWidth={1.4} />
+                  <span>הפינה שלכם</span>
+                </div>
+                <div className="dp-illustration-tile illustration-lamp">
+                  <LampDesk size={63} strokeWidth={1.3} />
+                  <span>רעיונות קטנים</span>
+                </div>
               </div>
             )}
             <div className="dp-art-bottom">
               <span>
-                פחות לחפש.
+                קצת לבית. קצת לעצמכם.
                 <br />
-                <strong>יותר לגלות.</strong>
+                <strong>הרבה דברים לגלות.</strong>
               </span>
               <span className="dp-art-arrow">
                 <ArrowUpLeft size={32} />
@@ -95,10 +109,10 @@ export default function DealPilotHome({
         <div className="dp-value-strip">
           <div className="dp-container">
             <span>
-              <Compass /> מוצרים מהמקור
+              <Compass /> מגלים בקצב שלכם
             </span>
             <span>
-              <Layers3 /> קטגוריות לחיים עצמם
+              <Layers3 /> רעיונות לכל פינה
             </span>
             <span>
               <ShieldCheck /> קישורים עם גילוי נאות
@@ -108,8 +122,8 @@ export default function DealPilotHome({
         <section className="dp-section dp-container">
           <div className="dp-section-head">
             <div>
-              <span className="dp-eyebrow">FIND YOUR EVERYDAY</span>
-              <h2>כל יום, משהו שימושי.</h2>
+              <span className="dp-eyebrow">מאיפה מתחילים?</span>
+              <h2>מה יעשה לכם את היום?</h2>
             </div>
             <Link className="dp-text-link" href="/categories">
               לכל הקטגוריות <ArrowUpLeft size={18} />
@@ -120,7 +134,7 @@ export default function DealPilotHome({
         <LiveCatalog snapshot={snapshot} compact />
         <section className="dp-editorial dp-container">
           <div>
-            <span className="dp-eyebrow">A LITTLE KNOW-HOW</span>
+            <span className="dp-eyebrow">לפני שמוצאים מקום בבית</span>
             <h2>
               הדיל הטוב מתחיל
               <br />

@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { ArrowUpLeft, Compass, Search, Menu, ShieldCheck } from "lucide-react";
+import {
+  ArrowUpLeft,
+  Compass,
+  Search,
+  Menu,
+  ShieldCheck,
+  House,
+  Headphones,
+  Car,
+  Boxes,
+} from "lucide-react";
 import { categories } from "../lib/dealpilot/categories";
 export function Brand() {
   return (
@@ -102,20 +112,26 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
   );
 }
 export function CategoryLinks() {
+  const icons = [House, Headphones, Car, Boxes];
   return (
     <div className="dp-category-grid">
-      {categories.map((c, i) => (
-        <Link
-          className={"dp-category-tile tone-" + i}
-          href={"/categories/" + c.slug}
-          key={c.slug}
-        >
-          <span className="dp-category-number">0{i + 1}</span>
-          <strong>{c.label}</strong>
-          <p>{c.description}</p>
-          <ArrowUpLeft size={22} />
-        </Link>
-      ))}
+      {categories.map((c, i) => {
+        const Icon = icons[i];
+        return (
+          <Link
+            className={"dp-category-tile tone-" + i}
+            href={"/categories/" + c.slug}
+            key={c.slug}
+          >
+            <span className="dp-category-icon">
+              <Icon size={32} strokeWidth={1.6} />
+            </span>
+            <strong>{c.label}</strong>
+            <p>{c.description}</p>
+            <ArrowUpLeft size={22} />
+          </Link>
+        );
+      })}
     </div>
   );
 }

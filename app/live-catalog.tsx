@@ -33,13 +33,13 @@ export default function LiveCatalog({
     <section className="dp-section dp-container" id="products">
       <div className="dp-section-head">
         <div>
-          <span className="dp-eyebrow">THE DISCOVERY LIST</span>
+          <span className="dp-eyebrow">מקום לסקרנות שלכם</span>
           <h2>
             {initialCategory
               ? categories.find((c) => c.slug === initialCategory)?.label
               : compact
-                ? "שווה להכיר."
-                : "מגלים את הקטלוג."}
+                ? "אולי זה בדיוק מה שחיפשתם."
+                : "בואו למצוא משהו בשבילכם."}
           </h2>
           <p>
             {snapshot.available
