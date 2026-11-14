@@ -1,4 +1,4 @@
-import { adminReady, AffiliateError, configured, queryAffiliateProducts, validAdminToken } from "../../../lib/aliexpress/affiliate";
+import { adminReady, AffiliateError, configured, queryAffiliateProducts, validAdminToken } from "../../../../lib/aliexpress/affiliate";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
