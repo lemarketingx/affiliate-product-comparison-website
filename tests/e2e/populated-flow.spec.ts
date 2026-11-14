@@ -92,6 +92,8 @@ test("isolated supplier fixture covers product redirect, gated review and local 
   );
   await mkdir("outputs/qa", { recursive: true });
   await page.keyboard.press("Control+Home");
+  await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);
+  await page.screenshot({path:"outputs/qa/admin-populated-desktop-viewport.png"});
   await page.screenshot({
     path: "outputs/qa/admin-populated-desktop.png",
     fullPage: true,
@@ -147,6 +149,7 @@ test("isolated supplier fixture covers product redirect, gated review and local 
     page.getByRole("link", { name: "הגדרות", exact: true }),
   ).toBeVisible();
   await page.keyboard.press("Control+Home");
+  await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);
   await page.screenshot({ path: "outputs/qa/admin-populated-mobile-menu.png" });
   await page.keyboard.press("Escape");
   await expect(adminMenu).toHaveAttribute("aria-expanded", "false");
@@ -156,6 +159,8 @@ test("isolated supplier fixture covers product redirect, gated review and local 
     ),
   ).toBe(true);
   await page.keyboard.press("Control+Home");
+  await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);
+  await page.screenshot({path:"outputs/qa/admin-populated-mobile-viewport.png"});
   await page.screenshot({
     path: "outputs/qa/admin-populated-mobile.png",
     fullPage: true,

@@ -20,6 +20,9 @@ test("public discovery navigation, filters and explicit unavailable catalog", as
     page.getByRole("button", { name: "רכב ואביזרים", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "הכול", exact: true }).click();
+  await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");
+  await expect(page.getByRole("combobox", { name: "סדר מוצרים" })).toHaveValue("orders");
+  await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("source");
   await page
     .getByRole("textbox", { name: "סינון לפי שם מוצר" })
     .fill("unmatched");
