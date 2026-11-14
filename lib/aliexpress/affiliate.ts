@@ -1,6 +1,7 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { allowRequest } from "../dealpilot/rate-limit";
+import { unknownQuality, type QualityEvidence } from "./quality";
 
 const GATEWAY = "https://api-sg.aliexpress.com/sync";
 const METHOD = "aliexpress.affiliate.product.query";
@@ -16,6 +17,12 @@ export type AliProduct = {
   commissionRate: string | null;
   orders: number | null;
   shipTo: null;
+  requestedCountry: "IL";
+  titleLanguage: "he" | "source";
+  images: string[];
+  shopName: string | null;
+  positiveFeedbackPercent: number | null;
+  quality: QualityEvidence;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -169,6 +176,22 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
       const affiliateUrl =
         promotionUrl && promotionUrl !== productUrl ? promotionUrl : null;
       const orders = Number(p.lastest_volume);
+      const smallImages = record(p.product_small_image_urls)?.string;
+      const images = [
+        ...new Set(
+          [
+            image,
+            ...(Array.isArray(smallImages) ? smallImages : [smallImages]).map(
+              (value) => safeUrl(value, "image"),
+            ),
+          ].filter((url): url is string => Boolean(url)),
+        ),
+      ].slice(0, 8);
+      const rate = text(p.evaluate_rate);
+      const parsedRate =
+        rate && /^\d{1,3}(?:\.\d+)?%$/.test(rate)
+          ? Number(rate.slice(0, -1))
+          : NaN;
       return {
         id,
         title,
@@ -186,6 +209,19 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
             ? null
             : Math.floor(orders),
         shipTo: null,
+        requestedCountry: "IL" as const,
+        titleLanguage: /[\u0590-\u05ff]/.test(title)
+          ? ("he" as const)
+          : ("source" as const),
+        images,
+        shopName: text(p.shop_name),
+        positiveFeedbackPercent:
+          Number.isFinite(parsedRate) && parsedRate >= 0 && parsedRate <= 100
+            ? parsedRate
+            : null,
+        // The affiliate response does not prove average stars, buyer countries
+        // or available delivery. Do not trust similarly named raw fields.
+        quality: unknownQuality(),
       };
     })
     .filter((p): p is AliProduct => p !== null);
@@ -210,9 +246,12 @@ export async function queryAffiliateProducts(
     keywords,
     page_no: "1",
     page_size: String(pageSize),
+    sort: "LAST_VOLUME_DESC",
+    ship_to_country: "IL",
+    target_language: "HE",
   };
-  // Minimal diagnostic query first: no country, currency, language or tracking restrictions.
-  // Restore these options one by one only after the baseline API call succeeds.
+  // Each option, then their combination, passed the bounded live Preview probe
+  // on 2026-11-14. Country-specific search is not delivery verification.
   params.sign = signAffiliateParams(params, secret);
   let resp: Response;
   try {

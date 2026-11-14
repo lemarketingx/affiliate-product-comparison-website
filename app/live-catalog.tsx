@@ -53,6 +53,16 @@ export default function LiveCatalog({
           </Link>
         )}
       </div>
+      {snapshot.qualityFiltered && (
+        <div className="dp-selection-policy">
+          <strong>מוצרים שעוברים את הבדיקה שלנו</strong>
+          <p>
+            יותר מ־500 רכישות מדווחות · דירוג 4.7 ומעלה · ביקורת מישראל · משלוח
+            מאומת לישראל
+          </p>
+          <small>כל התנאים נבדקים בנפרד. מידע חסר אינו נחשב לאישור.</small>
+        </div>
+      )}
       <div className="dp-filter-row">
         <div className="dp-filter-tabs">
           <button onClick={() => setCategory("")} aria-pressed={!category}>
@@ -115,14 +125,22 @@ export default function LiveCatalog({
             <PackageSearch size={34} />
           </span>
           <h3>
-            {snapshot.available
-              ? "לא נמצאו מוצרים בסינון הזה"
-              : "קצת סבלנות, הגילוי בדרך."}
+            {snapshot.available &&
+            snapshot.qualityFiltered &&
+            snapshot.items.length === 0
+              ? "המוצרים הבאים שלנו עדיין בבדיקה"
+              : snapshot.available
+                ? "לא נמצאו מוצרים בסינון הזה"
+                : "קצת סבלנות, הגילוי בדרך."}
           </h3>
           <p>
-            {snapshot.available
-              ? "נסו שם אחר או בחרו קטגוריה נוספת."
-              : "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."}
+            {snapshot.available &&
+            snapshot.qualityFiltered &&
+            snapshot.items.length === 0
+              ? "נציג כאן רק מוצרים שעברו את כל התנאים: רכישות, דירוג, ביקורת ישראלית ומשלוח לישראל. אפשר לחזור בהמשך."
+              : snapshot.available
+                ? "נסו שם אחר או בחרו קטגוריה נוספת."
+                : "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."}
           </p>
           {!snapshot.available && (
             <Link className="dp-text-link" href="/guides">

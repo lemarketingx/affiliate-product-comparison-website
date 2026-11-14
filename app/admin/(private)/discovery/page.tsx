@@ -1,5 +1,5 @@
 import { requireAdmin } from "../../../../lib/dealpilot/auth";
-import { getCatalog } from "../../../../lib/aliexpress/catalog";
+import { getDiscoveredCatalog } from "../../../../lib/aliexpress/catalog";
 import ScoutSearch from "../../scout-search";
 export default async function DiscoveryPage() {
   await requireAdmin();
@@ -14,7 +14,7 @@ export default async function DiscoveryPage() {
           </p>
         </div>
       </header>
-      <ScoutSearch initial={await getCatalog()} />
+      <ScoutSearch initial={await getDiscoveredCatalog()} />
     </>
   );
 }

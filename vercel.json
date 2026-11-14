@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "node scripts/probe-product-quality.mjs --details && npm run build",
+  "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "outputDirectory": null
 }

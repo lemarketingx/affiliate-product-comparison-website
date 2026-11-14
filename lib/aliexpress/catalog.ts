@@ -6,6 +6,7 @@ import {
   type AliProduct,
 } from "./affiliate";
 import { categories } from "../dealpilot/categories";
+import { evaluateEligibility } from "./quality";
 export type CatalogItem = AliProduct & {
   category: string;
   categorySlug: string;
@@ -15,16 +16,20 @@ export type CatalogSnapshot = {
   fetchedAt: string | null;
   available: boolean;
   partial: boolean;
+  qualityFiltered?: boolean;
 };
 const fetchBatch = unstable_cache(
   async (term: string) => ({
     products: await queryAffiliateProducts(term, 10),
     fetchedAt: new Date().toISOString(),
   }),
-  ["dealpilot-catalog-v2", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
+  [
+    "dealpilot-catalog-he-il-v3",
+    process.env.DEALPILOT_CACHE_NAMESPACE ?? "default",
+  ],
   { revalidate: 21600 },
 );
-export async function getCatalog(): Promise<CatalogSnapshot> {
+export async function getDiscoveredCatalog(): Promise<CatalogSnapshot> {
   if (!configured())
     return { items: [], fetchedAt: null, available: false, partial: false };
   const responses = await Promise.allSettled(
@@ -45,9 +50,20 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
     });
   });
   return {
-    items: [...unique.values()],
+    items: [...unique.values()].sort(
+      (a, b) => (b.orders ?? -1) - (a.orders ?? -1),
+    ),
     fetchedAt: timestamps.sort()[0] ?? null,
     available: timestamps.length > 0,
     partial: timestamps.length > 0 && timestamps.length < categories.length,
+  };
+}
+
+export async function getCatalog(): Promise<CatalogSnapshot> {
+  const snapshot = await getDiscoveredCatalog();
+  return {
+    ...snapshot,
+    qualityFiltered: true,
+    items: snapshot.items.filter((p) => evaluateEligibility(p).eligible),
   };
 }

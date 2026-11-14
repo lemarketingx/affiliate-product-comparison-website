@@ -24,6 +24,12 @@ export function ProductCard({ item }: { item: CatalogItem }) {
             ? item.orders.toLocaleString("he-IL") + " הזמנות לפי הספק"
             : "נתוני הזמנות אינם זמינים"}
         </p>
+        {item.quality?.rating && (
+          <p className="dp-product-orders">
+            דירוג {item.quality.rating.value.toFixed(1)}/5 ·{" "}
+            {item.quality.israelReviews?.count} ביקורות מישראל
+          </p>
+        )}
         <div className="dp-product-price">
           <strong dir="auto">{formatMoney(item.price, item.currency)}</strong>
           <Link href={"/products/" + item.id} aria-label={"פרטי " + item.title}>

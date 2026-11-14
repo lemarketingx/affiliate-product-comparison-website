@@ -6,11 +6,11 @@ import {
   PackageSearch,
 } from "lucide-react";
 import { requireAdmin } from "../../../../lib/dealpilot/auth";
-import { getCatalog } from "../../../../lib/aliexpress/catalog";
+import { getDiscoveredCatalog } from "../../../../lib/aliexpress/catalog";
 import { assessProduct } from "../../../../lib/aliexpress/scoring";
 export default async function DashboardPage() {
   await requireAdmin();
-  const catalog = await getCatalog();
+  const catalog = await getDiscoveredCatalog();
   const complete = catalog.items.filter(
     (item) => assessProduct(item).status === "review",
   ).length;

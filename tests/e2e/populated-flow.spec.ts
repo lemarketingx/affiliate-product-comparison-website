@@ -3,7 +3,7 @@ import { encode } from "next-auth/jwt";
 import { mkdir, readFile } from "node:fs/promises";
 
 test.use({ baseURL: "http://127.0.0.1:3102" });
-test("isolated supplier fixture covers product redirect, gated review and local content export", async ({
+test("unverified supplier candidates stay private while local review and content export work", async ({
   page,
   context,
   request,
@@ -19,30 +19,20 @@ test("isolated supplier fixture covers product redirect, gated review and local 
       }),
   );
   await page.goto("/deals");
+  await expect(page.locator(".dp-product")).toHaveCount(0);
   await expect(
-    page.getByRole("link", { name: title, exact: true }),
+    page.getByRole("heading", { name: "המוצרים הבאים שלנו עדיין בבדיקה" }),
   ).toBeVisible();
-  await expect(page.locator(".dp-product")).toHaveCount(2); // duplicate batches are deduplicated.
-  await page.getByRole("textbox", { name: "סינון לפי שם מוצר" }).fill("מארגן");
-  await expect(page.locator(".dp-product")).toHaveCount(1);
-  await page.getByRole("link", { name: title, exact: true }).click();
-  await expect(page).toHaveURL(/\/products\/1005001234567$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+  await page.goto("/products/1005001234567");
   await expect(
-    page.getByRole("link", { name: "לבדיקת המוצר ב־AliExpress" }),
-  ).toHaveAttribute("href", "/go/1005001234567?source=catalog");
+    page.getByRole("heading", { name: "המוצר אינו זמין כרגע" }),
+  ).toBeVisible();
   const redirect = await request.get(
     "/go/1005001234567?url=https://evil.test",
     { maxRedirects: 0 },
   );
-  expect(redirect.status()).toBe(307);
-  expect(redirect.headers().location).toBe(
-    "https://s.click.aliexpress.com/e/TEST_FIXTURE_ONLY",
-  );
-  expect(
-    (await request.get("/go/1005007654321", { maxRedirects: 0 })).status(),
-  ).toBe(404);
-
+  expect(redirect.status()).toBe(404);
+  expect(redirect.headers().location).toBeUndefined();
   const value = await encode({
     secret: process.env.DEALPILOT_QA_SECRET!,
     token: {
@@ -92,8 +82,10 @@ test("isolated supplier fixture covers product redirect, gated review and local 
   );
   await mkdir("outputs/qa", { recursive: true });
   await page.keyboard.press("Control+Home");
-  await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);
-  await page.screenshot({path:"outputs/qa/admin-populated-desktop-viewport.png"});
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.screenshot({
+    path: "outputs/qa/admin-populated-desktop-viewport.png",
+  });
   await page.screenshot({
     path: "outputs/qa/admin-populated-desktop.png",
     fullPage: true,
@@ -149,7 +141,7 @@ test("isolated supplier fixture covers product redirect, gated review and local 
     page.getByRole("link", { name: "הגדרות", exact: true }),
   ).toBeVisible();
   await page.keyboard.press("Control+Home");
-  await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   await page.screenshot({ path: "outputs/qa/admin-populated-mobile-menu.png" });
   await page.keyboard.press("Escape");
   await expect(adminMenu).toHaveAttribute("aria-expanded", "false");
@@ -159,8 +151,10 @@ test("isolated supplier fixture covers product redirect, gated review and local 
     ),
   ).toBe(true);
   await page.keyboard.press("Control+Home");
-  await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);
-  await page.screenshot({path:"outputs/qa/admin-populated-mobile-viewport.png"});
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.screenshot({
+    path: "outputs/qa/admin-populated-mobile-viewport.png",
+  });
   await page.screenshot({
     path: "outputs/qa/admin-populated-mobile.png",
     fullPage: true,

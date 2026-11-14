@@ -1,5 +1,44 @@
 /* Public storefront: warm paper, playful objects and spacious product discovery.
    Keep this theme scoped to the storefront; private tools retain their quiet UI. */
+.dp-selection-policy {
+  padding: 19px 23px;
+  margin-block: 22px;
+  background: #edf2e5;
+  border: 1px solid #dce5d1;
+  border-radius: 20px;
+  color: #385442;
+}
+.dp-selection-policy strong {
+  font-size: 16px;
+}
+.dp-selection-policy p {
+  font-size: 13px;
+  margin-block: 7px;
+  line-height: 1.9;
+}
+.dp-selection-policy small {
+  color: #52684c;
+  font-size: 11px;
+}
+.dp-detail-thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+.dp-detail-thumbnails a {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #e4e7db;
+  padding: 6px;
+  border-radius: 12px;
+  background: white;
+}
+.dp-detail-thumbnails img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .dp-public {
   --dp-ink: #23332f;
   --dp-muted: #5c6963;

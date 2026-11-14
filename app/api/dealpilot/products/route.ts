@@ -12,7 +12,7 @@ const cachedSearch = unstable_cache(
     products: await queryAffiliateProducts(term, 10),
     fetchedAt: new Date().toISOString(),
   }),
-  ["private-scout-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
+  ["private-scout-he-il-v2", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
   { revalidate: 21600 },
 );
 export async function POST(request: Request) {

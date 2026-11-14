@@ -16,6 +16,7 @@ import type {
   CatalogItem,
 } from "../../lib/aliexpress/catalog";
 import { formatMoney, safeAliUrl } from "../../lib/dealpilot/urls";
+import { evaluateEligibility } from "../../lib/aliexpress/quality";
 
 type Review = {
   status: "needs_review" | "approved" | "rejected";
@@ -142,6 +143,7 @@ export default function ProductWorkbench({
     : null;
   const completeness = selected ? checks(selected) : [];
   const ready = completeness.length === 4 && completeness.every(Boolean);
+  const publicQuality = selected ? evaluateEligibility(selected) : null;
   function update(patch: Partial<Review>) {
     if (!selected || !current) return;
     setReviews((previous) => ({
@@ -153,6 +155,11 @@ export default function ProductWorkbench({
   const draft =
     selected && current?.status === "approved"
       ? [
+          ...(publicQuality?.eligible
+            ? []
+            : [
+                "טיוטה לבדיקה בלבד — המוצר טרם עבר אימות של כל תנאי הסינון לפרסום.",
+              ]),
           channel === "shorts"
             ? "תסריט מוצע לבדיקה — לא וידאו שנוצר\nHook: בואו נכיר מוצר מתוך קטלוג AliExpress."
             : current.title,
@@ -347,6 +354,63 @@ export default function ProductWorkbench({
                 <small>תיאורטי · אינו עמלה מאושרת</small>
               </div>
             </div>
+            <div className="dp-notice">
+              <strong>
+                {publicQuality?.eligible
+                  ? "עומד בתנאי הסינון הציבורי"
+                  : "אינו כשיר להצגה באתר הציבורי"}
+              </strong>
+              <ul>
+                {publicQuality?.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+              <p>
+                אישור מקומי מכין טיוטה לבדיקה בלבד ואינו עוקף את סינון הפרסום.
+              </p>
+              <p>
+                ביקורות כלליות ומישראל: בדיקת הספק מ־14.11.2026 החזירה
+                InsufficientPermission. אין להסיק דירוג כוכבים מאחוז ביקורות
+                חיוביות.
+              </p>
+              <p>
+                אחוז ביקורות חיוביות לפי הספק:{" "}
+                {selected.positiveFeedbackPercent === null ||
+                selected.positiveFeedbackPercent === undefined
+                  ? "לא זמין"
+                  : selected.positiveFeedbackPercent + "%"}
+                . אינו דירוג מתוך 5.
+              </p>
+              <p>
+                יעד שנשלח בחיפוש: ישראל. זמינות משלוח, מחיר משלוח ומועד אספקה
+                עדיין אינם מאומתים.
+              </p>
+            </div>
+            {selected.images?.length > 1 && (
+              <div className="dp-detail-thumbnails">
+                {selected.images.map((image, index) => (
+                  <a
+                    key={image}
+                    href={image}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={"פתיחת תמונת ספק " + (index + 1)}
+                  >
+                    <img
+                      src={image}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      alt={"תמונת ספק " + (index + 1)}
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+            {selected.shopName && (
+              <p className="dp-muted">שם החנות לפי הספק: {selected.shopName}</p>
+            )}
             <div className="dp-review-links">
               {safeAliUrl(selected.productUrl) && (
                 <a

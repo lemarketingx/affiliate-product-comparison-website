@@ -2,6 +2,8 @@
 
 Hebrew RTL AliExpress affiliate product discovery and a separate private administration workspace. Development branch: `feat/dealpilot-aliexpress-rebuild`. Do not merge or promote to production without owner approval.
 
+The latest storefront applies the strict >500 purchases / 4.7 stars / Israeli review / verified Israel shipping policy. Hebrew supplier queries work; review permissions and additional rating/delivery evidence are missing, so no product is currently admitted publicly. See [live quality checks and required access](docs/ALIEXPRESS-QUALITY.md).
+
 ## Run and verify
 
 Node 22+:

@@ -34,8 +34,8 @@ export default async function Product({
           <div className="dp-empty">
             <h1>המוצר אינו זמין כרגע</h1>
             <p>
-              ייתכן שהמוצר הוסר מהקטלוג או שנתוני הספק אינם זמינים. לא נוכל לאמת
-              את המחיר או הקישור.
+              המוצר אינו מופיע בקטלוג המסונן. אנחנו מציגים רק מוצרים שעברו אימות
+              רכישות, דירוג, ביקורת מישראל ומשלוח לישראל.
             </p>
             <Link className="dp-btn" href="/deals">
               חזרה לקטלוג
@@ -70,10 +70,39 @@ export default async function Product({
             ) : (
               <ImageOff size={60} />
             )}
+            {p.images?.length > 1 && (
+              <div className="dp-detail-thumbnails">
+                {p.images.slice(1).map((image, index) => (
+                  <a
+                    key={image}
+                    href={image}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={"פתיחת תמונת מוצר " + (index + 2)}
+                  >
+                    <img
+                      src={image}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      alt={"תמונת מוצר " + (index + 2)}
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
           <div>
             <span className="dp-eyebrow">{p.category}</span>
             <h1 dir="auto">{p.title}</h1>
+            {p.titleLanguage === "he" && (
+              <p className="dp-disclosure">
+                מידע בעברית שהוחזר מ־AliExpress. יש לבדוק את המפרט המקורי לפני
+                רכישה.
+              </p>
+            )}
+            {p.shopName && <p>חנות לפי הספק: {p.shopName}</p>}
             <div className="dp-detail-price" dir="auto">
               {formatMoney(p.price, p.currency)}
             </div>

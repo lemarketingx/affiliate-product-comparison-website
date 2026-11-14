@@ -1,5 +1,5 @@
 import { requireAdmin } from "../../../../lib/dealpilot/auth";
-import { getCatalog } from "../../../../lib/aliexpress/catalog";
+import { getDiscoveredCatalog } from "../../../../lib/aliexpress/catalog";
 import ProductWorkbench from "../../product-workbench";
 export default async function ProductsPage() {
   await requireAdmin();
@@ -15,7 +15,7 @@ export default async function ProductsPage() {
           </p>
         </div>
       </header>
-      <ProductWorkbench snapshot={await getCatalog()} />
+      <ProductWorkbench snapshot={await getDiscoveredCatalog()} />
     </>
   );
 }
