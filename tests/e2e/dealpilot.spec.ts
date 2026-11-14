@@ -164,7 +164,7 @@ test("tampered or revoked session cannot authorize admin", async ({
   await page.goto("/admin/dashboard");
   await expect(page).toHaveURL(/\/admin\/login/);
 });
-for (const width of [375, 412, 768, 1366, 1920]) {
+for (const width of [304, 320, 375, 412, 768, 1366, 1920]) {
   test("responsive RTL without overflow at " + width, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
