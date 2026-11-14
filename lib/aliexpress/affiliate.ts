@@ -92,7 +92,11 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
   const dto = record(response.resp_result);
   if (!dto) throw new AffiliateError("MISSING_RESULT");
   const providerCode = text(dto.resp_code);
-  if (providerCode !== "200") throw new AffiliateError("PROVIDER_RESULT_" + (providerCode ?? "UNKNOWN").replace(/[^a-zA-Z0-9_-]/g,""));
+  if (providerCode !== "200") {
+    const message = (text(dto.resp_msg) ?? "").toLowerCase();
+    const hint = /parameter|param|invalid|illegal|错误|参数/.test(message) ? "_INVALID_PARAMETER" : /permission|access|authorize|权限|授权/.test(message) ? "_PERMISSION" : /track/.test(message) ? "_TRACKING" : "";
+    throw new AffiliateError("PROVIDER_RESULT_" + (providerCode ?? "UNKNOWN").replace(/[^a-zA-Z0-9_-]/g,"") + hint);
+  }
   const result = record(dto.result);
   const wrapper = result ? record(result.products) : null;
   const rows = wrapper?.product;
@@ -123,13 +127,12 @@ export async function queryAffiliateProducts(keywords: string, pageSize = 10): P
   const key = process.env.ALIEXPRESS_APP_KEY?.trim();
   const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING",503);
-  const trackingId = process.env.ALIEXPRESS_TRACKING_ID?.trim();
   const params: Record<string,string> = {
     app_key:key, method:METHOD, sign_method:"hmac", format:"json", v:"2.0",
     timestamp:timestampChina(), keywords, page_no:"1", page_size:String(pageSize),
-    target_language:"HE", target_currency:"USD", ship_to_country:"IL",
   };
-  if (trackingId) params.tracking_id = trackingId;
+  // Minimal diagnostic query first: no country, currency, language or tracking restrictions.
+  // Restore these options one by one only after the baseline API call succeeds.
   params.sign = signAffiliateParams(params,secret);
   let resp: Response;
   try {
