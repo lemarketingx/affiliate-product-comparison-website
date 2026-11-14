@@ -2,7 +2,7 @@
 
 Hebrew RTL AliExpress affiliate product discovery and a separate private administration workspace. Development branch: `feat/dealpilot-aliexpress-rebuild`. Do not merge or promote to production without owner approval.
 
-The latest storefront applies the strict >500 purchases / 4.7 stars / Israeli review / verified Israel shipping policy. Hebrew supplier queries work; review permissions and additional rating/delivery evidence are missing, so no product is currently admitted publicly. See [live quality checks and required access](docs/ALIEXPRESS-QUALITY.md).
+The storefront uses owner-authorized discovery mode: products with more than 500 reported purchases and complete Hebrew core data are visible with a pending-verification label. A verified badge still requires 4.7 stars, an Israeli review and verified Israel shipping with fresh official evidence. Missing evidence never becomes a verified badge. Review permissions and rating/delivery evidence remain unavailable. See [live quality checks and required access](docs/ALIEXPRESS-QUALITY.md).
 
 ## Run and verify
 

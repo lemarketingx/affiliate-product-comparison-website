@@ -63,7 +63,14 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
   const snapshot = await getDiscoveredCatalog();
   return {
     ...snapshot,
-    qualityFiltered: true,
-    items: snapshot.items.filter((p) => evaluateEligibility(p).eligible),
+    qualityFiltered: false,
+    // Owner-authorized discovery mode: retain known purchase/core-data checks,
+    // while missing quality evidence is disclosed on every public product.
+    items: snapshot.items.filter((p) => {
+      const { blockers } = evaluateEligibility(p);
+      return !blockers.some((code) =>
+        ["orders", "hebrew", "product_data"].includes(code),
+      );
+    }),
   };
 }

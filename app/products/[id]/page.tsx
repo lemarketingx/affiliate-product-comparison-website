@@ -5,6 +5,7 @@ import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { formatMoney } from "../../../lib/dealpilot/urls";
 import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
+import { evaluateEligibility } from "../../../lib/aliexpress/quality";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -34,8 +35,7 @@ export default async function Product({
           <div className="dp-empty">
             <h1>המוצר אינו זמין כרגע</h1>
             <p>
-              המוצר אינו מופיע בקטלוג המסונן. אנחנו מציגים רק מוצרים שעברו אימות
-              רכישות, דירוג, ביקורת מישראל ומשלוח לישראל.
+              המוצר אינו מופיע בקטלוג הנוכחי. אפשר לחזור לקטלוג ולבחור מוצר אחר.
             </p>
             <Link className="dp-btn" href="/deals">
               חזרה לקטלוג
@@ -96,6 +96,10 @@ export default async function Product({
           <div>
             <span className="dp-eyebrow">{p.category}</span>
             <h1 dir="auto">{p.title}</h1>
+            <div className="dp-selection-policy">
+              <strong>{evaluateEligibility(p).eligible ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}</strong>
+              {!evaluateEligibility(p).eligible && <p>דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו. יש לבדוק אותם ב־AliExpress לפני רכישה.</p>}
+            </div>
             {p.titleLanguage === "he" && (
               <p className="dp-disclosure">
                 מידע בעברית שהוחזר מ־AliExpress. יש לבדוק את המפרט המקורי לפני

@@ -3,7 +3,7 @@ import { encode } from "next-auth/jwt";
 import { mkdir, readFile } from "node:fs/promises";
 
 test.use({ baseURL: "http://127.0.0.1:3102" });
-test("unverified supplier candidates stay private while local review and content export work", async ({
+test("discovery products disclose missing verification while private review and export work", async ({
   page,
   context,
   request,
@@ -19,20 +19,28 @@ test("unverified supplier candidates stay private while local review and content
       }),
   );
   await page.goto("/deals");
-  await expect(page.locator(".dp-product")).toHaveCount(0);
-  await expect(
-    page.getByRole("heading", { name: "המוצרים הבאים שלנו עדיין בבדיקה" }),
-  ).toBeVisible();
+  await expect(page.locator(".dp-product")).toHaveCount(1);
+  await expect(page.locator(".dp-product")).toContainText("טרם נבדק לפי תנאי הסינון שלך");
+  await expect(page.locator(".dp-selection-policy")).toContainText("טרם אומתו");
+  await expect(page.locator(".dp-product")).not.toContainText("מאומת לפי תנאי הסינון");
+  await expect(page.locator(".dp-product")).not.toContainText("5.0/5");
+  await page.setViewportSize({ width: 375, height: 900 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await mkdir("outputs/qa", { recursive: true });
+  await page.screenshot({ path: "outputs/qa/discovery-mobile.png", fullPage: true });
   await page.goto("/products/1005001234567");
   await expect(
-    page.getByRole("heading", { name: "המוצר אינו זמין כרגע" }),
+    page.getByRole("heading", { name: title }),
   ).toBeVisible();
+  await expect(page.locator(".dp-selection-policy")).toContainText("טרם נבדק לפי תנאי הסינון שלך");
   const redirect = await request.get(
     "/go/1005001234567?url=https://evil.test",
     { maxRedirects: 0 },
   );
-  expect(redirect.status()).toBe(404);
-  expect(redirect.headers().location).toBeUndefined();
+  expect(redirect.status()).toBe(307);
+  expect(redirect.headers().location).toBe("https://s.click.aliexpress.com/e/TEST_FIXTURE_ONLY");
+  const missing = await request.get("/go/1005007654321", { maxRedirects: 0 });
+  expect(missing.status()).toBe(404);
   const value = await encode({
     secret: process.env.DEALPILOT_QA_SECRET!,
     token: {

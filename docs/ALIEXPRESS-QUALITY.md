@@ -1,5 +1,7 @@
 # Hebrew product data and strict Israel quality policy
 
+> Current update: the owner approved temporary public discovery mode. Products with >500 reported purchases and complete Hebrew core data are displayed with pending-verification disclosure on cards and details. Only the unchanged strict eligibility policy grants a verified badge. The findings below describe the earlier strict publication mode; API permission limitations remain unchanged.
+
 ## User requirements
 
 Public products must have **more than 500 reported purchases**, **at least 4.7/5 verified stars**, at least one verified review from an Israeli buyer, verified shipping availability to Israel, and Hebrew product copy. These are independent requirements. A missing value is never treated as a pass. Exactly 500 purchases fails; exactly 4.7 stars passes. Fresh, attributable evidence is required, with a six-hour maximum age.

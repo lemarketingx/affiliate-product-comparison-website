@@ -63,6 +63,13 @@ export default function LiveCatalog({
           <small>כל התנאים נבדקים בנפרד. מידע חסר אינו נחשב לאישור.</small>
         </div>
       )}
+      {!snapshot.qualityFiltered && (
+        <div className="dp-selection-policy">
+          <strong>מוצרים לגילוי · בדיקת האיכות טרם הושלמה</strong>
+          <p>מוצגים מוצרים עם יותר מ־500 רכישות מדווחות. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
+          <small>יש לבדוק דירוג, ביקורות ותנאי משלוח בעמוד המוצר ב־AliExpress לפני רכישה.</small>
+        </div>
+      )}
       <div className="dp-filter-row">
         <div className="dp-filter-tabs">
           <button onClick={() => setCategory("")} aria-pressed={!category}>
