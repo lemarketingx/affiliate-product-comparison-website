@@ -8,7 +8,7 @@ export const categories = [
   {
     slug: "tech",
     label: "גאדג׳טים וטכנולוגיה",
-    term: "computer accessories",
+    term: "laptop accessories",
     description: "אביזרים שימושיים למחשב, לטלפון ולשולחן העבודה.",
   },
   {
@@ -26,7 +26,7 @@ export const categories = [
   {
     slug: "games",
     label: "משחקים ופנאי",
-    term: "board games",
+    term: "educational puzzle",
     description: "רעיונות לערב משחקים ולזמן פנוי ביחד.",
   },
   {
