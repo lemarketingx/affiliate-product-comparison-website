@@ -24,6 +24,7 @@ export default function ProductCostCalculator({ priceILS, usdRate }: { priceILS:
     handlingILS: asNum(handling), usdIlsRate: fx,
   }, IMPORT_TAX), [price, quantity, discount, otherGoods, shipping, insurance, handling, fx]);
   const complete = result.estimatedTotalILS !== null;
+  const shownTotal = feeIncluded && complete ? result.knownSubtotalILS : result.estimatedTotalILS;
   return (
     <section className="fp-cost-tool" id="cost-calculator" aria-labelledby="fp-cost-title">
       <header className="fp-cost-header">
@@ -59,12 +60,12 @@ export default function ProductCostCalculator({ priceILS, usdRate }: { priceILS:
         </label>
       </div>
       <p className="fp-cost-fx">{usdRate ? `שער יציג מבנק ישראל: ${usdRate.rate} ₪ ל־$1 (תאריך ${new Date(usdRate.date).toLocaleDateString("he-IL")}). שער המכס עשוי להיות שונה.` : "השער היציג אינו זמין, הזינו שער ידוע. שער המכס בפועל עשוי להיות שונה."}</p>
-      <label className="fp-cost-checked"><input type="checkbox" checked={feeIncluded} onChange={e => setFeeIncluded(e.target.checked)}/>AliExpress כבר גבתה מע״מ בקופה</label>
+      <label className="fp-cost-checked"><input type="checkbox" checked={feeIncluded} onChange={e => setFeeIncluded(e.target.checked)}/>הסכום שהזנתי כבר כולל מע״מ שנגבה בקופה</label>
       <div className="fp-cost-result" aria-live="polite" aria-atomic="true">
         {result.goodsILS !== null && <div className="fp-cost-line"><span>מוצרים לאחר הנחה, כולל פריטים נוספים</span><strong>{money(result.goodsILS)}</strong></div>}
         {result.thresholdUSD !== null && <div className="fp-cost-line"><span>שווי מוצרים למבחן הפטור</span><strong dir="ltr">${result.thresholdUSD.toFixed(2)}$</strong></div>}
-        {result.estimatedVAT !== null && <div className="fp-cost-line"><span>מע״מ משוער {feeIncluded ? "(לבדוק אם כבר נכלל בקופה)" : ""}</span><strong>{money(result.estimatedVAT)}</strong></div>}
-        {complete && <div className="fp-cost-total"><span>{feeIncluded ? "סה״כ משוער כולל מע״מ (לא להוסיף אותו שוב)" : "עלות כוללת משוערת"}</span><strong>{money(result.estimatedTotalILS!)}</strong></div>}
+        {result.estimatedVAT !== null && <div className="fp-cost-line"><span>מע״מ משוער {feeIncluded ? "(כלול בסכומים שהוזנו)" : "(נוסף לסכומים שהוזנו)"}</span><strong>{money(result.estimatedVAT)}</strong></div>}
+        {complete && <div className="fp-cost-total"><span>{feeIncluded ? "עלות משוערת, מע״מ כבר כלול בקופה" : "עלות כוללת משוערת"}</span><strong>{money(shownTotal!)}</strong></div>}
         {!complete && <div className="fp-cost-pending"><AlertTriangle size={19} aria-hidden="true" /><span>החישוב אינו שלם. לא מציגים מחיר סופי לא מבוסס.</span></div>}
         <p className="fp-cost-message">{result.status === "exempt" ? <CheckCircle2 size={17} aria-hidden="true" /> : <AlertTriangle size={17} aria-hidden="true" />}{result.message}</p>
       </div>
