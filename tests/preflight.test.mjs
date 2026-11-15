@@ -229,14 +229,18 @@ test("search links are plain aliexpress.com search URLs with encoded words", () 
   assert.equal(u.pathname, "/w/wholesale-8CH-PoE-NVR-H.265.html");
   assert.doesNotMatch(aliSearchUrl("a\"><script>"), /[<>"]/);
 });
-test("approval gate: drafts hidden in production, visible in development or explicit QA", () => {
-  assert.equal(visibility("type:dashcam", { NODE_ENV: "production" }).visible, false);
-  assert.equal(visibility("type:dashcam", { NODE_ENV: "production" }).status, "draft");
-  assert.equal(visibility("type:dashcam", { NODE_ENV: "development" }).visible, true);
+test("approval gate: unapproved keys hidden in production, visible in development or explicit QA", () => {
+  assert.equal(visibility("type:not-approved-yet", { NODE_ENV: "production" }).visible, false);
+  assert.equal(visibility("type:not-approved-yet", { NODE_ENV: "production" }).status, "draft");
+  assert.equal(visibility("type:not-approved-yet", { NODE_ENV: "development" }).visible, true);
   assert.equal(draftsEnabled({ NODE_ENV: "production", DEALPILOT_SHOW_DRAFTS: "true" }), true);
   assert.equal(draftsEnabled({ NODE_ENV: "production", DEALPILOT_SHOW_DRAFTS: "1" }), false);
-  assert.equal(visibleTypes({ NODE_ENV: "production" }).length, 0);
-  assert.equal(visibleTypes({ NODE_ENV: "development" }).length, PRODUCT_TYPES.length);
+});
+test("owner approval: every destination and guide is published in production", () => {
+  const prod = visibleTypes({ NODE_ENV: "production" });
+  assert.equal(prod.length, PRODUCT_TYPES.length);
+  assert.ok(prod.every((t) => t.status === "approved"));
+  for (const g of GUIDES) assert.equal(visibility("guide:" + g.slug, { NODE_ENV: "production" }).status, "approved");
 });
 test("Israeli prices: none invented; invalid owner entries are ignored", () => {
   assert.equal(ISRAEL_PRICES.length, 0);

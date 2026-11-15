@@ -33,7 +33,6 @@ export default defineConfig({
         ALIEXPRESS_APP_KEY: "",
         ALIEXPRESS_APP_SECRET: "",
         ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
-        DEALPILOT_SHOW_DRAFTS: "true",
       },
     },
     {
@@ -50,7 +49,6 @@ export default defineConfig({
         ALIEXPRESS_APP_KEY: "fixture-only-never-real",
         ALIEXPRESS_APP_SECRET: "fixture-only-never-real",
         ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
-        DEALPILOT_SHOW_DRAFTS: "true",
         DEALPILOT_CACHE_NAMESPACE: `qa-fixture-${Date.now()}`,
       },
     },
@@ -68,7 +66,6 @@ export default defineConfig({
         ALIEXPRESS_APP_KEY: "fixture-only-never-real",
         ALIEXPRESS_APP_SECRET: "fixture-only-never-real",
         ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
-        DEALPILOT_SHOW_DRAFTS: "true",
         DEALPILOT_FIXTURE_SET: "missions",
         DEALPILOT_CACHE_NAMESPACE: `qa-missions-${Date.now()}`,
       },

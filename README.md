@@ -6,7 +6,7 @@ The storefront uses owner-authorized discovery mode: products with more than 500
 
 ## Pre-flight engine (autopilot, destinations, landed cost)
 
-`/autopilot`, `/missions` and the per-product "מה כנראה לא בקופסה" block turn an Israeli need into a buying plan: what to buy, what is usually not in the box, how to search, Israel fit, when to buy locally and an honest landed-cost estimate. All content is a draft hidden in production until approved in `lib/preflight/approvals.ts`. Import-tax values are not computed until verified from an official source. See [pre-flight engine](docs/DEALPILOT-PREFLIGHT.md).
+`/autopilot`, `/missions` and the per-product "מה כנראה לא בקופסה" block turn an Israeli need into a buying plan: what to buy, what is usually not in the box, how to search, Israel fit, when to buy locally and an honest landed-cost estimate. All destinations and guides are owner-approved (`lib/preflight/approvals.ts`); new ones stay hidden until approved. Import-tax values are not computed until verified from an official source. See [pre-flight engine](docs/DEALPILOT-PREFLIGHT.md).
 
 ## Run and verify
 

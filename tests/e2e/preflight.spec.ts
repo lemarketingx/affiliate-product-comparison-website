@@ -77,7 +77,7 @@ test("destination page: manifest, transparent disk calculator, terms, sources an
   await page.getByRole("link", { name: /מערכת מצלמות אבטחה עם מקליט/ }).click();
   await expect(page).toHaveURL(/\/missions\/security-recorder$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("מערכת מצלמות אבטחה עם מקליט");
-  await expect(page.locator(".fp-draft").first()).toContainText("טיוטה");
+  await expect(page.locator(".fp-draft")).toHaveCount(0);
   const hdd = page.locator(".fp-manifest-list li", { hasText: "דיסק קשיח" });
   await expect(hdd).toHaveClass(/is-required/);
   await expect(hdd.getByRole("link")).toHaveAttribute("href", /aliexpress\.com\/w\/wholesale-surveillance-hard-drive/);

@@ -49,7 +49,7 @@ To activate: read the official Israel Tax Authority page, then set `verified: tr
 
 ## Owner actions
 
-1. **Approve content.** Everything is a draft. In production nothing new is visible: no nav links, no home band, and `/missions` and `/autopilot` show an empty state. To publish, add entries to `lib/preflight/approvals.ts`, e.g. `"type:dashcam": { approvedAt: "2026-11-20", by: "owner" }` and `"guide:plugs-power": {...}`. Drafts are visible in `next dev` or with `DEALPILOT_SHOW_DRAFTS=true` (set only for the e2e servers), always with a "טיוטה" banner.
+1. **Content approved.** The owner approved all destinations and guides on 2026-11-15 (`lib/preflight/approvals.ts`). They render in production builds. New destinations stay drafts until added there.
 2. **Israeli prices.** Add rows to `ISRAEL_PRICES` (store, exact item, price in ₪, https link, date checked). Invalid rows are ignored. Without a row no gap is shown, unless the visitor types a price they saw.
 3. **Verify "נדרש אימות" claims** (list below) and either attach a source or keep the label.
 4. **Tax config** as described above.
