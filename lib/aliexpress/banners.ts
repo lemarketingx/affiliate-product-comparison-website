@@ -1,5 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
+import { after } from "next/server";
 import { AffiliateError, callAffiliateMethod, configured } from "./affiliate";
 import { categories } from "../dealpilot/categories";
 import {
@@ -85,6 +86,7 @@ async function build(): Promise<BannerSnapshot> {
         const { promos, fieldsSeen } = parseFeaturedPromos(got.result);
         promosFound = promos.length;
         promoFieldsSeen = fieldsSeen;
+        const active: { banner: Banner; name: string }[] = [];
         for (const [i, p] of promos.slice(0, MAX_PROMOS).entries()) {
           const t = timing(p.startsAt, p.endsAt, now);
           const banner: Banner = {
@@ -94,25 +96,28 @@ async function build(): Promise<BannerSnapshot> {
             reason: null, sourceUrl: null, link: null, productCount: p.productCount,
           };
           banners.push(banner);
-          if (t !== "active") continue;
+          if (t === "active") active.push({ banner, name: p.name });
+        }
+        // Top product per active campaign, fetched in parallel.
+        await Promise.all(active.map(async ({ banner, name }) => {
           try {
             const prods = unwrapResult(
               await callAffiliateMethod("aliexpress.affiliate.featuredpromo.products.get", {
-                promotion_name: p.name, page_no: "1", page_size: "1",
+                promotion_name: name, page_no: "1", page_size: "1",
                 target_currency: "ILS", target_language: "HE", country: "IL",
               }, GUARD),
               "aliexpress.affiliate.featuredpromo.products.get",
             );
-            if (!prods.ok) { fail(prods.code); banner.reason = "לא התקבלו מוצרי הקמפיין: " + prods.code; continue; }
+            if (!prods.ok) { fail(prods.code); banner.reason = "לא התקבלו מוצרי הקמפיין: " + prods.code; return; }
             const top = parsePromoProducts(prods.result)[0];
-            if (!top?.productUrl) { banner.reason = "לקמפיין לא הוחזר מוצר עם קישור תקין"; continue; }
+            if (!top?.productUrl) { banner.reason = "לקמפיין לא הוחזר מוצר עם קישור תקין"; return; }
             banner.image = top.image;
             banner.sourceUrl = top.productUrl;
           } catch (e) {
             fail(codeOf(e));
             banner.reason = "שגיאה בשליפת מוצרי הקמפיין: " + codeOf(e);
           }
-        }
+        }));
       }
     } catch (e) {
       fail(codeOf(e));
@@ -181,10 +186,18 @@ function categoryFallbacks(): Banner[] {
  * active right now. Expired campaigns disappear; if none remain, regular
  * category banners take their place (internal links, no affiliate claim).
  */
-export async function getPublicBanners(now = Date.now()): Promise<{ banners: Banner[]; attributionConfirmed: boolean }> {
+export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise<{ banners: Banner[]; attributionConfirmed: boolean }> {
   let live: Banner[] = [];
   try {
-    const snap = await getBannerSnapshot();
+    // Never hold the homepage for a cold banner build; finish it after the response.
+    const pending = getBannerSnapshot();
+    const snap = await Promise.race([pending, new Promise<null>((r) => setTimeout(() => r(null), waitMs))]);
+    if (!snap) {
+      try {
+        after(() => pending.then(() => undefined, () => undefined));
+      } catch {}
+      return { banners: categoryFallbacks(), attributionConfirmed: ATTRIBUTION.confirmed };
+    }
     live = snap.banners.filter((b) => b.status === "published" && b.link && timing(b.startsAt, b.endsAt, now) === "active");
   } catch {
     live = [];

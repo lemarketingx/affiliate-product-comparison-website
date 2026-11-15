@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PublicShell } from "../public-shell";
 import { getCatalog } from "../../lib/aliexpress/catalog";
 import { CATALOG_POLICY, REJECT_LABELS, type RejectReason } from "../../lib/aliexpress/catalog-build";
+import { getBannerSnapshot, type BannerSnapshot } from "../../lib/aliexpress/banners";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "איך נבנה הקטלוג | DealPilot", robots: { index: false } };
@@ -11,6 +12,14 @@ const fmt = (n: number) => n.toLocaleString("he-IL");
 export default async function CatalogStatus() {
   const snapshot = await getCatalog();
   const r = snapshot.report;
+  let banners: BannerSnapshot | null = null;
+  try {
+    banners = await Promise.race([getBannerSnapshot(), new Promise<null>((res) => setTimeout(() => res(null), 3000))]);
+  } catch {
+    banners = null;
+  }
+  const reasons = new Map<string, number>();
+  for (const b of banners?.banners ?? []) if (b.status !== "published") reasons.set(b.reason ?? b.status, (reasons.get(b.reason ?? b.status) ?? 0) + 1);
   return (
     <PublicShell>
       <main id="main" className="fp-wrap fp-section">
@@ -100,6 +109,30 @@ export default async function CatalogStatus() {
               )}
             </>
           )}
+          <section>
+            <h2>באנרים וקמפיינים רשמיים</h2>
+            {!banners ? (
+              <p className="fp-lead">בדיקת הבאנרים עדיין רצה ברקע. רעננו בעוד רגע.</p>
+            ) : (
+              <div className="fp-report-scroll">
+                <table>
+                  <tbody>
+                    <tr><td>חיבור ל־Affiliate API</td><td className="num">{banners.apiConfigured ? "מוגדר" : "לא מוגדר"}</td></tr>
+                    <tr><td>מזהה מעקב (ALIEXPRESS_TRACKING_ID) בשרת</td><td className="num">{banners.trackingConfigured ? "מוגדר" : "חסר: אף באנר לא יפורסם"}</td></tr>
+                    <tr><td>קמפיינים שהחזיר featuredpromo.get</td><td className="num">{fmt(banners.promosFound)}</td></tr>
+                    <tr><td>באנרים שפורסמו (קישור שותפים תקין ומזהה מעקב תואם)</td><td className="num">{fmt(banners.banners.filter((b) => b.status === "published").length)}</td></tr>
+                    {[...reasons].map(([why, n]) => (
+                      <tr key={why}><td>לא פורסם: {why}</td><td className="num">{fmt(n)}</td></tr>
+                    ))}
+                    {Object.entries(banners.errors).map(([code, n]) => (
+                      <tr key={code}><td>שגיאת ספק <span dir="ltr">{code}</span></td><td className="num">{fmt(n)}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <p className="fp-fine">כשאין קמפיין פעיל עם קישור מאומת, דף הבית מציג במקומו שערי קטגוריות.</p>
+          </section>
           <p><Link className="fp-link" href="/deals">לקטלוג</Link></p>
         </article>
       </main>

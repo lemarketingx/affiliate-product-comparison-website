@@ -82,7 +82,9 @@ export default function CatalogBrowser({
       </form>
 
       <p className="fp-status-line" role="status">
-        {snapshot.available ? (
+        {snapshot.warming ? (
+          "הקטלוג מתעדכן ברקע"
+        ) : snapshot.available ? (
           <>
             <strong>{fmt(view.total)}</strong> {filtered ? "מוצרים עברו את הסינון" : "מוצרים בקטלוג"}
             {filtered && <> מתוך {fmt(published)} שפורסמו</>}
@@ -105,7 +107,13 @@ export default function CatalogBrowser({
         </div>
       )}
 
-      {view.items.length ? (
+      {snapshot.warming ? (
+        <div className="fp-empty" role="status">
+          <span><PackageSearch size={34} /></span>
+          <h3>הקטלוג מתעדכן ממש עכשיו</h3>
+          <p>אנחנו שולפים את המוצרים מ־AliExpress ברקע. רעננו את הדף בעוד כחצי דקה.</p>
+        </div>
+      ) : view.items.length ? (
         <div className="fp-grid">
           {view.items.map((item, i) => (
             <ProductCard item={item} key={item.id} eager={i < 4} />

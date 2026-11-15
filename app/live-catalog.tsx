@@ -160,7 +160,9 @@ export default function LiveCatalog({
             <PackageSearch size={34} />
           </span>
           <h3>
-            {snapshot.available &&
+            {snapshot.warming
+              ? "הקטלוג מתעדכן ממש עכשיו"
+              : snapshot.available &&
             snapshot.qualityFiltered &&
             snapshot.items.length === 0
               ? "המוצרים הבאים שלנו עדיין בבדיקה"
@@ -169,7 +171,9 @@ export default function LiveCatalog({
                 : "קצת סבלנות, הגילוי בדרך."}
           </h3>
           <p>
-            {snapshot.available &&
+            {snapshot.warming
+              ? "המוצרים נשלפים מ־AliExpress ברקע. רעננו את הדף בעוד כחצי דקה."
+              : snapshot.available &&
             snapshot.qualityFiltered &&
             snapshot.items.length === 0
               ? "נציג כאן רק מוצרים שעברו את כל התנאים: רכישות, דירוג, ביקורת ישראלית ומשלוח לישראל. אפשר לחזור בהמשך."

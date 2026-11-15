@@ -1,6 +1,6 @@
 import "server-only";
-import { AsyncLocalStorage } from "node:async_hooks";
 import { unstable_cache } from "next/cache";
+import { after } from "next/server";
 import {
   AffiliateError,
   configured,
@@ -22,6 +22,8 @@ export type CatalogSnapshot = {
   partial: boolean;
   qualityFiltered?: boolean;
   report?: CatalogReport;
+  /** The catalog is being (re)built in the background; nothing is shown as missing. */
+  warming?: boolean;
 };
 
 const NS = process.env.DEALPILOT_CACHE_NAMESPACE ?? "default";
@@ -29,20 +31,12 @@ const intEnv = (name: string, fallback: number, min: number, max: number) => {
   const n = Number(process.env[name]);
   return Number.isSafeInteger(n) && n >= min && n <= max ? n : fallback;
 };
-/** Uncached provider calls one visitor request may trigger. Cached pages are free. */
-const REQUEST_BUDGET = intEnv("DEALPILOT_CATALOG_REQUEST_BUDGET", 12, 0, 200);
 /** Per-process ceiling on catalog provider calls per hour (deployment-wide quota is the provider's). */
 const HOURLY_LIMIT = intEnv("DEALPILOT_CATALOG_HOURLY_LIMIT", 150, 1, 1000);
-
-// Request-scoped budget, visible inside unstable_cache misses (same async context).
-const budget = new AsyncLocalStorage<{ remaining: number }>();
+/** How long a visitor request waits for a catalog that is still being built. */
+const WAIT_MS = intEnv("DEALPILOT_CATALOG_WAIT_MS", 2500, 0, 20000);
 
 async function providerPage(term: string, pageNo: number, pageSize: number) {
-  const state = budget.getStore();
-  if (state) {
-    if (state.remaining <= 0) throw new AffiliateError("CATALOG_DEFERRED", 503);
-    state.remaining--;
-  }
   const page = await queryAffiliateProductsPage({
     keywords: term,
     pageNo,
@@ -59,23 +53,18 @@ const fetchPlanPage = (item: PlanItem, pageSize: number) =>
   pageCache[Math.min(item.pageNo, pageCache.length) - 1](item.term, item.pageNo, pageSize);
 
 let learnedPageSize: number | null = null;
-let memo: { at: number; snapshot: CatalogSnapshot } | null = null;
-let inflight: Promise<CatalogSnapshot> | null = null;
-const MEMO_MS = 60000;
 
 async function assemble(): Promise<CatalogSnapshot> {
   const timestamps: string[] = [];
-  const { items, report, acceptedPageSize } = await budget.run({ remaining: REQUEST_BUDGET }, () =>
-    buildCatalog({
-      categories,
-      knownPageSize: learnedPageSize,
-      fetchPage: async (item, size) => {
-        const page = await fetchPlanPage(item, size);
-        timestamps.push(page.fetchedAt);
-        return page;
-      },
-    }),
-  );
+  const { items, report, acceptedPageSize } = await buildCatalog({
+    categories,
+    knownPageSize: learnedPageSize,
+    fetchPage: async (item, size) => {
+      const page = await fetchPlanPage(item, size);
+      timestamps.push(page.fetchedAt);
+      return page;
+    },
+  });
   if (acceptedPageSize) learnedPageSize = acceptedPageSize;
   return {
     items: items as CatalogProduct[],
@@ -87,25 +76,46 @@ async function assemble(): Promise<CatalogSnapshot> {
   };
 }
 
+// The whole assembled catalog is one cache entry shared by all instances.
+// After the first build, visitors always get it instantly (stale-while-revalidate);
+// refreshes and provider calls happen in the background, never in a page view.
+const cachedSnapshot = unstable_cache(assemble, ["dealpilot-public-catalog-v6", NS], { revalidate: 21600 });
+
+let memo: { at: number; snapshot: CatalogSnapshot } | null = null;
+let inflight: Promise<CatalogSnapshot> | null = null;
+const MEMO_MS = 60000;
+const sleep = (ms: number) => new Promise<null>((r) => setTimeout(() => r(null), ms));
+
 /**
  * Public catalog: >5000 reported sales, ILS, Hebrew title, valid product data
- * and a valid affiliate link. Built in stages from cached provider pages; a
- * visitor request never triggers more than REQUEST_BUDGET new provider calls.
+ * and a valid affiliate link. A page view waits at most WAIT_MS; if the catalog
+ * is still being built it gets a "warming" snapshot and the build continues
+ * after the response (next/server `after`).
  */
 export async function getCatalog(): Promise<CatalogSnapshot> {
   if (!configured()) return { items: [], fetchedAt: null, available: false, partial: false, qualityFiltered: false };
   const now = Date.now();
   if (memo && now - memo.at < MEMO_MS) return memo.snapshot;
-  inflight ??= assemble()
-    .then((snapshot) => {
-      // Keep complete snapshots for the memo window; retry partial ones sooner.
-      memo = { at: snapshot.partial ? now - MEMO_MS + 5000 : now, snapshot };
-      return snapshot;
-    })
-    .finally(() => {
-      inflight = null;
-    });
-  return inflight;
+  if (!inflight) {
+    inflight = cachedSnapshot()
+      .then((snapshot) => {
+        memo = { at: Date.now(), snapshot };
+        return snapshot;
+      })
+      .catch(() => ({ items: [], fetchedAt: null, available: false, partial: true, qualityFiltered: false }) as CatalogSnapshot)
+      .finally(() => {
+        inflight = null;
+      });
+  }
+  const pending = inflight;
+  const result = await Promise.race([pending, sleep(WAIT_MS)]);
+  if (result) return result;
+  try {
+    after(() => pending.then(() => undefined));
+  } catch {
+    // Outside a request scope (e.g. build): nothing to keep alive.
+  }
+  return { items: [], fetchedAt: null, available: true, partial: true, qualityFiltered: false, warming: true };
 }
 
 // Private discovery (admin): first page of the first term per category, unfiltered.

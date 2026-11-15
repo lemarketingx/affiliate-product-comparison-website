@@ -16,23 +16,35 @@
   `quality.ts` is unchanged: rating, Israeli reviews and Israel delivery stay "not verified" unless real evidence exists. `/go` and product pages only resolve published products.
 - **Ordering**: highest reported sales first within each category, with categories interleaved.
 
-## Quotas and caching
+## Quotas, caching and speed
 
-- Every result page is cached 6, 8 or 10 hours, depending on the page number, so refreshes are staggered.
-- A visitor request may trigger at most `DEALPILOT_CATALOG_REQUEST_BUDGET` new provider calls (default 12). Cached pages cost nothing. Pages over the budget are reported as pending and are fetched by later requests, so the catalog fills up in stages.
-- Per-process ceiling: `DEALPILOT_CATALOG_HOURLY_LIMIT` (default 150 calls per hour). This guard is separate from the 24-per-hour admin Scout guard.
-- An `ApiCallLimit` or quota error stops the build immediately. The remaining pages are reported as pending.
-- Fetching stops once 650 publishable products exist, a buffer above the 500 target.
-- The assembled catalog is memoised per process for 60 seconds, and for 5 seconds while it is still partial.
+- **A page view never waits on AliExpress.**
+  - The assembled catalog is a single shared cache entry, refreshed every 6 hours with stale-while-revalidate.
+  - Every view after the first build reads that one entry, which takes milliseconds.
+  - A cold build (first ever, or after a cache reset) holds a view for at most `DEALPILOT_CATALOG_WAIT_MS` (default 2.5 s). After that the view shows "הקטלוג מתעדכן ממש עכשיו", and the build finishes after the response (`after()` from `next/server`).
+- **Banners work the same way.** The homepage waits at most 1.5 s, then shows category gates while the banner check completes in the background. Campaign product lookups run in parallel.
+- **Result pages are cached individually** (6, 8 or 10 hours, staggered), so a rebuild reuses them.
+- **Limits:**
+  - per-process ceiling of `DEALPILOT_CATALOG_HOURLY_LIMIT` (default 150) catalog calls per hour;
+  - a quota error stops the build immediately;
+  - fetching stops at 650 publishable products;
+  - provider calls time out after 8 s.
+- **Measured locally** against the fixture API with a simulated 700 ms provider latency, starting from an empty cache. Times are for the homepage.
 
-The account's real daily quota for `aliexpress.affiliate.product.query` is not documented in this repository and could not be read from here. The defaults keep a full refresh at about 120 calls per 6 hours or less.
+  | Request | Before | After |
+  |---|---|---|
+  | 1st | 4.3 s | 2.6 s (then shows "מתעדכן") |
+  | 2nd | 1.6 s | 0.04 s |
+  | Later | about 0.03 s | about 0.02 s |
+
+  On Vercel the "before" behaviour was worse: every new serverless instance rebuilt the catalog from about 120 cache reads, plus up to 12 provider calls.
 
 ## Site
 
 - `/deals`, `/search` and `/categories/[slug]` are server-rendered with 24 products per page. They support search (multi-word, Hebrew-aware), a category filter, four sort orders and a numbered pager. They work without JavaScript, and only 24 cards are sent per page.
 - The status line shows real counts: "X מוצרים עברו את הסינון מתוך Y שפורסמו · מוצגים 25–48 · עמוד 2 מתוך N".
 - If fewer than 500 products are published, the catalog shows the real number and the main reasons, and links to `/catalog-status`.
-- `/catalog-status` (noindex) is the build report. It shows API rows, unique products, rejected products by first and by all reasons, published products, duplicates, pages fetched, pending, failed and skipped, the page size tried and accepted, provider error codes, per-phrase `total_record_count`, and how many products would pass at more than 500, 1,000 and 5,000 sales (diagnostic only).
+- `/catalog-status` (noindex) is the build report, and it also shows why official banners are or are not published. It shows API rows, unique products, rejected products by first and by all reasons, published products, duplicates, pages fetched, pending, failed and skipped, the page size tried and accepted, provider error codes, per-phrase `total_record_count`, and how many products would pass at more than 500, 1,000 and 5,000 sales (diagnostic only).
 - Card images use the AliExpress CDN `_350x350.jpg` thumbnail. If that fails, the original image is loaded, and after that a placeholder. The first 4 cards load eagerly and the rest lazily.
 
 ## Tests

@@ -273,7 +273,7 @@ export async function queryAffiliateProductsPage(query: ProductQuery): Promise<P
       },
       body: new URLSearchParams(params),
       cache: "no-store",
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(8000),
     });
   } catch {
     throw new AffiliateError("PROVIDER_UNREACHABLE", 503);
@@ -329,7 +329,7 @@ export async function callAffiliateMethod(
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body: new URLSearchParams(params),
       cache: "no-store",
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(8000),
     });
   } catch {
     throw new AffiliateError("PROVIDER_UNREACHABLE", 503);

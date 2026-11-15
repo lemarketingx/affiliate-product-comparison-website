@@ -1,7 +1,7 @@
 // Explicit Node preload for the isolated populated-flow test server only.
 // This module is never imported by application code and provides no HTTP bypass or route.
 if (
-  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104"].includes(process.env.NEXTAUTH_URL ?? "") ||
+  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104", "http://127.0.0.1:3199"].includes(process.env.NEXTAUTH_URL ?? "") ||
   process.env.ALIEXPRESS_APP_KEY !== "fixture-only-never-real" ||
   process.env.ALIEXPRESS_APP_SECRET !== "fixture-only-never-real"
 ) {
@@ -27,6 +27,9 @@ globalThis.fetch = async function (input, init) {
   if (url !== "https://api-sg.aliexpress.com/sync")
     return originalFetch(input, init);
   const params = new URLSearchParams(String(init?.body ?? ""));
+  // Optional simulated provider latency (performance checks only).
+  const latency = Number(process.env.DEALPILOT_FIXTURE_LATENCY_MS ?? 0);
+  if (latency > 0) await new Promise((r) => setTimeout(r, Math.min(latency, 5000)));
   const wrap = (method, result) =>
     Response.json({ [method.replace(/\./g, "_") + "_response"]: { resp_result: { resp_code: 200, resp_msg: "ok", result } } });
   if (catalogSet && params.get("app_key") === "fixture-only-never-real" && init?.method === "POST") {
