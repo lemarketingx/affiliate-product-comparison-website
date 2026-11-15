@@ -27,7 +27,7 @@ export function StoreLine({ item }: { item: CatalogItem }) {
       )}
       <span dir="ltr">{item.shopName}</span>
       <small>
-        {item.storeStatus === "verified" ? "חנות רשמית מאומתת" : "חנות רשמית לפי שם החנות"}
+        {item.storeStatus === "verified" ? "חנות שנבדקה ידנית" : "שם החנות תואם למותג"}
       </small>
     </p>
   );
