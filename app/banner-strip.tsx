@@ -22,7 +22,7 @@ export default function BannerStrip({ banners, attributionConfirmed }: { banners
       <ul className="fp-banner-list">
         {banners.map((b) => {
           const external = b.source !== "category";
-          const href = external ? "/go/b/" + b.id + "?source=banner" : b.link!;
+          const href = external ? (b.link ?? "#") : b.link!;
           const body = (
             <>
               <span className={"fp-banner-media is-" + b.imageFit}>
