@@ -76,7 +76,7 @@ export function ProductCard({ item }: { item: CatalogItem }) {
       </div>
       <div className="dp-product-price og-card-price">
         <div>
-          <strong dir="auto">{price}</strong>
+          <strong dir="auto" title="מחיר שהתקבל מממשק AliExpress. המחיר בקופה עשוי להיות שונה.">{price}</strong>
           {off && (
             <s dir="auto" aria-label="מחיר לפני הנחה לפי הספק">
               {formatMoney(item.originalPrice, item.currency)}
@@ -92,7 +92,7 @@ export function ProductCard({ item }: { item: CatalogItem }) {
           למוצר <ChevronLeft size={16} />
         </Link>
       </div>
-      {item.affiliateUrl && <small className="og-card-aff">קישור שותפים</small>}
+      <small className="og-card-aff">מחיר מדווח · המחיר בקופה עשוי להשתנות{item.affiliateUrl ? " · קישור שותפים" : ""}</small>
     </article>
   );
 }
