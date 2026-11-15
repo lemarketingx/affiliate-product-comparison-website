@@ -37,7 +37,15 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
               <nav className="og-crumbs" aria-label="מיקום">
                 <Link href="/brands">מותגים</Link> <span>/</span> <span>{b.he}</span>
               </nav>
-              <h1 dir="ltr" className="og-brand-name">{b.name}</h1>
+              <h1 dir="ltr" className="og-brand-name">
+                {b.logo ? (
+                  <span className="og-brand-logo">
+                    <img src={b.logo} alt={b.name} />
+                  </span>
+                ) : (
+                  b.name
+                )}
+              </h1>
               <p className="og-brand-he">{b.he} · מהחנות הרשמית ב־AliExpress</p>
               <p className="og-brand-known">{b.knownFor}</p>
               <ul className="og-shelves">

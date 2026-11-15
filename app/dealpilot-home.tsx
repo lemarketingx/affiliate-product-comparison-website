@@ -7,6 +7,7 @@ import { PublicShell } from "./public-shell";
 import LiveCatalog from "./live-catalog";
 import HeroCarousel, { type Slide } from "./hero-carousel";
 import { ProductCard, discountOf } from "./product-card";
+import { BrandMark } from "./brand-mark";
 
 export function ChannelCta() {
   const telegram = process.env.DEALPILOT_TELEGRAM_URL;
@@ -88,6 +89,7 @@ function buildSlides(items: CatalogItem[]): Slide[] {
       key: "brand-" + slug,
       kicker: "מהחנות הרשמית ב־AliExpress",
       wordmark: b.name,
+      logo: b.logo,
       title: b.knownFor,
       subtitle: `${list.length} מוצרים של ${b.he} עכשיו באתר, במחירים בשקלים.`,
       cta: "לחנות של " + b.he,
@@ -136,7 +138,7 @@ export default function DealPilotHome({ snapshot }: { snapshot: CatalogSnapshot 
             {brands.map((b) => (
               <li key={b.slug}>
                 <Link href={"/brands/" + b.slug} style={{ "--accent": b.accent } as React.CSSProperties}>
-                  <span className="og-bw-name" dir="ltr">{b.name}</span>
+                  <BrandMark slug={b.slug} className="og-bw-name" />
                   <span className="og-bw-meta">
                     {counts[b.slug] ? counts[b.slug] + " מוצרים" : b.he}
                   </span>

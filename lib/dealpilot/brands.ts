@@ -17,6 +17,10 @@ export type Brand = {
   shelves: string[];
   /* Accent for chips and banners (approximate, not a logo). */
   accent: string;
+  /* Official logo file supplied by the owner, e.g. "/brand-logos/xiaomi.svg".
+     Leave undefined until you have the file and the right to use it;
+     the brand name is shown instead. Never draw or trace a logo. */
+  logo?: string;
 };
 
 export const brands: Brand[] = [

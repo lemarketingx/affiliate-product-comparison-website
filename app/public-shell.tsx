@@ -3,6 +3,7 @@ import { Search, Menu, ChevronDown, Flame, House, LayoutGrid, Tags, Heart } from
 import { brands } from "../lib/dealpilot/brands";
 import { shelves } from "../lib/dealpilot/shelves";
 import { FavCount } from "./favorites";
+import { BrandMark } from "./brand-mark";
 
 export function Wordmark({ light = true }: { light?: boolean }) {
   return (
@@ -167,7 +168,7 @@ export function BrandDirectory({ counts }: { counts?: Record<string, number> }) 
       {brands.map((b) => (
         <li key={b.slug}>
           <Link href={"/brands/" + b.slug} style={{ "--accent": b.accent } as React.CSSProperties}>
-            <span className="og-bw-name" dir="ltr">{b.name}</span>
+            <BrandMark slug={b.slug} className="og-bw-name" />
             <span className="og-bw-he">{b.he}</span>
             <span className="og-bw-known">{b.knownFor}</span>
             <span className="og-bw-meta">

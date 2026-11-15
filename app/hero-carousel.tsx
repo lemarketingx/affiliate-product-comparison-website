@@ -13,6 +13,7 @@ export type Slide = {
   accent: string;
   images: string[];
   wordmark?: string;
+  logo?: string;
 };
 
 export default function HeroCarousel({ slides }: { slides: Slide[] }) {
@@ -49,10 +50,16 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
         >
           <div className="og-slide-copy">
             <span className="og-slide-kicker">{s.kicker}</span>
-            {s.wordmark && (
-              <span className="og-slide-word" dir="ltr">
-                {s.wordmark}
+            {s.logo ? (
+              <span className="og-slide-logo">
+                <img src={s.logo} alt={s.wordmark ?? ""} />
               </span>
+            ) : (
+              s.wordmark && (
+                <span className="og-slide-word" dir="ltr">
+                  {s.wordmark}
+                </span>
+              )
             )}
             <h2>{s.title}</h2>
             <p>{s.subtitle}</p>

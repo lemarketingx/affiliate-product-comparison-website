@@ -42,8 +42,14 @@ export function BrandChip({ slug, name }: { slug: string; name: string }) {
       style={{ "--accent": b?.accent ?? "#0b1730" } as React.CSSProperties}
       dir="ltr"
     >
-      <i aria-hidden="true" />
-      {name}
+      {b?.logo ? (
+        <img className="og-chip-logo" src={b.logo} alt={name} loading="lazy" />
+      ) : (
+        <>
+          <i aria-hidden="true" />
+          {name}
+        </>
+      )}
     </Link>
   );
 }
