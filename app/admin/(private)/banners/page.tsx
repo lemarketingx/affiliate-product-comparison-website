@@ -87,7 +87,7 @@ export default async function BannersPage() {
                     <tr key={b.id}>
                       <td dir="auto">{b.title}{b.productCount !== null ? ` (${b.productCount} מוצרים)` : ""}</td>
                       <td>{SOURCE[b.source]}</td>
-                      <td>{STATUS[b.status]}{b.reason ? " · " + b.reason : ""}</td>
+                      <td>{STATUS[b.status]}{b.trackingSource === "default" ? " · קישור מאומת עם Tracking ID: default (ייחוס עמלה טרם אומת)" : ""}{b.reason ? " · " + b.reason : ""}</td>
                       <td>{d(b.startsAt)} – {d(b.endsAt)}</td>
                       <td dir="ltr" style={{ wordBreak: "break-all" }}>{maskLink(b.link) ?? "—"}</td>
                       <td>{c ? (c.ok ? "תקין" : "לא תקין") + " · " + c.note + " · " + c.hops.map((h) => h.status + " " + h.host).join(" → ") : "לא נבדק"}</td>

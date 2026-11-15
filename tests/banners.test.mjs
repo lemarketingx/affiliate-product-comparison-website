@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   unwrapResult, parseFeaturedPromos, parsePromoProducts, parseGeneratedLinks, checkGeneratedLink,
-  classifyRedirect, timing, parseProviderTime, canonicalSource, maskLink, safeProviderMessage,
+  classifyRedirect, timing, parseProviderTime, canonicalSource, maskLink, safeProviderMessage, isTrackingIdRejection,
 } from "../lib/aliexpress/promo-parse.ts";
 import { validPortalBanner, maskTrackingId, ATTRIBUTION, PORTAL_BANNERS } from "../lib/aliexpress/banner-config.ts";
 
@@ -104,4 +104,13 @@ test("unwrap keeps the raw provider message for sanitising, plus error_response 
   assert.equal(r.message, "Invalid parameter tracking_id");
   const e = unwrapResult({ error_response: { code: "15", msg: "Remote service error", sub_code: "isv.invalid-parameter", sub_msg: "source_values illegal" } }, M);
   assert.equal(e.message, "Remote service error · isv.invalid-parameter · source_values illegal");
+});
+
+test("retry default only for explicit tracking id rejection, not generic 402", () => {
+  assert.equal(isTrackingIdRejection("PROVIDER_RESULT_402_INVALID_PARAMETER", "TrackingId input parameter error"), true);
+  assert.equal(isTrackingIdRejection("PROVIDER_RESULT_402_INVALID_PARAMETER", "tracking_id invalid"), true);
+  assert.equal(isTrackingIdRejection("PROVIDER_RESULT_402_INVALID_PARAMETER", "source_values invalid"), false);
+  assert.equal(isTrackingIdRejection("PROVIDER_RESULT_402_PERMISSION", "Access denied"), false);
+  assert.equal(isTrackingIdRejection("PROVIDER_UNREACHABLE", "TrackingId input parameter error"), false);
+  assert.equal(isTrackingIdRejection("PROVIDER_RESULT_402_INVALID_PARAMETER", null), false);
 });
