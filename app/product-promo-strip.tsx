@@ -52,7 +52,7 @@ export default function ProductPromoStrip({ items }: { items: CatalogItem[] }) {
             </span>
             <span className="fp-product-promo-visual">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+              <img src={item.image ?? undefined} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             </span>
           </a>
         ))}
