@@ -14,8 +14,8 @@ export default function ProductGallery({
   const [failed, setFailed] = useState<Record<number, boolean>>({});
   const src = list[active];
   return (
-    <div className="fp-gallery">
-      <div className="fp-gallery-main">
+    <div className="og-gallery">
+      <div className="og-gallery-main">
         {src && !failed[active] ? (
           <img
             src={src}
@@ -26,13 +26,13 @@ export default function ProductGallery({
             onError={() => setFailed((f) => ({ ...f, [active]: true }))}
           />
         ) : (
-          <span className="fp-img-fallback" role="img" aria-label="תמונת המוצר אינה זמינה">
+          <span className="og-img-fallback" role="img" aria-label="תמונת המוצר אינה זמינה">
             <ImageOff size={56} />
           </span>
         )}
       </div>
       {list.length > 1 && (
-        <div className="fp-thumbs">
+        <div className="og-thumbs">
           {list.slice(0, 8).map((image, index) => (
             <button
               type="button"

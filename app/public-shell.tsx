@@ -1,128 +1,99 @@
 import Link from "next/link";
-import {
-  ArrowUpLeft,
-  Search,
-  Menu,
-  House,
-  Headphones,
-  Car,
-  Boxes,
-  ShoppingBag,
-  Brush,
-  Gamepad2,
-  Dumbbell,
-  RadioTower,
-} from "lucide-react";
-import { categories } from "../lib/dealpilot/categories";
-import { BrandMark, gateCode } from "./flight-bits";
-import FlightClock from "./flight-clock";
-
-export function Brand({ light = false }: { light?: boolean }) {
-  return (
-    <Link
-      className={"dp-brand fp-brand" + (light ? " fp-brand-light" : "")}
-      href="/"
-      aria-label="DealPilot בית"
-    >
-      <BrandMark />
-      <span dir="ltr" className="fp-wordmark">
-        deal<strong>pilot</strong>
-      </span>
-    </Link>
-  );
-}
+import { ArrowUpLeft, Search, Menu, BadgeCheck } from "lucide-react";
+import { brands } from "../lib/dealpilot/brands";
+import { Wordmark } from "./og-bits";
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fp">
-      <a className="fp-skip" href="#main">
+    <div className="og">
+      <a className="og-skip" href="#main">
         דילוג לתוכן
       </a>
-      <div className="fp-tower">
-        <div className="fp-wrap fp-tower-row">
-          <span className="fp-tower-label">
-            <RadioTower size={14} /> מגדל פיקוח
+      <div className="og-strip">
+        <div className="og-wrap og-strip-row">
+          <span>
+            <BadgeCheck size={15} aria-hidden="true" /> רק מחנויות רשמיות של המותגים
           </span>
-          <span className="fp-tower-msg">
-            מגלים ב־DealPilot · קונים ב־AliExpress ·{" "}
-            <Link href="/disclosure">
-              איך קישורי השותפים שלנו עובדים <ArrowUpLeft size={12} />
-            </Link>
-          </span>
-          <span className="fp-tower-time">
-            שעון ישראל <FlightClock />
-          </span>
+          <span className="og-strip-sep" aria-hidden="true" />
+          <span className="og-strip-more">מחירים בשקלים, ישר מ־AliExpress</span>
+          <Link href="/disclosure" className="og-strip-link">
+            גילוי שותפים <ArrowUpLeft size={12} />
+          </Link>
         </div>
       </div>
-      <header className="fp-header">
-        <div className="fp-wrap fp-header-row">
-          <Brand />
-          <form action="/search" className="fp-search" role="search">
+      <header className="og-header">
+        <div className="og-wrap og-header-row">
+          <Wordmark />
+          <form action="/search" className="og-search" role="search">
             <Search size={18} aria-hidden="true" />
             <input
               name="q"
               maxLength={80}
-              placeholder="לאן ממריאים היום? חפשו מוצר"
+              placeholder="חפשו מותג או מוצר: שואב, מטען, אוזניות…"
               aria-label="חיפוש מוצרים"
             />
             <button type="submit" aria-label="חיפוש">
               <ArrowUpLeft size={18} />
             </button>
           </form>
-          <nav className="fp-nav" aria-label="ניווט ראשי">
-            <Link href="/deals">גלו מוצרים</Link>
-            <Link href="/categories">קטגוריות</Link>
-            <Link href="/guides">מדריכים</Link>
+          <nav className="og-nav" aria-label="ניווט ראשי">
+            <Link href="/brands">מותגים</Link>
+            <Link href="/deals">כל המוצרים</Link>
+            <Link href="/warranty">אחריות ויבוא</Link>
           </nav>
-          <details className="dp-mobile-menu fp-menu">
+          <details className="dp-mobile-menu og-menu">
             <summary aria-label="פתיחת תפריט">
               <Menu />
             </summary>
             <nav aria-label="ניווט נייד">
-              <Link href="/deals">גלו מוצרים</Link>
-              <Link href="/categories">כל הקטגוריות</Link>
-              <Link href="/guides">מדריכים</Link>
+              <Link href="/brands">מותגים</Link>
+              <Link href="/deals">כל המוצרים</Link>
+              <Link href="/warranty">אחריות ויבוא</Link>
+              <Link href="/guides">מדריך קנייה</Link>
             </nav>
           </details>
         </div>
       </header>
       {children}
-      <footer className="fp-footer">
-        <div className="fp-wrap">
-          <div className="fp-footer-top">
-            <div className="fp-footer-brand">
-              <Brand light />
+      <footer className="og-footer">
+        <div className="og-wrap">
+          <div className="og-footer-top">
+            <div className="og-footer-brand">
+              <Wordmark light />
               <p>
-                מגלים מוצרים חכמים, בודקים לפני שממריאים.
-                <br />
-                אתר גילוי עצמאי בעברית למוצרי AliExpress.
+                המותגים שאתם מכירים, מהחנויות הרשמיות שלהם ב־AliExpress. אתר
+                גילוי עצמאי בעברית.
               </p>
             </div>
             <div>
-              <strong>לגלות</strong>
-              <Link href="/deals">כל המוצרים</Link>
-              <Link href="/categories">קטגוריות</Link>
-              <Link href="/guides">קונים חכם</Link>
+              <strong>מותגים</strong>
+              {brands.slice(0, 6).map((b) => (
+                <Link key={b.slug} href={"/brands/" + b.slug}>
+                  {b.he}
+                </Link>
+              ))}
             </div>
             <div>
               <strong>טוב לדעת</strong>
-              <Link href="/about">אודות DealPilot</Link>
+              <Link href="/warranty">אחריות ויבוא אישי</Link>
+              <Link href="/guides">מדריך קנייה</Link>
+              <Link href="/about">אודות</Link>
               <Link href="/disclosure">גילוי שותפים</Link>
               <Link href="/privacy">פרטיות</Link>
               <Link href="/terms">תנאי שימוש</Link>
             </div>
-            <div className="fp-footer-pass">
-              <span className="fp-pass-kicker">כרטיס גילוי נאות</span>
-              <strong>הבחירה נשארת שלכם.</strong>
+            <div className="og-footer-note">
+              <strong>שקיפות מלאה</strong>
               <p>
-                ייתכן שנקבל עמלה מקישורים באתר. המחיר, המשלוח והתשלום נקבעים
-                ב־AliExpress.
+                ייתכן שנקבל עמלה מקישורים באתר, בלי עלות נוספת לכם. DealPilot
+                אינו קשור למותגים המוצגים ואינו מוכר את המוצרים. שמות המותגים
+                שייכים לבעליהם.
               </p>
             </div>
           </div>
-          <div className="fp-footer-bottom">
+          <div className="og-footer-bottom">
             <span>© {new Date().getFullYear()} DealPilot</span>
-            <span>נבנה בשביל הסקרנות שלכם.</span>
+            <span>המחיר, המשלוח והאחריות נקבעים ב־AliExpress ואצל המוכר.</span>
           </div>
         </div>
       </footer>
@@ -130,39 +101,37 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const icons = {
-  home: House,
-  tech: Headphones,
-  car: Car,
-  organization: Boxes,
-  fashion: ShoppingBag,
-  beauty: Brush,
-  games: Gamepad2,
-  sport: Dumbbell,
-};
-
+/* Kept for older imports; categories became brands. */
 export function CategoryLinks() {
+  return <BrandDirectory />;
+}
+
+export function BrandDirectory({ counts }: { counts?: Record<string, number> }) {
   return (
-    <div className="fp-gates">
-      {categories.map((c, i) => {
-        const Icon = icons[c.slug];
-        return (
-          <Link className="fp-gate" href={"/categories/" + c.slug} key={c.slug}>
-            <span className="fp-gate-top">
-              <span className="fp-gate-code" dir="ltr">
-                <small>שער</small>
-                {gateCode(i)}
-              </span>
-              <Icon size={26} strokeWidth={1.6} aria-hidden="true" />
+    <ol className="og-directory">
+      {brands.map((b, i) => (
+        <li key={b.slug}>
+          <Link href={"/brands/" + b.slug} className="og-dir-item">
+            <span className="og-dir-no" dir="ltr">
+              {String(i + 1).padStart(2, "0")}
             </span>
-            <strong>{c.label}</strong>
-            <p>{c.description}</p>
-            <span className="fp-gate-go">
-              לעלייה <ArrowUpLeft size={16} />
+            <span className="og-dir-name" dir="ltr">
+              {b.name}
+            </span>
+            <span className="og-dir-he">{b.he}</span>
+            <span className="og-dir-known">{b.knownFor}</span>
+            <span className="og-dir-meta">
+              {counts && counts[b.slug] ? counts[b.slug] + " מוצרים" : "לחנות המותג"}
+              <ArrowUpLeft size={16} />
             </span>
           </Link>
-        );
-      })}
-    </div>
+        </li>
+      ))}
+    </ol>
   );
+}
+
+/* Used by the admin login page. */
+export function Brand() {
+  return <Wordmark />;
 }

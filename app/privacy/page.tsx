@@ -6,8 +6,8 @@ import { PublicShell } from "../public-shell";
 export default function Privacy() {
   return (
     <PublicShell>
-      <main id="main" className="fp-wrap">
-        <article className="fp-prose">
+      <main id="main" className="og-wrap">
+        <article className="og-prose">
           <h1>פרטיות</h1>
           <p>
             עדכון: 14 בנובמבר 2026. מסמך זה מתאר את המימוש הנוכחי של גרסת

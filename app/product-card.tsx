@@ -1,63 +1,85 @@
 import Link from "next/link";
-import { ArrowUpLeft } from "lucide-react";
+import { ArrowUpLeft, BadgeCheck, Store } from "lucide-react";
 import type { CatalogItem } from "../lib/aliexpress/catalog";
 import { formatMoney } from "../lib/dealpilot/urls";
 import ProductImage from "./product-image";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
-import { Barcode, flightCode } from "./flight-bits";
+import { israelPriceFor } from "../lib/dealpilot/israel-prices";
+import { serial } from "./og-bits";
 
-/* A product is a boarding pass: image, ticket body, perforation, price stub. */
+export function StoreLine({ item }: { item: CatalogItem }) {
+  if (!item.shopName) return null;
+  return (
+    <p className={"og-store " + (item.storeStatus === "verified" ? "is-verified" : "")}>
+      {item.storeStatus === "verified" ? (
+        <BadgeCheck size={15} aria-hidden="true" />
+      ) : (
+        <Store size={15} aria-hidden="true" />
+      )}
+      <span dir="ltr">{item.shopName}</span>
+      <small>
+        {item.storeStatus === "verified" ? "חנות רשמית מאומתת" : "חנות רשמית לפי שם החנות"}
+      </small>
+    </p>
+  );
+}
+
+/* A product is a certificate tag: brand, serial, store, price. */
 export function ProductCard({ item }: { item: CatalogItem }) {
   const verified = evaluateEligibility(item).eligible;
+  const il = israelPriceFor(item.id);
   return (
-    <article className="dp-product fp-pass">
+    <article className="dp-product og-tag">
+      <div className="og-tag-head">
+        <span className="og-tag-brand" dir="ltr">
+          {item.category}
+        </span>
+        <span className="og-tag-serial" dir="ltr">
+          {serial(item.id)}
+        </span>
+      </div>
       <Link
-        className="fp-pass-image"
+        className="og-tag-image"
         href={"/products/" + item.id}
         tabIndex={-1}
         aria-hidden="true"
       >
         <ProductImage src={item.image} alt="" />
-        <span className="fp-pass-class">{item.category}</span>
       </Link>
-      <div className="fp-pass-body">
-        <div className="fp-pass-meta">
-          <span dir="ltr">{flightCode(item.id)}</span>
-          <span className={"fp-chip " + (verified ? "is-go" : "is-wait")}>
-            {verified ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}
-          </span>
-        </div>
+      <div className="og-tag-body">
         <h3 dir="auto">
           <Link href={"/products/" + item.id}>{item.title}</Link>
         </h3>
-        <p className="fp-pass-orders">
+        <StoreLine item={item} />
+        <p className="og-tag-meta">
           {item.orders !== null
             ? item.orders.toLocaleString("he-IL") + " הזמנות לפי הספק"
             : "נתוני הזמנות אינם זמינים"}
+          {" · "}
+          <span className={verified ? "og-ok" : "og-pending"}>
+            {verified ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}
+          </span>
         </p>
-        {verified && item.quality?.rating && (
-          <p className="fp-pass-orders">
-            דירוג {item.quality.rating.value.toFixed(1)}/5 ·{" "}
-            {item.quality.israelReviews?.count} ביקורות מישראל
-          </p>
-        )}
       </div>
-      <div className="fp-perf" aria-hidden="true" />
-      <div className="dp-product-price fp-pass-stub">
+      <div className="dp-product-price og-tag-price">
         <div>
-          <small>מחיר ספק</small>
+          <small>באליאקספרס</small>
           <strong dir="auto">{formatMoney(item.price, item.currency)}</strong>
+          {il && (
+            <span className="og-tag-il">
+              בישראל {formatMoney(String(il.price), "ILS")} · {il.store}
+            </span>
+          )}
         </div>
-        <Barcode seed={item.id} />
         <Link
-          className="fp-pass-go"
+          className="og-tag-go"
           href={"/products/" + item.id}
           aria-label={"פרטי " + item.title}
         >
           <ArrowUpLeft size={20} />
         </Link>
       </div>
-      <small className="fp-pass-aff">
+      <small className="og-tag-aff">
         {item.affiliateUrl ? "כולל קישור שותפים" : "קישור שותפים אינו זמין"}
       </small>
     </article>

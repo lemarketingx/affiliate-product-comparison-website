@@ -6,9 +6,9 @@ import { PublicShell } from "../public-shell";
 export default function Guides() {
   return (
     <PublicShell>
-      <main id="main" className="fp-wrap">
-        <article className="fp-prose">
-          <span className="fp-kicker">מדריך טרום המראה</span>
+      <main id="main" className="og-wrap">
+        <article className="og-prose">
+          <span className="og-kicker">מדריך קנייה</span>
           <h1>
             קנייה טובה מתחילה
             <br />

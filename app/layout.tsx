@@ -5,9 +5,9 @@ import "./welcoming.css";
 import "./storefront.css";
 
 export const metadata: Metadata = {
-  title: "DealPilot | מוצרים חכמים והזדמנויות שוות",
+  title: "DealPilot | המותגים שאתם מכירים, מהחנות הרשמית",
   description:
-    "מוצרים שימושיים, גאדג׳טים והפתעות מ־AliExpress. מגלים מוצרים חכמים, עם נתוני ספק וגילוי שותפים ברור.",
+    "שיאומי, אנקר, יוגרין, דרימי ועוד: מוצרים מהחנויות הרשמיות של המותגים ב־AliExpress, במחירים בשקלים ועם גילוי שותפים ברור.",
   metadataBase: new URL(
     process.env.DEALPILOT_SITE_URL ||
       (process.env.VERCEL_URL
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
         : "http://localhost:3100"),
   ),
   openGraph: {
-    title: "DealPilot | מגלים מוצרים חכמים",
-    description: "קצת סקרנות. הרבה שימושיות. מוצרים מ־AliExpress במקום אחד.",
+    title: "DealPilot | המותגים שאתם מכירים, מהחנות הרשמית",
+    description: "מוצרים מקוריים מהחנויות הרשמיות של המותגים ב־AliExpress, במחירים בשקלים.",
     locale: "he_IL",
     type: "website",
   },
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl">
       <head>
-        <meta name="theme-color" content="#14161B" />
+        <meta name="theme-color" content="#0D4A33" />
       </head>
       <body>{children}</body>
     </html>
