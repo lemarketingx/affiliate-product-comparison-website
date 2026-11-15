@@ -89,14 +89,13 @@ test("build: dedupes by product_id, filters, sorts by sales and reports honestly
   assert.equal(items.find((i) => i.id === shared.id).categorySlug, "a"); // first term that found it wins
   assert.deepEqual(items.filter((i) => i.categorySlug === "a").map((i) => i.orders), [20000, 7000]);
   assert.equal(report.rejectedTotal, 4);
-  assert.deepEqual(report.rejectedPrimary, { sales: 1, currency: 1, affiliate: 1, hebrew: 1 });
+  assert.deepEqual(report.rejectedPrimary, { sales: 1, currency: 1, affiliate: 1, brand: 1 });
   assert.equal(report.salesBands.over5000, 3);
   // Short pages mean the term is exhausted: no page 2 requests.
   assert.ok(calls.every(([, pageNo]) => pageNo === 1));
   assert.equal(report.pagesSkippedExhausted, 6); // 3 terms × pages 2–3
   assert.equal(report.pageSize.accepted, 50);
-  assert.ok(report.shortfall[0].includes("פורסמו 3"));
-  assert.ok(report.shortfall.some((s) => s.includes("5,000")));
+  assert.deepEqual(report.shortfall, []); // No artificial item count target.
 });
 
 test("build: page-size probe falls back when the provider rejects 50, then sticks to the accepted size", async () => {
