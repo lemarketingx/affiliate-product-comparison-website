@@ -82,27 +82,6 @@ async function assemble(): Promise<CatalogSnapshot> {
 // refreshes and provider calls happen in the background, never in a page view.
 const cachedSnapshot = unstable_cache(assemble, ["dealpilot-brand-catalog-v1", NS], { revalidate: 21600 });
 
-/** Public site only presents corroborated brands. Search term alone is not evidence. */
-function publicBrandSnapshot(snapshot: CatalogSnapshot): CatalogSnapshot {
-  const items = snapshot.items.filter((p) => identifyListedBrand(p) !== null);
-  if (!snapshot.report) return { ...snapshot, items };
-  const r = snapshot.report;
-  const filteredByBrand = snapshot.items.length - items.length;
-  return {
-    ...snapshot, items,
-    report: {
-      ...r,
-      published: items.length,
-      rejectedTotal: r.rejectedTotal + filteredByBrand,
-      rejectedPrimary: { ...r.rejectedPrimary, brand: filteredByBrand },
-      rejectedAll: { ...r.rejectedAll, brand: filteredByBrand },
-      shortfall: items.length >= r.target ? [] : [
-        `פורסמו ${items.length} מוצרים של מותגים מזוהים מתוך ${r.uniqueProducts} מועמדים. לא נציג מוצרים ללא הצלבת שם מותג ונתוני ספק/חנות.`,
-      ],
-    },
-  };
-}
-
 let memo: { at: number; snapshot: CatalogSnapshot } | null = null;
 let inflight: Promise<CatalogSnapshot> | null = null;
 const MEMO_MS = 60000;
@@ -121,9 +100,8 @@ export async function getCatalog(options: { waitMs?: number } = {}): Promise<Cat
   if (!inflight) {
     inflight = cachedSnapshot()
       .then((snapshot) => {
-        const branded = publicBrandSnapshot(snapshot);
-        memo = { at: Date.now(), snapshot: branded };
-        return branded;
+        memo = { at: Date.now(), snapshot };
+        return snapshot;
       })
       .catch(() => ({ items: [], fetchedAt: null, available: false, partial: true, qualityFiltered: false }) as CatalogSnapshot)
       .finally(() => {
@@ -178,7 +156,7 @@ export async function getDiscoveredCatalog(): Promise<CatalogSnapshot> {
     });
   }
   return {
-    items: [...unique.values()],
+    items: [...unique.values()].filter((p) => identifyListedBrand(p) !== null),
     fetchedAt: timestamps.sort()[0] ?? null,
     available: timestamps.length > 0,
     partial: timestamps.length > 0 && timestamps.length < categories.length,
