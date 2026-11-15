@@ -28,7 +28,8 @@ export type RejectReason =
   | "price"
   | "image"
   | "product_url"
-  | "affiliate";
+  | "affiliate"
+  | "brand";
 export const REJECT_LABELS: Record<RejectReason, string> = {
   currency: "המחיר לא הוחזר בשקלים (ILS)",
   sales: "5,000 מכירות מדווחות או פחות (או נתון חסר)",
@@ -37,6 +38,7 @@ export const REJECT_LABELS: Record<RejectReason, string> = {
   image: "אין תמונה תקינה",
   product_url: "אין קישור מוצר תקין",
   affiliate: "אין קישור שותפים תקין",
+  brand: "מותג מוכר אינו מזוהה בהצלבת שם המוצר ונתוני הספק",
 };
 
 const AFFILIATE_HOSTS = ["s.click.aliexpress.com", "aliexpress.com", "aliexpress.us"];
