@@ -28,8 +28,8 @@ export default async function CatalogStatus() {
             <span className="fp-kicker">דוח קטלוג</span>
             <h1 className="fp-catalog-title">איך נבנה הקטלוג</h1>
             <p className="fp-lead">
-              מספרים אמיתיים מהשליפה האחרונה. אנחנו מפרסמים רק מוצרים עם יותר מ־{fmt(CATALOG_POLICY.minimumReportedSalesExclusive)} מכירות
-              מדווחות, מחיר בשקלים, כותרת בעברית, תמונה, קישור מוצר וקישור שותפים תקין. לא משלימים את היעד במוצרים חלשים או מומצאים.
+              מספרים מהשליפה האחרונה של קטלוג מותגים נבחרים. אנחנו מפרסמים רק מוצרים ששם המותג שלהם הוצלב עם נתוני ספק או חנות, ושיש להם יותר מ־{fmt(CATALOG_POLICY.minimumReportedSalesExclusive)} מכירות
+              מדווחות, מחיר בשקלים, כותרת בעברית, תמונה, קישור מוצר וקישור שותפים תקין. לא מפרסמים מוצרים גנריים כדי להגדיל את כמות הפריטים.
             </p>
           </div>
           {!r ? (
@@ -43,11 +43,11 @@ export default async function CatalogStatus() {
                 <div><dt>שורות שהתקבלו מה־API</dt><dd>{fmt(r.rawRows)}</dd></div>
                 <div><dt>מוצרים ייחודיים</dt><dd>{fmt(r.uniqueProducts)}</dd></div>
                 <div><dt>נפסלו</dt><dd>{fmt(r.rejectedTotal)}</dd></div>
-                <div className="is-pub"><dt>פורסמו בפועל (יעד {fmt(r.target)})</dt><dd>{fmt(r.published)}</dd></div>
+                <div className="is-pub"><dt>פורסמו מוצרי מותג</dt><dd>{fmt(r.published)}</dd></div>
               </dl>
               {r.shortfall.length > 0 && (
                 <div className="fp-notice is-wait fp-shortfall">
-                  <strong>למה עדיין אין {fmt(r.target)}?</strong>
+                  <strong>למה יש פחות מוצרי מותג?</strong>
                   <ul>{r.shortfall.map((s) => <li key={s}>{s}</li>)}</ul>
                 </div>
               )}
