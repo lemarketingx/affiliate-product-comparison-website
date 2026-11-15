@@ -30,6 +30,7 @@ export type AliProduct = {
   titleLanguage: "he" | "source";
   images: string[];
   shopName: string | null;
+  supplierBrand?: string | null;
   positiveFeedbackPercent: number | null;
   quality: QualityEvidence;
 };
@@ -220,6 +221,7 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
           : ("source" as const),
         images,
         shopName: text(p.shop_name),
+        supplierBrand: text(p.brand_name) ?? text(p.brand),
         positiveFeedbackPercent:
           Number.isFinite(parsedRate) && parsedRate >= 0 && parsedRate <= 100
             ? parsedRate
