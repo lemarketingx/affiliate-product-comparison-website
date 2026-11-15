@@ -13,6 +13,7 @@ import {
   parseFeaturedPromos,
   parseGeneratedLinks,
   parsePromoProducts,
+  isTrackingIdRejection,
   timing,
   unwrapResult,
   type BannerTiming,
@@ -37,6 +38,7 @@ export type Banner = {
   reason: string | null;
   sourceUrl: string | null;
   link: string | null; // generated affiliate link (or internal path for category fallbacks)
+  trackingSource?: "configured" | "default"; // do not claim original ID attribution after fallback
   /** Source exactly as the provider returned it, before canonicalisation (admin diagnostics). */
   originalSource?: string | null;
   productCount: number | null;
@@ -218,17 +220,37 @@ async function build(): Promise<BannerSnapshot> {
       else b.sourceUrl = canonical;
     }
     const ready = pending.filter((b) => !b.reason);
+    // AliExpress can reject an obsolete/unregistered configured tracking id.
+    // "default" is tried ONLY if the provider explicitly rejects tracking_id;
+    // it is never silently trusted: its echoed ID and generated link must match.
+    let verifiedDefault = false;
     for (let i = 0; i < ready.length; i += 3) {
       await Promise.all(ready.slice(i, i + 3).map(async (b) => {
-        const r = await generateLink(b.sourceUrl!, tid, { promotion_link_type: "0" });
+        let usedId = verifiedDefault ? "default" : tid;
+        let r = await generateLink(b.sourceUrl!, usedId, { promotion_link_type: "0" });
+        if (!r.ok && usedId !== "default" && isTrackingIdRejection(r.code, r.message)) {
+          fail("CONFIGURED_TRACKING_ID_REJECTED", "TrackingId input parameter error");
+          const fallback = await generateLink(b.sourceUrl!, "default", { promotion_link_type: "0" });
+          if (fallback.ok && checkGeneratedLink(fallback.gen, b.sourceUrl!, "default").ok) {
+            r = fallback;
+            usedId = "default";
+            verifiedDefault = true;
+          } else {
+            // Never publish an unverified URL, even when default returns a link.
+            if (!fallback.ok) fail(fallback.code, fallback.message);
+            b.reason = "מזהה המעקב שהוגדר נדחה. יש לבחור Tracking ID פעיל מתוך AliExpress Portals > Account > Tracking ID";
+            return;
+          }
+        }
         if (!r.ok) {
           fail(r.code, r.message);
           b.reason = (r.code.includes("PERMISSION") ? "אין הרשאה ליצירת קישורים: " : "יצירת הקישור נכשלה: ") + r.code;
           return;
         }
-        const check = checkGeneratedLink(r.gen, b.sourceUrl!, tid);
+        const check = checkGeneratedLink(r.gen, b.sourceUrl!, usedId);
         if (!check.ok) { b.reason = check.reason; return; }
         b.link = r.gen.links.find((l) => l.source === b.sourceUrl)!.link;
+        b.trackingSource = usedId === tid ? "configured" : "default";
         b.status = "published";
       }));
     }
