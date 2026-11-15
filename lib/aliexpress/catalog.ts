@@ -9,6 +9,7 @@ import { categories } from "../dealpilot/categories";
 import { evaluateEligibility } from "./quality";
 import { brands, storeStatus, type StoreStatus } from "../dealpilot/brands";
 import { shelfFor } from "../dealpilot/shelves";
+import { brandSearchTerms } from "../dealpilot/brand-search";
 export type CatalogItem = AliProduct & {
   category: string;
   categorySlug: string;
@@ -71,31 +72,31 @@ export async function getDiscoveredCatalog(): Promise<CatalogSnapshot> {
   };
 }
 
-const BRAND_TARGET = 100;
 /**
- * 2 pages × 50 candidates × 12 brands = 24 provider calls per cold refresh,
- * subject to the existing per-instance 24/hour guard. 100 is a TARGET, not
- * a guaranteed stock count. Only qualifying shop-matched products are shown.
+ * Cache each query/page independently. The first refresh can use up to
+ * 12 brands × 4 terms × 2 pages = 96 calls. This is provider-dependent;
+ * a quota error is reflected as partial results, not disguised as inventory.
  */
-const fetchBrandBatch = unstable_cache(
-  async (term: string) => {
-    const products: AliProduct[] = [];
-    let incomplete = false;
-    for (let page = 1; page <= 2; page++) {
-      try {
-        const rows = await queryAffiliateProducts(term, 50, page);
-        products.push(...rows);
-        if (rows.length < 50) break;
-      } catch {
-        incomplete = true;
-        break;
-      }
-    }
-    return { products, incomplete, fetchedAt: new Date().toISOString() };
-  },
-  ["dealpilot-brand-paged-100-candidates-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
-  { revalidate: 21600 },
+const fetchBrandPage = unstable_cache(
+  async (term: string, page: number) =>
+    ({products:await queryAffiliateProducts(term,50,page),fetchedAt:new Date().toISOString()}),
+  ["dealpilot-brand-pages-v2",process.env.DEALPILOT_CACHE_NAMESPACE??"default"],
+  {revalidate:21600},
 );
+const fetchBrandBatch = async (slug:string,primary:string) => {
+  const terms=brandSearchTerms(slug,primary);
+  const requests=terms.flatMap(term=>[1,2].map(page=>({term,page})));
+  const results=await Promise.allSettled(requests.map(x=>fetchBrandPage(x.term,x.page)));
+  const unique=new Map<string,AliProduct>();
+  let incomplete=false;
+  const timestamps:string[]=[];
+  for(const r of results){
+    if(r.status!=="fulfilled"){incomplete=true;continue;}
+    timestamps.push(r.value.fetchedAt);
+    for(const p of r.value.products) if(!unique.has(p.id)) unique.set(p.id,p);
+  }
+  return {products:[...unique.values()],incomplete,fetchedAt:timestamps.sort()[0]??new Date().toISOString()};
+};
 
 /* Public storefront: known brands only, and only products whose shop name
    identifies the brand's official store. Everything else is dropped. */
@@ -103,7 +104,7 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
   if (!configured())
     return { items: [], fetchedAt: null, available: false, partial: false, qualityFiltered: false };
   const responses = await Promise.allSettled(
-    brands.map((b) => fetchBrandBatch(b.term)),
+    brands.map((b) => fetchBrandBatch(b.slug,b.term)),
   );
   const unique = new Map<string, CatalogItem>();
   const timestamps: string[] = [];
@@ -123,6 +124,7 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
       const brand = brands[index];
       const status = storeStatus(brand, product.shopName);
       if (status === "none") return;
+      if (!product.title.toLowerCase().includes(brand.name.toLowerCase()) && !brand.storeVerified) return;
       const { blockers } = evaluateEligibility(product);
       if (
         product.currency !== "ILS" ||
