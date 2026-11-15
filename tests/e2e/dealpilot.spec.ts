@@ -5,19 +5,19 @@ test("public discovery navigation, filters and explicit unavailable catalog", as
 }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "מגלים מוצרים חכמים",
+    "המותגים שאתם מכירים",
   );
   await expect(
     page.getByRole("link", { name: "מרכז שליטה", exact: true }),
   ).toHaveCount(0);
   await page
-    .getByRole("link", { name: "גלו מוצרים", exact: true })
+    .getByRole("link", { name: "כל המוצרים", exact: true })
     .last()
     .click();
   await expect(page).toHaveURL(/\/deals/);
-  await page.getByRole("button", { name: "רכב ואביזרים", exact: true }).click();
+  await page.getByRole("button", { name: "שיאומי", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "רכב ואביזרים", exact: true }),
+    page.getByRole("button", { name: "שיאומי", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "הכול", exact: true }).click();
   await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");

@@ -6,8 +6,8 @@ import { PublicShell } from "../public-shell";
 export default function Terms() {
   return (
     <PublicShell>
-      <main id="main" className="dp-container">
-        <article className="dp-prose">
+      <main id="main" className="og-wrap">
+        <article className="og-prose">
           <h1>תנאי שימוש</h1>
           <p>
             DealPilot הוא אתר גילוי ותוכן בגרסת פיתוח. השימוש במידע מצריך בדיקה

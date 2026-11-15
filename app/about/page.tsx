@@ -6,13 +6,14 @@ import { PublicShell } from "../public-shell";
 export default function About() {
   return (
     <PublicShell>
-      <main id="main" className="dp-container">
-        <article className="dp-prose">
-          <span className="dp-eyebrow">CURIOUS BY DESIGN</span>
-          <h1>להכניס קצת גילוי ליום־יום.</h1>
+      <main id="main" className="og-wrap">
+        <article className="og-prose">
+          <span className="og-kicker">אודות DealPilot</span>
+          <h1>המותגים שאתם מכירים, מהמקור.</h1>
           <p>
-            DealPilot מרכז מוצרים מ־AliExpress בקטגוריות שימושיות, כדי שיהיה קל
-            לחפש, להשוות ולבדוק מה מתאים לכם.
+            DealPilot מרכז מוצרים של מותגים מוכרים מהחנויות הרשמיות שלהם
+            ב־AliExpress, כדי שיהיה קל למצוא את המקורי, לראות מחיר בשקלים ולהבין
+            מה ההבדל מקנייה בישראל. DealPilot אינו קשור למותגים.
           </p>
           <h2>מה אנחנו עושים</h2>
           <p>

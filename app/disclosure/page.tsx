@@ -6,8 +6,8 @@ import { PublicShell } from "../public-shell";
 export default function Disclosure() {
   return (
     <PublicShell>
-      <main id="main" className="dp-container">
-        <article className="dp-prose">
+      <main id="main" className="og-wrap">
+        <article className="og-prose">
           <h1>גילוי נאות: קישורי שותפים</h1>
           <p>
             חלק מהקישורים באתר הם קישורי קידום שהתקבלו מ־AliExpress. אם תרכשו

@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { allowRequest } from "../dealpilot/rate-limit";
 import { unknownQuality, type QualityEvidence } from "./quality";
+import { pickOriginalPrice } from "../dealpilot/urls";
 
 const GATEWAY = "https://api-sg.aliexpress.com/sync";
 const METHOD = "aliexpress.affiliate.product.query";
@@ -11,6 +12,8 @@ export type AliProduct = {
   title: string;
   price: string | null;
   currency: string | null;
+  /* Provider's pre-discount price in the SAME currency, only when higher. */
+  originalPrice: string | null;
   image: string | null;
   productUrl: string | null;
   affiliateUrl: string | null;
@@ -173,6 +176,13 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
       const useTarget = Boolean(targetPrice && targetCurrency);
       const price = useTarget ? targetPrice : text(p.sale_price);
       const currency = useTarget ? targetCurrency : text(p.sale_price_currency);
+      const rawOriginal = useTarget
+        ? text(p.target_original_price)
+        : text(p.original_price);
+      const originalCurrency = useTarget
+        ? text(p.target_original_price_currency)
+        : text(p.original_price_currency);
+      const originalPrice = pickOriginalPrice(rawOriginal, originalCurrency, price, currency);
       const image = safeUrl(p.product_main_image_url, "image");
       const productUrl = safeUrl(p.product_detail_url, "product");
       // Do not confuse a product URL with an affiliate URL.
@@ -201,6 +211,7 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
         title,
         price,
         currency,
+        originalPrice,
         image,
         productUrl,
         affiliateUrl,
@@ -234,11 +245,14 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
 export async function queryAffiliateProducts(
   keywords: string,
   pageSize = 10,
+  pageNo = 1,
 ): Promise<AliProduct[]> {
   const key = process.env.ALIEXPRESS_APP_KEY?.trim();
   const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING", 503);
-  if (!allowRequest("aliexpress-products", 24, 3600000))
+  if (!Number.isInteger(pageNo) || pageNo < 1 || pageNo > 20 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50)
+    throw new AffiliateError("INVALID_PAGE_INPUT", 400);
+  if (!allowRequest("aliexpress-products", 120, 3600000))
     throw new AffiliateError("PROVIDER_QUOTA_GUARD", 429);
   const params: Record<string, string> = {
     app_key: key,
@@ -248,7 +262,7 @@ export async function queryAffiliateProducts(
     v: "2.0",
     timestamp: timestampChina(),
     keywords,
-    page_no: "1",
+    page_no: String(pageNo),
     page_size: String(pageSize),
     sort: "LAST_VOLUME_DESC",
     ship_to_country: "IL",

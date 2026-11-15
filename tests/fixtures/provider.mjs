@@ -50,6 +50,8 @@ globalThis.fetch = async function (input, init) {
       product_main_image_url:
         "https://ae01.alicdn.com/dealpilot-test-fixture-cable.png",
       product_detail_url: "https://www.aliexpress.com/item/1005001234567.html",
+      // Brand storefront shows only shops named as the brand's official store.
+      shop_name: "Xiaomi Official Store",
       promotion_link: "https://s.click.aliexpress.com/e/TEST_FIXTURE_ONLY",
     },
     {

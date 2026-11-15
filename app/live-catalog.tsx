@@ -3,96 +3,106 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, PackageSearch, ArrowUpLeft } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
-import { categories } from "../lib/dealpilot/categories";
+import { brands } from "../lib/dealpilot/brands";
+import { shelfBySlug } from "../lib/dealpilot/shelves";
+import { discountOf } from "./product-card";
 import { ProductCard } from "./product-card";
+
 export default function LiveCatalog({
   snapshot,
   compact = false,
   initialQuery = "",
   initialCategory = "",
+  hideTabs = false,
+  title,
+  shelf = "",
+  initialSort = "source",
 }: {
   snapshot: CatalogSnapshot;
   compact?: boolean;
   initialQuery?: string;
   initialCategory?: string;
+  hideTabs?: boolean;
+  title?: string;
+  shelf?: string;
+  initialSort?: string;
 }) {
   const [query, setQuery] = useState(initialQuery),
-    [category, setCategory] = useState(initialCategory),
-    [sort, setSort] = useState("source");
+    [brand, setBrand] = useState(initialCategory),
+    [sort, setSort] = useState(initialSort);
   const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase();
     const rows = snapshot.items.filter(
       (p) =>
-        (!category || p.categorySlug === category) &&
-        p.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+        (!brand || p.categorySlug === brand) &&
+        (!shelf || p.shelf === shelf) &&
+        (!q ||
+          p.title.toLocaleLowerCase().includes(q) ||
+          p.category.toLocaleLowerCase().includes(q) ||
+          (brands.find((b) => b.slug === p.categorySlug)?.he ?? "").includes(q)),
     );
     if (sort === "orders")
       rows.sort((a, b) => (b.orders ?? -1) - (a.orders ?? -1));
+    if (sort === "discount")
+      rows.sort((a, b) => (discountOf(b) ?? 0) - (discountOf(a) ?? 0));
+    if (sort === "price")
+      rows.sort((a, b) => Number(a.price ?? Infinity) - Number(b.price ?? Infinity));
     return compact ? rows.slice(0, 8) : rows;
-  }, [snapshot.items, query, category, sort, compact]);
+  }, [snapshot.items, query, brand, sort, compact, shelf]);
+  const current = brands.find((b) => b.slug === brand);
+  const currentShelf = shelfBySlug(shelf);
   return (
-    <section className="dp-section dp-container" id="products">
-      <div className="dp-section-head">
+    <section className="og-section og-wrap og-catalog" id="products">
+      <div className="og-section-head">
         <div>
-          <span className="dp-eyebrow">מקום לסקרנות שלכם</span>
+          <span className="og-kicker">מותגים נבחרים</span>
           <h2>
-            {initialCategory
-              ? categories.find((c) => c.slug === initialCategory)?.label
-              : compact
-                ? "אולי זה בדיוק מה שחיפשתם."
-                : "בואו למצוא משהו בשבילכם."}
+            {title ??
+              (currentShelf
+                ? currentShelf.label + (current ? " של " + current.he : " מכל המותגים")
+                : current
+                ? "כל המוצרים של " + current.he
+                : compact
+                  ? "מה קונים עכשיו מהמותגים."
+                  : "כל המוצרים, מכל המותגים.")}
           </h2>
           <p>
             {snapshot.available
-              ? "מוצרים מ־AliExpress במחירי ספק בשקלים. המחירים והזמינות עשויים להשתנות."
+              ? "מחירי ספק בשקלים מ־AliExpress. המחיר והזמינות עשויים להשתנות."
               : "הקטלוג אינו זמין כרגע. נסו שוב מאוחר יותר."}
           </p>
         </div>
         {compact && (
-          <Link className="dp-text-link" href="/deals">
-            לכל המוצרים <ArrowUpLeft size={18} />
+          <Link className="og-pill-link" href="/deals">
+            כל המוצרים <ArrowUpLeft size={16} />
           </Link>
         )}
       </div>
-      {snapshot.qualityFiltered && (
-        <div className="dp-selection-policy">
-          <strong>מוצרים שעוברים את הבדיקה שלנו</strong>
-          <p>
-            יותר מ־500 רכישות מדווחות · דירוג 4.7 ומעלה · ביקורת מישראל · משלוח
-            מאומת לישראל
-          </p>
-          <small>כל התנאים נבדקים בנפרד. מידע חסר אינו נחשב לאישור.</small>
-        </div>
-      )}
-      {!snapshot.qualityFiltered && (
-        <div className="dp-selection-policy">
-          <strong>מוצרים לגילוי · בדיקת האיכות טרם הושלמה</strong>
-          <p>מוצגים מוצרים עם יותר מ־500 רכישות מדווחות. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
-          <small>יש לבדוק דירוג, ביקורות ותנאי משלוח בעמוד המוצר ב־AliExpress לפני רכישה.</small>
-        </div>
-      )}
-      <div className="dp-filter-row">
-        <div className="dp-filter-tabs">
-          <button onClick={() => setCategory("")} aria-pressed={!category}>
-            הכול
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c.slug}
-              onClick={() => setCategory(c.slug)}
-              aria-pressed={category === c.slug}
-            >
-              {c.label}
+      <div className="og-filters">
+        {!hideTabs && (
+          <div className="og-tabs">
+            <button onClick={() => setBrand("")} aria-pressed={!brand}>
+              הכול
             </button>
-          ))}
-        </div>
-        <div className="dp-filter-inputs">
-          <label className="dp-search-field">
+            {brands.map((b) => (
+              <button
+                key={b.slug}
+                onClick={() => setBrand(b.slug)}
+                aria-pressed={brand === b.slug}
+              >
+                {b.he}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="og-filter-inputs">
+          <label className="og-field">
             <Search size={18} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               maxLength={80}
-              placeholder="חיפוש בקטלוג"
+              placeholder="סינון לפי מוצר"
               aria-label="סינון לפי שם מוצר"
             />
           </label>
@@ -103,14 +113,16 @@ export default function LiveCatalog({
           >
             <option value="source">סדר הספק</option>
             <option value="orders">הזמנות לפי הספק</option>
+            <option value="discount">הנחה לפי הספק</option>
+            <option value="price">מחיר: מהנמוך</option>
           </select>
         </div>
       </div>
-      <p className="dp-catalog-status" role="status">
+      <p className="og-status-line" role="status">
         {snapshot.available
           ? filtered.length + " מוצרים בתצוגה"
           : "ממתינים לחיבור הקטלוג"}
-        {snapshot.partial ? " · חלק מהקטגוריות אינן זמינות" : ""}
+        {snapshot.partial ? " · חלק מהמותגים אינם זמינים כרגע" : ""}
         {snapshot.fetchedAt
           ? " · נתוני ספק מ־" +
             new Intl.DateTimeFormat("he-IL", {
@@ -121,44 +133,36 @@ export default function LiveCatalog({
           : ""}
       </p>
       {filtered.length ? (
-        <div className="dp-product-grid">
+        <div className="og-grid">
           {filtered.map((item) => (
             <ProductCard item={item} key={item.id} />
           ))}
         </div>
       ) : (
-        <div className="dp-empty">
+        <div className="og-empty">
           <span>
-            <PackageSearch size={34} />
+            <PackageSearch size={32} />
           </span>
           <h3>
-            {snapshot.available &&
-            snapshot.qualityFiltered &&
-            snapshot.items.length === 0
-              ? "המוצרים הבאים שלנו עדיין בבדיקה"
-              : snapshot.available
-                ? "לא נמצאו מוצרים בסינון הזה"
-                : "קצת סבלנות, הגילוי בדרך."}
+            {snapshot.available
+              ? "לא נמצאו מוצרים בסינון הזה"
+              : "קצת סבלנות, הגילוי בדרך."}
           </h3>
           <p>
-            {snapshot.available &&
-            snapshot.qualityFiltered &&
-            snapshot.items.length === 0
-              ? "נציג כאן רק מוצרים שעברו את כל התנאים: רכישות, דירוג, ביקורת ישראלית ומשלוח לישראל. אפשר לחזור בהמשך."
-              : snapshot.available
-                ? "נסו שם אחר או בחרו קטגוריה נוספת."
-                : "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."}
+            {snapshot.available
+              ? "נסו מילה אחרת או בחרו מותג אחר."
+              : "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לקרוא על אחריות ויבוא אישי."}
           </p>
           {!snapshot.available && (
-            <Link className="dp-text-link" href="/guides">
-              איך קונים חכם <ArrowUpLeft size={17} />
+            <Link className="og-link" href="/warranty">
+              אחריות ויבוא אישי <ArrowUpLeft size={17} />
             </Link>
           )}
         </div>
       )}
-      <p className="dp-disclosure">
-        קישורי שותפים עשויים לזכות אותנו בעמלה. איננו מוכרים את המוצרים; המחיר
-        הסופי, תנאי המשלוח והזמינות נקבעים ב־AliExpress.{" "}
+      <p className="og-fine">
+        קישורי שותפים עשויים לזכות אותנו בעמלה. איננו מוכרים את המוצרים ואיננו
+        קשורים למותגים; המחיר הסופי, תנאי המשלוח והאחריות נקבעים ב־AliExpress.{" "}
         <Link href="/disclosure">לגילוי המלא</Link>
       </p>
     </section>

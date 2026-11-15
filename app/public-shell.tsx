@@ -1,142 +1,191 @@
 import Link from "next/link";
-import {
-  ArrowUpLeft,
-  Compass,
-  Search,
-  Menu,
-  ShieldCheck,
-  House,
-  Headphones,
-  Car,
-  Boxes,
-  ShoppingBag,
-  Brush,
-  Gamepad2,
-  Dumbbell,
-} from "lucide-react";
-import { categories } from "../lib/dealpilot/categories";
-export function Brand() {
+import { Search, Menu, ChevronDown, Flame, House, LayoutGrid, Tags, Heart } from "lucide-react";
+import { brands } from "../lib/dealpilot/brands";
+import { shelves } from "../lib/dealpilot/shelves";
+import { FavCount } from "./favorites";
+import { BrandMark } from "./brand-mark";
+
+export function Wordmark({ light = true }: { light?: boolean }) {
   return (
-    <Link className="dp-brand" href="/" aria-label="DealPilot בית">
-      <span className="dp-brand-icon">
-        <Compass size={25} />
-      </span>
+    <Link href="/" className={"og-logo" + (light ? " is-light" : "")} aria-label="DealPilot בית">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <path d="M3 16.5 31 4l-9.5 27-5.2-10.6z" fill="#ff7a1a" />
+        <path d="M16.3 20.4 31 4 12.4 17.4z" fill="#ffc98a" />
+      </svg>
       <span dir="ltr">
-        deal<strong>pilot</strong>
-        <small>פשוט לגלות טוב יותר</small>
+        Deal<b>Pilot</b>
       </span>
     </Link>
   );
 }
+
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="dp-public">
-      <a className="dp-skip" href="#main">
+    <div className="og">
+      <a className="og-skip" href="#main">
         דילוג לתוכן
       </a>
-      <div className="dp-topline">
-        מגלים ב־DealPilot. קונים ב־AliExpress.{" "}
-        <Link href="/disclosure">
-          איך קישורי השותפים שלנו עובדים <ArrowUpLeft size={12} />
-        </Link>
-      </div>
-      <header className="dp-header">
-        <div className="dp-container dp-header-row">
-          <Brand />
-          <form action="/search" className="dp-header-search" role="search">
-            <Search size={19} />
+      <header className="og-header">
+        <div className="og-wrap og-header-row">
+          <Wordmark />
+          <nav className="og-nav" aria-label="ניווט ראשי">
+            <Link href="/">דף הבית</Link>
+            <Link href="/brands">מותגים</Link>
+            <details className="og-mega">
+              <summary>
+                קטגוריות <ChevronDown size={15} />
+              </summary>
+              <div className="og-mega-panel">
+                <div>
+                  <strong>קטגוריות</strong>
+                  {shelves.map((s) => (
+                    <Link key={s.slug} href={"/categories/" + s.slug}>
+                      {s.label}
+                    </Link>
+                  ))}
+                </div>
+                <div>
+                  <strong>מותגים</strong>
+                  {brands.map((b) => (
+                    <Link key={b.slug} href={"/brands/" + b.slug} dir="ltr">
+                      {b.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </details>
+            <Link href="/deals?sort=discount">מבצעים חמים</Link>
+            <Link href="/warranty">אחריות ויבוא</Link>
+          </nav>
+          <form action="/search" className="og-search" role="search">
             <input
               name="q"
               maxLength={80}
-              placeholder="מה יעשה לכם את היום?"
+              placeholder="חיפוש מותג, מוצר או קטגוריה…"
               aria-label="חיפוש מוצרים"
             />
             <button type="submit" aria-label="חיפוש">
-              <ArrowUpLeft size={19} />
+              <Search size={18} />
             </button>
           </form>
-          <nav className="dp-desktop-nav" aria-label="ניווט ראשי">
-            <Link href="/deals">גלו מוצרים</Link>
-            <Link href="/categories">קטגוריות</Link>
-            <Link href="/guides">מדריכים</Link>
-          </nav>
-          <details className="dp-mobile-menu">
+          <div className="og-header-actions">
+            <FavCount />
+            <Link className="og-btn og-btn-go og-btn-sm" href="/deals?sort=discount">
+              <Flame size={17} /> למבצעים
+            </Link>
+          </div>
+          <details className="dp-mobile-menu og-menu">
             <summary aria-label="פתיחת תפריט">
               <Menu />
             </summary>
             <nav aria-label="ניווט נייד">
-              <Link href="/deals">גלו מוצרים</Link>
-              <Link href="/categories">כל הקטגוריות</Link>
-              <Link href="/guides">מדריכים</Link>
+              <Link href="/brands">מותגים</Link>
+              <Link href="/deals">כל המוצרים</Link>
+              <Link href="/categories">קטגוריות</Link>
+              <Link href="/deals?sort=discount">מבצעים חמים</Link>
+              <Link href="/warranty">אחריות ויבוא</Link>
+              <Link href="/saved">המועדפים שלי</Link>
             </nav>
           </details>
         </div>
       </header>
       {children}
-      <footer className="dp-footer">
-        <div className="dp-container">
-          <div className="dp-footer-top">
-            <div>
-              <Brand />
+      <footer className="og-footer">
+        <div className="og-wrap">
+          <div className="og-footer-top">
+            <div className="og-footer-brand">
+              <Wordmark />
               <p>
-                מוצרים מעניינים. מידע ברור.
-                <br />
-                עוד דרך לגלות משהו שימושי.
+                המותגים שאתם מכירים, ממוכרים שנמצאו ב־AliExpress. מקוריות ורשמיות דורשות אימות. אתר גילוי
+                עצמאי בעברית.
               </p>
             </div>
             <div>
-              <strong>לגלות</strong>
-              <Link href="/deals">כל המוצרים</Link>
-              <Link href="/categories">קטגוריות</Link>
-              <Link href="/guides">קונים חכם</Link>
+              <strong>מותגים</strong>
+              {brands.slice(0, 6).map((b) => (
+                <Link key={b.slug} href={"/brands/" + b.slug}>
+                  {b.he}
+                </Link>
+              ))}
+            </div>
+            <div>
+              <strong>קטגוריות</strong>
+              {shelves.slice(0, 6).map((s) => (
+                <Link key={s.slug} href={"/categories/" + s.slug}>
+                  {s.label}
+                </Link>
+              ))}
             </div>
             <div>
               <strong>טוב לדעת</strong>
-              <Link href="/about">אודות DealPilot</Link>
+              <Link href="/warranty">אחריות ויבוא אישי</Link>
+              <Link href="/guides">מדריך קנייה</Link>
+              <Link href="/about">אודות</Link>
               <Link href="/disclosure">גילוי שותפים</Link>
               <Link href="/privacy">פרטיות</Link>
               <Link href="/terms">תנאי שימוש</Link>
             </div>
-            <div className="dp-footer-note">
-              <ShieldCheck size={25} />
-              <strong>הבחירה נשארת שלכם.</strong>
-              <p>
-                ייתכן שנקבל עמלה מקישורים באתר. המחיר, המשלוח והתשלום נקבעים
-                ב־AliExpress.
-              </p>
-            </div>
           </div>
-          <div className="dp-footer-bottom">
+          <p className="og-footer-note">
+            ייתכן שנקבל עמלה מקישורים באתר, בלי עלות נוספת לכם. DealPilot אינו קשור
+            למותגים או ל־AliExpress ואינו מוכר את המוצרים. שמות המותגים שייכים לבעליהם.
+          </p>
+          <div className="og-footer-bottom">
             <span>© {new Date().getFullYear()} DealPilot</span>
-            <span>נבנה בשביל הסקרנות שלכם.</span>
+            <span>המחיר, המשלוח והאחריות נקבעים ב־AliExpress ואצל המוכר.</span>
           </div>
         </div>
       </footer>
+      <nav className="og-tabbar" aria-label="ניווט מהיר">
+        <Link href="/">
+          <House size={20} />
+          בית
+        </Link>
+        <Link href="/brands">
+          <Tags size={20} />
+          מותגים
+        </Link>
+        <Link href="/categories">
+          <LayoutGrid size={20} />
+          קטגוריות
+        </Link>
+        <Link href="/deals?sort=discount">
+          <Flame size={20} />
+          מבצעים
+        </Link>
+        <Link href="/saved">
+          <Heart size={20} />
+          מועדפים
+        </Link>
+      </nav>
     </div>
   );
 }
-export function CategoryLinks() {
-  const icons = { home: House, tech: Headphones, car: Car, organization: Boxes,
-    fashion: ShoppingBag, beauty: Brush, games: Gamepad2, sport: Dumbbell };
+
+export function BrandDirectory({ counts }: { counts?: Record<string, number> }) {
   return (
-    <div className="dp-category-grid">
-      {categories.map((c, i) => {
-        const Icon = icons[c.slug];
-        return (
-          <Link
-            className={"dp-category-tile tone-" + (i % 4)}
-            href={"/categories/" + c.slug}
-            key={c.slug}
-          >
-            <span className="dp-category-icon">
-              <Icon size={32} strokeWidth={1.6} />
+    <ul className="og-brandwall og-brandwall-lg">
+      {brands.map((b) => (
+        <li key={b.slug}>
+          <Link href={"/brands/" + b.slug} style={{ "--accent": b.accent } as React.CSSProperties}>
+            <BrandMark slug={b.slug} className="og-bw-name" />
+            <span className="og-bw-he">{b.he}</span>
+            <span className="og-bw-known">{b.knownFor}</span>
+            <span className="og-bw-meta">
+              {counts && counts[b.slug] ? counts[b.slug] + " מוצרים" : "לחנות המותג"}
             </span>
-            <strong>{c.label}</strong>
-            <p>{c.description}</p>
-            <ArrowUpLeft size={22} />
           </Link>
-        );
-      })}
-    </div>
+        </li>
+      ))}
+    </ul>
   );
+}
+
+export function CategoryLinks() {
+  return <BrandDirectory />;
+}
+
+/* Used by the admin login page. */
+export function Brand() {
+  return <Wordmark light={false} />;
 }
