@@ -76,7 +76,7 @@ export default async function Product({
       rel="sponsored noopener noreferrer"
       target="_blank"
     >
-      לחנות הרשמית ב־AliExpress <ExternalLink size={18} />
+      לצפייה במוצר ב־AliExpress <ExternalLink size={18} />
     </a>
   ) : p.productUrl ? (
     <a
@@ -163,6 +163,7 @@ export default async function Product({
               <h2>פרטי מוצר וקנייה</h2>
               <ul>
                 {p.orders !== null && <li>{p.orders.toLocaleString("he-IL")} הזמנות שדווחו על ידי AliExpress</li>}
+                {p.positiveFeedbackPercent !== null && <li>{p.positiveFeedbackPercent}% משוב חיובי שדווח על ידי הספק</li>}}
                 {p.shopName && <li>מוכר: <span dir="ltr">{p.shopName}</span></li>}
                 <li>המחיר הסופי ותנאי המשלוח מוצגים בקופה ב־AliExpress</li>
               </ul>
