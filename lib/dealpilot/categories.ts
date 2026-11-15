@@ -1,66 +1,24 @@
+/** Curated brand-first discovery. Search terms narrow candidates only;
+ * publicBrandSnapshot must independently validate the returned item. */
 export const categories = [
   {
-    slug: "fashion",
-    label: "אופנה ואביזרים",
-    term: "fashion accessories",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["fashion accessories", "women handbag", "sunglasses", "men wallet", "jewelry set"],
-    description: "תיקים, צעיפים ואביזרים קטנים להשלמת ההופעה.",
+    slug: "tech", label: "טכנולוגיה וטעינה", term: "Baseus",
+    terms: ["Baseus", "UGREEN", "Anker charger", "Xiaomi", "Redmi", "POCO", "QCY", "Soundcore", "Edifier", "Ulanzi", "Creality", "Anycubic"],
+    description: "מותגים מוכרים באביזרי טעינה, אודיו, סלולר וטכנולוגיה.",
   },
   {
-    slug: "tech",
-    label: "גאדג׳טים וטכנולוגיה",
-    term: "laptop accessories",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["laptop accessories", "phone holder", "usb c hub", "wireless earbuds", "phone case"],
-    description: "אביזרים שימושיים למחשב, לטלפון ולשולחן העבודה.",
+    slug: "home", label: "מותגים לבית", term: "Dreame",
+    terms: ["Dreame", "Roborock", "Yeelight", "Reolink", "Xiaomi home"],
+    description: "שואבים, תאורה ומוצרי בית חכם ממותגים מזוהים.",
   },
   {
-    slug: "home",
-    label: "בית ומטבח",
-    term: "kitchen tools",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["kitchen tools", "kitchen gadgets", "bathroom accessories", "led strip light", "home decor"],
-    description: "פריטים שימושיים למרחב שבו הכול מתחיל.",
+    slug: "car", label: "מותגים לרכב", term: "70mai",
+    terms: ["70mai", "VIOFO", "DDPAI", "Baseus car"],
+    description: "מצלמות דרך ואביזרי רכב ממותגים מוכרים.",
   },
   {
-    slug: "beauty",
-    label: "אביזרי טיפוח",
-    term: "makeup brushes",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["makeup brushes", "nail art", "hair accessories", "makeup organizer", "skin care tools"],
-    description: "מברשות, תיקי איפור ואביזרים לשגרת הטיפוח.",
-  },
-  {
-    slug: "games",
-    label: "משחקים ופנאי",
-    term: "educational puzzle",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["educational puzzle", "building blocks", "board game", "fidget toy", "rc car"],
-    description: "רעיונות לערב משחקים ולזמן פנוי ביחד.",
-  },
-  {
-    slug: "sport",
-    label: "ספורט וטיולים",
-    term: "fitness accessories",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["fitness accessories", "yoga mat", "cycling accessories", "camping gear", "resistance bands"],
-    description: "אביזרים לאימון, להליכה וליציאה מהבית.",
-  },
-  {
-    slug: "car",
-    label: "רכב ואביזרים",
-    term: "car accessories",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["car accessories", "car phone holder", "car organizer", "car cleaning", "car interior accessories"],
-    description: "מגלים פתרונות לדרך ולרכב.",
-  },
-  {
-    slug: "organization",
-    label: "סדר וארגון",
-    term: "home organizer",
-    // Catalog search phrases, first one is the original discovery term.
-    terms: ["home organizer", "storage box", "drawer organizer", "closet organizer", "cable organizer"],
-    description: "מקום לכל דבר, וקצת יותר מקום בבית.",
+    slug: "sport", label: "כושר וטיולים", term: "Amazfit",
+    terms: ["Amazfit", "Naturehike", "ROCKBROS"],
+    description: "ציוד כושר וטיולים ממותגים מוכרים.",
   },
 ] as const;
