@@ -306,7 +306,7 @@ export async function getCurrentAffiliatePrice(productId: string): Promise<{
   currency: "ILS";
   originalPrice: string | null;
 } | null> {
-  if (!/^\\d{4,24}$/.test(productId)) return null;
+  if (!/^\d{4,24}$/.test(productId)) return null;
   const key = process.env.ALIEXPRESS_APP_KEY?.trim();
   const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   if (!key || !secret || !allowRequest("aliexpress-price-detail", 120, 3600000)) return null;
