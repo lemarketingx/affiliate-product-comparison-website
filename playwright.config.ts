@@ -70,5 +70,24 @@ export default defineConfig({
         DEALPILOT_CACHE_NAMESPACE: `qa-missions-${Date.now()}`,
       },
     },
+    {
+      command:
+        "node --import ./tests/fixtures/provider.mjs node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3104",
+      url: "http://127.0.0.1:3104/api/health",
+      reuseExistingServer: false,
+      env: {
+        NEXTAUTH_SECRET: process.env.DEALPILOT_QA_SECRET,
+        NEXTAUTH_URL: "http://127.0.0.1:3104",
+        GITHUB_ID: "local-test-client",
+        GITHUB_SECRET: "local-test-secret",
+        DEALPILOT_ADMIN_GITHUB_IDS: "123",
+        ALIEXPRESS_APP_KEY: "fixture-only-never-real",
+        ALIEXPRESS_APP_SECRET: "fixture-only-never-real",
+        ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
+        DEALPILOT_FIXTURE_SET: "catalog",
+        DEALPILOT_CATALOG_REQUEST_BUDGET: "200",
+        DEALPILOT_CACHE_NAMESPACE: `qa-catalog-${Date.now()}`,
+      },
+    },
   ],
 });

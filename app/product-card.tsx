@@ -7,7 +7,7 @@ import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { Barcode, flightCode } from "./flight-bits";
 
 /* A product is a boarding pass: image, ticket body, perforation, price stub. */
-export function ProductCard({ item }: { item: CatalogItem }) {
+export function ProductCard({ item, eager = false }: { item: CatalogItem; eager?: boolean }) {
   const verified = evaluateEligibility(item).eligible;
   return (
     <article className="dp-product fp-pass">
@@ -17,7 +17,7 @@ export function ProductCard({ item }: { item: CatalogItem }) {
         tabIndex={-1}
         aria-hidden="true"
       >
-        <ProductImage src={item.image} alt="" />
+        <ProductImage src={item.image} alt="" thumb lazy={!eager} />
         <span className="fp-pass-class">{item.category}</span>
       </Link>
       <div className="fp-pass-body">

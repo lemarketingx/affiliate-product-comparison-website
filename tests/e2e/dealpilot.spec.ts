@@ -15,26 +15,29 @@ test("public discovery navigation, filters and explicit unavailable catalog", as
     .last()
     .click();
   await expect(page).toHaveURL(/\/deals/);
-  await page.getByRole("button", { name: "רכב ואביזרים", exact: true }).click();
+  await page.getByRole("link", { name: "רכב ואביזרים", exact: true }).click();
+  await expect(page).toHaveURL(/\/deals\?cat=car/);
   await expect(
-    page.getByRole("button", { name: "רכב ואביזרים", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "הכול", exact: true }).click();
+    page.getByRole("link", { name: "רכב ואביזרים", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.getByRole("link", { name: "הכול", exact: true }).click();
+  await expect(page).toHaveURL(/\/deals$/);
   await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");
+  await expect(page).toHaveURL(/sort=orders/);
   await expect(page.getByRole("combobox", { name: "סדר מוצרים" })).toHaveValue("orders");
-  await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("source");
   await page
     .getByRole("textbox", { name: "סינון לפי שם מוצר" })
     .fill("unmatched");
+  await page.getByRole("button", { name: "סינון", exact: true }).click();
   await expect(page.getByText("קצת סבלנות, הגילוי בדרך.")).toBeVisible();
   await page.getByRole("textbox", { name: "חיפוש מוצרים" }).fill("organizer");
-  await page.getByRole("button", { name: "חיפוש", exact: true }).click();
+  await page.getByRole("banner").getByRole("button", { name: "חיפוש", exact: true }).click();
   await expect(page).toHaveURL(/search\?q=organizer/);
   await expect(
     page.getByRole("textbox", { name: "סינון לפי שם מוצר" }),
   ).toHaveValue("organizer");
   await page.getByRole("textbox", { name: "חיפוש מוצרים" }).fill("kitchen");
-  await page.getByRole("button", { name: "חיפוש", exact: true }).click();
+  await page.getByRole("banner").getByRole("button", { name: "חיפוש", exact: true }).click();
   await expect(page).toHaveURL(/search\?q=kitchen/);
   await expect(page.getByRole("textbox", { name: "סינון לפי שם מוצר" })).toHaveValue("kitchen");
 });

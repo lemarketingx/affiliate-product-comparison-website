@@ -888,7 +888,13 @@
   gap: 8px;
   min-width: 0;
 }
-.fp-tabs button {
+.fp-tabs a {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.fp-tabs button,
+.fp-tabs a {
   min-height: 40px;
   padding: 0 16px;
   border: 1.5px solid var(--fp-line);
@@ -899,10 +905,12 @@
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
-.fp-tabs button:hover {
+.fp-tabs button:hover,
+.fp-tabs a:hover {
   border-color: var(--fp-ink);
 }
-.fp-tabs button[aria-pressed="true"] {
+.fp-tabs button[aria-pressed="true"],
+.fp-tabs a[aria-current="page"] {
   background: var(--fp-ink);
   border-color: var(--fp-ink);
   color: var(--fp-amber);
@@ -1733,7 +1741,8 @@
     padding-bottom: 6px;
     scrollbar-width: none;
   }
-  .fp-tabs button {
+  .fp-tabs button,
+  .fp-tabs a {
     flex-shrink: 0;
   }
   .fp-ticket {
@@ -2316,3 +2325,66 @@
   .fp-manifest, .fp-calc, .fp-lexicon, .fp-brief-card, .fp-pbrief { padding-inline: 14px; }
   .fp-cost-table td { white-space: normal; }
 }
+
+/* ---------- catalog pagination & honesty notes ---------- */
+.fp-catalog-title {
+  font-family: var(--fp-display);
+  font-weight: 700;
+  font-size: clamp(40px, 5.4vw, 76px);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+.fp-filters form, form.fp-filters { margin: 0; }
+.fp-filter-inputs .fp-btn { min-height: 42px; box-shadow: 0 3px 0 var(--fp-ink); }
+.fp-status-line strong { color: var(--fp-ink); font-size: 14px; }
+.fp-shortfall { display: grid; gap: 4px; margin: -8px 0 24px; padding: 14px 16px; border-radius: var(--fp-r-md); }
+.fp-shortfall p { margin: 0; font-size: 14px; line-height: 1.6; }
+.fp-shortfall a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }
+.fp-notice.is-wait { background: var(--fp-wait-bg); color: var(--fp-ink); border: 1px solid var(--fp-wait); }
+.fp-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 36px 0 18px;
+}
+.fp-pager ol { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; justify-content: center; }
+.fp-pager li { display: flex; align-items: center; color: var(--fp-muted); }
+.fp-pager a, .fp-pager-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid var(--fp-line);
+  border-radius: 999px;
+  background: var(--fp-card);
+  font-family: var(--fp-mono);
+  font-weight: 700;
+  font-size: 14px;
+}
+.fp-pager a:hover { border-color: var(--fp-ink); }
+.fp-pager a[aria-current="page"] { background: var(--fp-ink); border-color: var(--fp-ink); color: var(--fp-amber); }
+.fp-pager-step { font-family: var(--fp-sans); }
+.fp-pager-step.is-off { opacity: 0.4; }
+@media (max-width: 480px) {
+  .fp-pager { gap: 6px; }
+  .fp-pager a, .fp-pager-step { min-width: 40px; min-height: 40px; padding: 0 10px; }
+  .fp-filter-inputs .fp-field { flex: 1 1 100%; }
+  .fp-filter-inputs select { flex: 1 1 auto; min-width: 0; max-width: 100%; }
+}
+/* catalog status report */
+.fp-report { display: grid; gap: 18px; }
+.fp-report-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fp-report-kpis div { padding: 16px; border: 1.5px solid var(--fp-ink); border-radius: var(--fp-r-md); background: var(--fp-card); }
+.fp-report-kpis dt { font-size: 13px; color: var(--fp-muted); }
+.fp-report-kpis dd { margin: 4px 0 0; font-family: var(--fp-mono); font-size: 28px; font-weight: 700; }
+.fp-report-kpis .is-pub dd { color: var(--fp-go); }
+.fp-report table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--fp-card); border-radius: var(--fp-r-md); }
+.fp-report th, .fp-report td { padding: 10px 12px; border-bottom: 1px solid var(--fp-line); text-align: start; }
+.fp-report td.num { font-family: var(--fp-mono); text-align: end; white-space: nowrap; }
+.fp-report-scroll { overflow-x: auto; }
+@media (min-width: 760px) { .fp-report-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

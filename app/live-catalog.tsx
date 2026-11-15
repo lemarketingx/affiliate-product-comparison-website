@@ -11,11 +11,14 @@ export default function LiveCatalog({
   compact = false,
   initialQuery = "",
   initialCategory = "",
+  total,
 }: {
   snapshot: CatalogSnapshot;
   compact?: boolean;
   initialQuery?: string;
   initialCategory?: string;
+  /** Size of the whole published catalog when only a slice is passed in. */
+  total?: number;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery),
@@ -88,7 +91,7 @@ export default function LiveCatalog({
           <RadioTower size={18} aria-hidden="true" />
           <div>
           <strong>מוצרים לגילוי · בדיקת האיכות טרם הושלמה</strong>
-          <p>מוצגים מוצרים עם יותר מ־500 רכישות מדווחות. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
+          <p>מוצגים מוצרים עם יותר מ־5,000 מכירות מדווחות וקישור שותפים תקין. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
           <small>יש לבדוק דירוג, ביקורות ותנאי משלוח בעמוד המוצר ב־AliExpress לפני רכישה.</small>
           </div>
         </div>
@@ -131,7 +134,9 @@ export default function LiveCatalog({
       </div>
       <p className="fp-status-line" role="status">
         {snapshot.available
-          ? filtered.length + " מוצרים בתצוגה"
+          ? total !== undefined
+            ? total.toLocaleString("he-IL") + " מוצרים בקטלוג · " + filtered.length + " בתצוגה כאן"
+            : filtered.length + " מוצרים בתצוגה"
           : "ממתינים לחיבור הקטלוג"}
         {snapshot.partial ? " · חלק מהקטגוריות אינן זמינות" : ""}
         {snapshot.fetchedAt

@@ -1,7 +1,7 @@
 // Explicit Node preload for the isolated populated-flow test server only.
 // This module is never imported by application code and provides no HTTP bypass or route.
 if (
-  !["http://127.0.0.1:3102", "http://127.0.0.1:3103"].includes(process.env.NEXTAUTH_URL ?? "") ||
+  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104"].includes(process.env.NEXTAUTH_URL ?? "") ||
   process.env.ALIEXPRESS_APP_KEY !== "fixture-only-never-real" ||
   process.env.ALIEXPRESS_APP_SECRET !== "fixture-only-never-real"
 ) {
@@ -40,7 +40,7 @@ globalThis.fetch = async function (input, init) {
       product_title: "TEST FIXTURE — מארגן כבלים לבדיקה בלבד",
       target_sale_price: "12.50",
       target_sale_price_currency: "ILS",
-      lastest_volume: 1200,
+      lastest_volume: 12000,
       commission_rate: "5%",
       // Deliberately unsupported fields must not grant publication eligibility.
       evaluate_rate: "98.0%",
@@ -71,6 +71,49 @@ globalThis.fetch = async function (input, init) {
     product_detail_url: "https://www.aliexpress.com/item/1005001111111.html",
     promotion_link: "https://s.click.aliexpress.com/e/TEST_USD_FIXTURE_ONLY",
   });
+  const pageNo = Number(params.get("page_no"));
+  const pageSize = Number(params.get("page_size"));
+  if (!Number.isInteger(pageNo) || pageNo < 1 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50)
+    throw new Error("Invalid paging parameters");
+  // Large deterministic catalog (3104) for pagination, dedupe and rejection checks.
+  // Every product is labelled TEST FIXTURE; none of it is represented as live data.
+  if (process.env.DEALPILOT_FIXTURE_SET === "catalog") {
+    const keywords = params.get("keywords") ?? "";
+    let h = 7;
+    for (const ch of keywords) h = (h * 31 + ch.charCodeAt(0)) % 1000003;
+    const rows = pageNo >= 3 ? 20 : pageSize; // third page is short: term exhausted
+    const product = [];
+    for (let row = 0; row < rows; row++) {
+      // Rows 0–4 come from a shared pool, so different terms return duplicates.
+      const id = row < 5 ? String(1005090000000 + row) : String(1005100000000 + h * 1000 + pageNo * 100 + row);
+      const kind = Number(id.slice(-1));
+      const base = {
+        product_id: id,
+        product_title: `TEST FIXTURE — מוצר קטלוג ${row} עמוד ${pageNo} (${keywords})`,
+        target_sale_price: (9.9 + (Number(id.slice(-3)) % 200)).toFixed(2),
+        target_sale_price_currency: "ILS",
+        lastest_volume: kind === 0 ? 3000 : 5001 + (Number(id.slice(-4)) * 7) % 40000,
+        commission_rate: "6%",
+        product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-${id}.jpg`,
+        product_detail_url: `https://www.aliexpress.com/item/${id}.html`,
+        promotion_link: kind === 1 ? undefined : `https://s.click.aliexpress.com/e/TEST_CATALOG_${id}`,
+      };
+      if (kind === 2) {
+        base.target_sale_price = undefined;
+        base.sale_price = "3.50";
+        base.sale_price_currency = "USD";
+      }
+      product.push(base);
+    }
+    return Response.json({
+      aliexpress_affiliate_product_query_response: {
+        resp_result: {
+          resp_code: 200,
+          result: { current_page_no: pageNo, current_record_count: rows, total_record_count: 2 * pageSize + 20, products: { product } },
+        },
+      },
+    });
+  }
   // Separate isolated server (3103) for pre-flight briefing checks: typed products only.
   if (process.env.DEALPILOT_FIXTURE_SET === "missions") {
     const mission = (id, title, price) => ({

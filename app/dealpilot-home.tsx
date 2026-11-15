@@ -207,7 +207,7 @@ export default function DealPilotHome({
           <CategoryLinks />
         </section>
 
-        <LiveCatalog snapshot={snapshot} compact />
+        <LiveCatalog snapshot={{ ...snapshot, report: undefined, items: snapshot.items.slice(0, 8) }} total={snapshot.items.length} compact />
 
         <section className="fp-wrap fp-section">
           <div className="fp-guide-pass">
