@@ -8,7 +8,10 @@ export const dynamic="force-dynamic";
 export async function GET(request:Request, context:{params:Promise<{id:string}>}) {
   const {id}=await context.params;
   if (!/^\d{4,24}$/.test(id)) return new Response("Not found",{status:404,headers:{"Cache-Control":"no-store"}});
-  const catalog=await getCatalog();
+  // Redirects must not treat a cold catalog-cache miss as a missing product.
+  // Browsing waits briefly, but affiliate clicks can tolerate a longer bounded wait.
+  const catalog=await getCatalog({waitMs:15000});
+  if (catalog.warming) return new Response("Catalog warming, please retry",{status:503,headers:{"Cache-Control":"no-store","Retry-After":"5"}});
   const product=catalog.items.find(item=>item.id===id);
   // Only link returned by the affiliate API is eligible. Never accept destination URLs from the visitor.
   if (!product?.affiliateUrl) return new Response("Affiliate link unavailable",{status:404,headers:{"Cache-Control":"no-store"}});
