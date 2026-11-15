@@ -6,11 +6,11 @@ import { PublicShell, CategoryLinks } from "../public-shell";
 export default function Categories() {
   return (
     <PublicShell>
-      <main id="main" className="dp-container dp-section">
-        <span className="dp-eyebrow">A PLACE FOR EVERYTHING</span>
-        <h1 className="dp-page-title">מה מסקרן אתכם היום?</h1>
-        <p className="dp-muted" style={{ marginBottom: 30 }}>
-          ארבע דרכים לגלות מוצרים שמתאימים ליום־יום שלכם.
+      <main id="main" className="fp-wrap fp-section">
+        <span className="fp-kicker">שמונה שערים · יעד אחד</span>
+        <h1 className="fp-page-title">מאיזה שער ממריאים היום?</h1>
+        <p className="fp-lead">
+          כל קטגוריה היא שער. בחרו אחד, ותגיעו ללוח המוצרים שלו.
         </p>
         <CategoryLinks />
       </main>

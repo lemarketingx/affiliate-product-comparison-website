@@ -1,7 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, PackageSearch, ArrowUpLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, PackageSearch, ArrowUpLeft, Shuffle, RadioTower } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 import { categories } from "../lib/dealpilot/categories";
 import { ProductCard } from "./product-card";
@@ -16,6 +17,7 @@ export default function LiveCatalog({
   initialQuery?: string;
   initialCategory?: string;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery),
     [category, setCategory] = useState(initialCategory),
     [sort, setSort] = useState("source");
@@ -30,10 +32,10 @@ export default function LiveCatalog({
     return compact ? rows.slice(0, 8) : rows;
   }, [snapshot.items, query, category, sort, compact]);
   return (
-    <section className="dp-section dp-container" id="products">
-      <div className="dp-section-head">
+    <section className="fp-section fp-wrap fp-catalog" id="products">
+      <div className="fp-section-head">
         <div>
-          <span className="dp-eyebrow">מקום לסקרנות שלכם</span>
+          <span className="fp-kicker">לוח הטיסות המלא</span>
           <h2>
             {initialCategory
               ? categories.find((c) => c.slug === initialCategory)?.label
@@ -47,31 +49,52 @@ export default function LiveCatalog({
               : "הקטלוג אינו זמין כרגע. נסו שוב מאוחר יותר."}
           </p>
         </div>
-        {compact && (
-          <Link className="dp-text-link" href="/deals">
-            לכל המוצרים <ArrowUpLeft size={18} />
-          </Link>
-        )}
+        <div className="fp-head-actions">
+          {snapshot.items.length > 1 && (
+            <button
+              type="button"
+              className="fp-btn fp-btn-ghost fp-btn-sm"
+              onClick={() => {
+                const pick =
+                  snapshot.items[Math.floor(Math.random() * snapshot.items.length)];
+                router.push("/products/" + pick.id);
+              }}
+            >
+              <Shuffle size={16} /> טיסה אקראית
+            </button>
+          )}
+          {compact && (
+            <Link className="fp-link" href="/deals">
+              לכל המוצרים <ArrowUpLeft size={17} />
+            </Link>
+          )}
+        </div>
       </div>
       {snapshot.qualityFiltered && (
-        <div className="dp-selection-policy">
+        <div className="dp-selection-policy fp-notice">
+          <RadioTower size={18} aria-hidden="true" />
+          <div>
           <strong>מוצרים שעוברים את הבדיקה שלנו</strong>
           <p>
             יותר מ־500 רכישות מדווחות · דירוג 4.7 ומעלה · ביקורת מישראל · משלוח
             מאומת לישראל
           </p>
           <small>כל התנאים נבדקים בנפרד. מידע חסר אינו נחשב לאישור.</small>
+          </div>
         </div>
       )}
       {!snapshot.qualityFiltered && (
-        <div className="dp-selection-policy">
+        <div className="dp-selection-policy fp-notice">
+          <RadioTower size={18} aria-hidden="true" />
+          <div>
           <strong>מוצרים לגילוי · בדיקת האיכות טרם הושלמה</strong>
           <p>מוצגים מוצרים עם יותר מ־500 רכישות מדווחות. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
           <small>יש לבדוק דירוג, ביקורות ותנאי משלוח בעמוד המוצר ב־AliExpress לפני רכישה.</small>
+          </div>
         </div>
       )}
-      <div className="dp-filter-row">
-        <div className="dp-filter-tabs">
+      <div className="fp-filters">
+        <div className="fp-tabs">
           <button onClick={() => setCategory("")} aria-pressed={!category}>
             הכול
           </button>
@@ -85,8 +108,8 @@ export default function LiveCatalog({
             </button>
           ))}
         </div>
-        <div className="dp-filter-inputs">
-          <label className="dp-search-field">
+        <div className="fp-filter-inputs">
+          <label className="fp-field">
             <Search size={18} />
             <input
               value={query}
@@ -106,7 +129,7 @@ export default function LiveCatalog({
           </select>
         </div>
       </div>
-      <p className="dp-catalog-status" role="status">
+      <p className="fp-status-line" role="status">
         {snapshot.available
           ? filtered.length + " מוצרים בתצוגה"
           : "ממתינים לחיבור הקטלוג"}
@@ -121,13 +144,13 @@ export default function LiveCatalog({
           : ""}
       </p>
       {filtered.length ? (
-        <div className="dp-product-grid">
+        <div className="fp-grid">
           {filtered.map((item) => (
             <ProductCard item={item} key={item.id} />
           ))}
         </div>
       ) : (
-        <div className="dp-empty">
+        <div className="fp-empty">
           <span>
             <PackageSearch size={34} />
           </span>
@@ -150,13 +173,13 @@ export default function LiveCatalog({
                 : "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."}
           </p>
           {!snapshot.available && (
-            <Link className="dp-text-link" href="/guides">
+            <Link className="fp-link" href="/guides">
               איך קונים חכם <ArrowUpLeft size={17} />
             </Link>
           )}
         </div>
       )}
-      <p className="dp-disclosure">
+      <p className="fp-fine">
         קישורי שותפים עשויים לזכות אותנו בעמלה. איננו מוכרים את המוצרים; המחיר
         הסופי, תנאי המשלוח והזמינות נקבעים ב־AliExpress.{" "}
         <Link href="/disclosure">לגילוי המלא</Link>

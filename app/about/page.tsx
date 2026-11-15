@@ -6,9 +6,9 @@ import { PublicShell } from "../public-shell";
 export default function About() {
   return (
     <PublicShell>
-      <main id="main" className="dp-container">
-        <article className="dp-prose">
-          <span className="dp-eyebrow">CURIOUS BY DESIGN</span>
+      <main id="main" className="fp-wrap">
+        <article className="fp-prose">
+          <span className="fp-kicker">CURIOUS BY DESIGN</span>
           <h1>להכניס קצת גילוי ליום־יום.</h1>
           <p>
             DealPilot מרכז מוצרים מ־AliExpress בקטגוריות שימושיות, כדי שיהיה קל

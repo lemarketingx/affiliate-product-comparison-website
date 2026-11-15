@@ -2,13 +2,19 @@ export const metadata = {
   title: "מדריך קנייה | DealPilot",
   alternates: { canonical: "/guides" },
 };
+import Link from "next/link";
 import { PublicShell } from "../public-shell";
+import { GUIDES } from "../../lib/preflight/guides";
+import { visibility } from "../../lib/preflight/approvals";
+
+export const dynamic = "force-dynamic";
 export default function Guides() {
+  const guides = GUIDES.filter((g) => visibility("guide:" + g.slug).visible);
   return (
     <PublicShell>
-      <main id="main" className="dp-container">
-        <article className="dp-prose">
-          <span className="dp-eyebrow">THE SMART SHOPPING NOTEBOOK</span>
+      <main id="main" className="fp-wrap">
+        <article className="fp-prose">
+          <span className="fp-kicker">מדריך טרום המראה</span>
           <h1>
             קנייה טובה מתחילה
             <br />
@@ -45,6 +51,28 @@ export default function Guides() {
             לילדים או בעלי דרישות בטיחות, אל תסיקו התאמה או אישור ממראה המוצר.
           </p>
         </article>
+        {guides.length > 0 && (
+          <section className="fp-section" aria-labelledby="abroad-title">
+            <div className="fp-section-head">
+              <div>
+                <span className="fp-kicker">קונים חכם מחו״ל</span>
+                <h2 id="abroad-title">מדריכים קצרים, ממוקדים לישראל</h2>
+              </div>
+            </div>
+            <ul className="fp-dests">
+              {guides.map((g) => (
+                <li key={g.slug}>
+                  <Link className="fp-dest" href={"/guides/" + g.slug}>
+                    <span className="fp-dest-code" dir="ltr">{g.code}</span>
+                    <strong>{g.title}</strong>
+                    <p>{g.summary}</p>
+                    <span className="fp-dest-foot"><span>עודכן {g.updatedAt}</span></span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </main>
     </PublicShell>
   );

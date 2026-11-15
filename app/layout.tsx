@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./dealpilot.css";
 import "./welcoming.css";
+import "./storefront.css";
 
 export const metadata: Metadata = {
   title: "DealPilot | מוצרים חכמים והזדמנויות שוות",
@@ -27,6 +28,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="he" dir="rtl">
+      <head>
+        <meta name="theme-color" content="#14161B" />
+      </head>
       <body>{children}</body>
     </html>
   );
