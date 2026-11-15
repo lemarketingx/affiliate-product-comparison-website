@@ -1,165 +1,198 @@
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUpLeft,
-  Compass,
-  Layers3,
-  ShieldCheck,
-  Sparkles,
-  Headphones,
-  Coffee,
-  LampDesk,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Plane } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
+import { categories } from "../lib/dealpilot/categories";
+import { formatMoney } from "../lib/dealpilot/urls";
+import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { PublicShell, CategoryLinks } from "./public-shell";
 import LiveCatalog from "./live-catalog";
+import FlightClock from "./flight-clock";
+import { flightCode, gateCode } from "./flight-bits";
+
+const checks = [
+  ["גרסה מדויקת", "צבע, גודל, כמות ואביזרים: בוחרים את מה שצריך."],
+  ["מחיר סופי", "משווים בקופה, עם משלוח ותוספות, לא רק בכותרת."],
+  ["משלוח לישראל", "מוודאים יעד, שיטת משלוח והערכת זמן אצל המוכר."],
+  ["תנאי החזרה", "יודעים מי המוכר ומה קורה אם משהו לא מתאים."],
+] as const;
+
+function DepartureBoard({ snapshot }: { snapshot: CatalogSnapshot }) {
+  const gateOf = (slug: string) =>
+    gateCode(Math.max(0, categories.findIndex((c) => c.slug === slug)));
+  const rows = snapshot.items.slice(0, 6);
+  return (
+    <div className="fp-board" aria-label="לוח המראות: מוצרים אחרונים בקטלוג">
+      <div className="fp-board-head">
+        <span>
+          <Plane size={16} aria-hidden="true" /> המראות
+          <em dir="ltr">DEPARTURES</em>
+        </span>
+        <FlightClock />
+      </div>
+      <div className="fp-board-cols" aria-hidden="true">
+        <span>שער</span>
+        <span>מוצר</span>
+        <span>מחיר</span>
+        <span>סטטוס</span>
+      </div>
+      <ol className="fp-board-rows">
+        {rows.length
+          ? rows.map((p, i) => {
+              const verified = evaluateEligibility(p).eligible;
+              return (
+                <li key={p.id} style={{ "--i": i } as React.CSSProperties}>
+                  <Link href={"/products/" + p.id}>
+                    <span className="fp-flap fp-flap-gate" dir="ltr">
+                      {gateOf(p.categorySlug)}
+                    </span>
+                    <span className="fp-flap fp-flap-title" dir="auto">
+                      {p.title}
+                      <small dir="ltr">{flightCode(p.id)}</small>
+                    </span>
+                    <span className="fp-flap fp-flap-price" dir="auto">
+                      {formatMoney(p.price, p.currency)}
+                    </span>
+                    <span
+                      className={
+                        "fp-flap fp-status " +
+                        (verified ? "is-go" : "is-wait")
+                      }
+                    >
+                      {verified ? "מאומת" : "בבדיקה"}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })
+          : categories.slice(0, 6).map((c, i) => (
+              <li key={c.slug} style={{ "--i": i } as React.CSSProperties}>
+                <Link href={"/categories/" + c.slug}>
+                  <span className="fp-flap fp-flap-gate" dir="ltr">
+                    {gateCode(i)}
+                  </span>
+                  <span className="fp-flap fp-flap-title">{c.label}</span>
+                  <span className="fp-flap fp-flap-price">—</span>
+                  <span className="fp-flap fp-status is-hold">ממתין</span>
+                </Link>
+              </li>
+            ))}
+      </ol>
+      <p className="fp-board-foot">
+        {rows.length
+          ? "נתוני ספק בשקלים. ״בבדיקה״ = דירוג, ביקורות ומשלוח טרם אומתו."
+          : "הקטלוג ממתין לחיבור. אין טיסות מוצגות, ואנחנו לא ממציאים אותן."}
+      </p>
+    </div>
+  );
+}
+
 export default function DealPilotHome({
   snapshot,
 }: {
   snapshot: CatalogSnapshot;
 }) {
-  const seenCategories = new Set<string>();
-  const images = snapshot.items
-    .filter((p) => {
-      if (!p.image || seenCategories.has(p.categorySlug)) return false;
-      seenCategories.add(p.categorySlug);
-      return true;
-    })
-    .slice(0, 3);
   return (
     <PublicShell>
       <main id="main">
-        <section className="dp-hero dp-container">
-          <div className="dp-hero-copy">
-            <span className="dp-eyebrow">
-              <Sparkles size={16} /> איזה כיף לגלות משהו חדש
-            </span>
-            <h1>
-              מגלים מוצרים חכמים.
-              <br />
-              <em>מוצאים דילים טובים.</em>
-            </h1>
-            <p>
-              אביזר להופעה, משהו לבית, רעיון לאימון או גאדג׳ט שכיף להכיר.
-              בואו למצוא את הדברים שמתאימים ליום־יום שלכם.
-            </p>
-            <div className="dp-actions">
-              <Link className="dp-btn" href="/deals">
-                גלו מוצרים <ArrowLeft size={19} />
-              </Link>
-              <Link className="dp-text-link" href="/categories">
-                כל הקטגוריות <ArrowUpLeft size={18} />
-              </Link>
-            </div>
-            <div className="dp-hero-caption">
-              <ShieldCheck size={17} /> מחירים בשקלים · המחיר הסופי ב־AliExpress
-            </div>
-          </div>
-          <div className="dp-hero-visual">
-            <div className="dp-visual-grid" />
-            <span className="dp-art-label">
-              <Sparkles size={15} /> קצת השראה ליום־יום
-            </span>
-            {images.length ? (
-              <div className="dp-hero-products">
-                {images.map((p, i) => (
-                  <Link
-                    href={"/products/" + p.id}
-                    className={"dp-hero-product hp-" + i}
-                    key={p.id}
-                  >
-                    <img src={p.image!} alt={p.title} />
-                    <span>
-                      {p.category} <ArrowUpLeft size={15} />
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div
-                className="dp-original-art"
-                aria-label="איור של אוזניות, כוס ומנורה להשראה יומיומית"
-              >
-                <div className="dp-illustration-tile illustration-main">
-                  <Headphones size={91} strokeWidth={1.2} />
-                  <span>רגע לעצמכם</span>
-                </div>
-                <div className="dp-illustration-tile illustration-coffee">
-                  <Coffee size={55} strokeWidth={1.4} />
-                  <span>הפינה שלכם</span>
-                </div>
-                <div className="dp-illustration-tile illustration-lamp">
-                  <LampDesk size={63} strokeWidth={1.3} />
-                  <span>רעיונות קטנים</span>
-                </div>
-              </div>
-            )}
-            <div className="dp-art-bottom">
-              <span>
-                קצת לבית. קצת לעצמכם.
-                <br />
-                <strong>הרבה דברים לגלות.</strong>
+        <section className="dp-hero fp-hero">
+          <div className="fp-wrap fp-hero-grid">
+            <div className="fp-hero-copy">
+              <span className="fp-kicker">
+                <span className="fp-dot" /> עלייה למטוס פתוחה
               </span>
-              <span className="dp-art-arrow">
-                <ArrowUpLeft size={32} />
-              </span>
+              <h1>
+                מגלים מוצרים חכמים.
+                <em>בודקים. ממריאים.</em>
+              </h1>
+              <p>
+                אתר הגילוי היחיד שעושה איתכם צ׳ק־ליסט לפני כל קנייה ב־AliExpress.
+                גאדג׳טים, בית, רכב ופנאי, עם מידע ברור על מה נבדק ומה עוד לא.
+              </p>
+              <div className="fp-actions">
+                <Link className="fp-btn" href="/deals">
+                  גלו מוצרים <ArrowLeft size={19} />
+                </Link>
+                <Link className="fp-btn fp-btn-ghost" href="/categories">
+                  לשערי הקטגוריות
+                </Link>
+              </div>
+              <dl className="fp-hero-facts">
+                <div>
+                  <dt>מחירים</dt>
+                  <dd>בשקלים</dd>
+                </div>
+                <div>
+                  <dt>שערים</dt>
+                  <dd dir="ltr">{String(categories.length).padStart(2, "0")}</dd>
+                </div>
+                <div>
+                  <dt>בדיקות לפני קנייה</dt>
+                  <dd dir="ltr">04</dd>
+                </div>
+              </dl>
             </div>
+            <DepartureBoard snapshot={snapshot} />
           </div>
         </section>
-        <div className="dp-value-strip">
-          <div className="dp-container">
-            <span>
-              <Compass /> מגלים בקצב שלכם
-            </span>
-            <span>
-              <Layers3 /> רעיונות לכל פינה
-            </span>
-            <span>
-              <ShieldCheck /> קישורים עם גילוי נאות
-            </span>
-          </div>
-        </div>
-        <section className="dp-section dp-container">
-          <div className="dp-section-head">
-            <div>
-              <span className="dp-eyebrow">מאיפה מתחילים?</span>
-              <h2>מה יעשה לכם את היום?</h2>
+
+        <section className="fp-preflight" aria-labelledby="preflight-title">
+          <div className="fp-wrap">
+            <div className="fp-preflight-head">
+              <span className="fp-kicker fp-kicker-light">צ׳ק־ליסט טרום המראה</span>
+              <h2 id="preflight-title">ארבע בדיקות. אפס הפתעות בקופה.</h2>
             </div>
-            <Link className="dp-text-link" href="/categories">
-              לכל הקטגוריות <ArrowUpLeft size={18} />
+            <ol className="fp-preflight-list">
+              {checks.map(([t, d], i) => (
+                <li key={t}>
+                  <span dir="ltr">0{i + 1}</span>
+                  <strong>{t}</strong>
+                  <p>{d}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="fp-section fp-wrap">
+          <div className="fp-section-head">
+            <div>
+              <span className="fp-kicker">מאיפה ממריאים?</span>
+              <h2>בחרו שער.</h2>
+            </div>
+            <Link className="fp-link" href="/categories">
+              לכל הקטגוריות <ArrowUpLeft size={17} />
             </Link>
           </div>
           <CategoryLinks />
         </section>
+
         <LiveCatalog snapshot={snapshot} compact />
-        <section className="dp-editorial dp-container">
-          <div>
-            <span className="dp-eyebrow">לפני שמוצאים מקום בבית</span>
-            <h2>
-              הדיל הטוב מתחיל
-              <br />
-              בבדיקה קטנה.
-            </h2>
-            <p>
-              לפני שמקליקים: בודקים גרסה, משלוח, מחיר סופי ומדיניות החזרה. הכנו
-              מדריך קצר שיעזור לעשות סדר.
-            </p>
-            <Link className="dp-btn dp-btn-secondary" href="/guides">
-              למדריך הקנייה <ArrowLeft size={18} />
-            </Link>
-          </div>
-          <div className="dp-editorial-steps">
-            {[
-              "משווים את הגרסה המדויקת",
-              "בודקים משלוח לישראל",
-              "מאמתים מחיר בקופה",
-            ].map((s, i) => (
-              <div key={s}>
-                <span>0{i + 1}</span>
-                <strong>{s}</strong>
-                <ArrowUpLeft size={20} />
-              </div>
-            ))}
+
+        <section className="fp-wrap fp-section">
+          <div className="fp-guide-pass">
+            <div className="fp-guide-main">
+              <span className="fp-kicker">מדריך הקנייה</span>
+              <h2>
+                הדיל הטוב מתחיל
+                <br />
+                בבדיקה קטנה.
+              </h2>
+              <p>
+                חמש שאלות שכדאי לשאול לפני שמשלמים. קצר, ברור, בלי מבצעים
+                מזויפים.
+              </p>
+              <Link className="fp-btn" href="/guides">
+                למדריך הקנייה <ArrowLeft size={18} />
+              </Link>
+            </div>
+            <div className="fp-guide-stub" aria-hidden="true">
+              <span>נוסע/ת</span>
+              <strong>קונים חכם</strong>
+              <span>יעד</span>
+              <strong>החלטה טובה</strong>
+              <span>מושב</span>
+              <strong dir="ltr">01A</strong>
+            </div>
           </div>
         </section>
       </main>

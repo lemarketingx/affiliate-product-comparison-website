@@ -6,9 +6,9 @@ import { PublicShell } from "../public-shell";
 export default function Guides() {
   return (
     <PublicShell>
-      <main id="main" className="dp-container">
-        <article className="dp-prose">
-          <span className="dp-eyebrow">THE SMART SHOPPING NOTEBOOK</span>
+      <main id="main" className="fp-wrap">
+        <article className="fp-prose">
+          <span className="fp-kicker">מדריך טרום המראה</span>
           <h1>
             קנייה טובה מתחילה
             <br />
