@@ -10,8 +10,9 @@ import FlightClock from "./flight-clock";
 import { flightCode, gateCode } from "./flight-bits";
 import { visibleTypes } from "../lib/preflight";
 import BannerStrip from "./banner-strip";
+import CampaignShowcase from "./campaign-showcase";
 import ProductPromoStrip from "./product-promo-strip";
-import type { Banner } from "../lib/aliexpress/banners";
+import type { Banner, CampaignRecord } from "../lib/aliexpress/banners";
 
 function AutopilotPanel() {
   const types = visibleTypes();
@@ -134,7 +135,7 @@ export default function DealPilotHome({
   usdRate = null,
 }: {
   snapshot: CatalogSnapshot;
-  banners?: { banners: Banner[]; attributionConfirmed: boolean };
+  banners?: { banners: Banner[]; campaigns: CampaignRecord[]; attributionConfirmed: boolean };
   usdRate?: import("../lib/preflight/tax-estimate").UsdRate | null;
 }) {
   return (
@@ -181,6 +182,7 @@ export default function DealPilotHome({
           </div>
         </section>
 
+        <CampaignShowcase campaigns={banners?.campaigns ?? []} banners={banners?.banners ?? []} />
         <ProductPromoStrip items={snapshot.items} />
         {banners && banners.banners.some((b) => b.status === "published") && <BannerStrip banners={banners.banners.filter((b) => b.status === "published")} attributionConfirmed={banners.attributionConfirmed} />}
 
