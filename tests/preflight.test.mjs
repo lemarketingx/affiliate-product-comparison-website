@@ -283,3 +283,33 @@ test("per-product tax estimate: exempt / near the threshold / VAT / VAT+customs 
   assert.equal(e(100, rate, { ...IMPORT_TAX, verified: false }).status, "unknown");
   assert.match(e(100, null).label, /לא חושב/);
 });
+
+
+import { calculateBasketCost } from "../lib/preflight/basket-cost.ts";
+
+test("full import cost estimator: exemption ignores separately stated shipping but includes other goods", () => {
+  const base = { unitPriceILS: 260, quantity: 1, discountILS: 0, otherGoodsILS: 0, shippingILS: 30, insuranceILS: 0, handlingILS: 0, usdIlsRate: 3.5 };
+  const a = calculateBasketCost(base, IMPORT_TAX);
+  assert.equal(a.status, "exempt");
+  assert.equal(a.estimatedVAT, 0);
+  assert.equal(a.estimatedTotalILS, 290);
+  const b = calculateBasketCost({ ...base, otherGoodsILS: 10 }, IMPORT_TAX);
+  assert.equal(b.status, "vat_estimate");
+  assert.equal(b.estimatedVAT, 54);
+  assert.equal(b.estimatedTotalILS, 354);
+});
+test("full import cost estimator: discounts, quantity, VAT freight, insurance, unknowns and exclusions", () => {
+  const base = { unitPriceILS: 250, quantity: 2, discountILS: 50, otherGoodsILS: 0, shippingILS: 20, insuranceILS: 10, handlingILS: 15, usdIlsRate: 3.5 };
+  const a = calculateBasketCost(base, IMPORT_TAX);
+  assert.equal(a.goodsILS, 450);
+  assert.equal(a.estimatedVAT, 86.4);
+  assert.equal(a.estimatedTotalILS, 581.4);
+  assert.equal(calculateBasketCost({ ...base, shippingILS: null }, IMPORT_TAX).status, "incomplete");
+  assert.equal(calculateBasketCost({ ...base, usdIlsRate: null }, IMPORT_TAX).estimatedTotalILS, null);
+  assert.equal(calculateBasketCost({ ...base, discountILS: 900 }, IMPORT_TAX).status, "invalid");
+  assert.equal(calculateBasketCost({ ...base, quantity: 1.5 }, IMPORT_TAX).status, "invalid");
+  const high = calculateBasketCost({ ...base, unitPriceILS: 3000, quantity: 1 }, IMPORT_TAX);
+  assert.equal(high.status, "special_tax");
+  assert.equal(high.estimatedTotalILS, null);
+  assert.equal(calculateBasketCost(base, { ...IMPORT_TAX, verified: false }).estimatedTotalILS, null);
+});
