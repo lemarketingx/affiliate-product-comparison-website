@@ -22,7 +22,7 @@ export type Unwrapped = { ok: true; result: Rec } | { ok: false; code: string; m
  */
 export function isTrackingIdRejection(code: string, message: string | null): boolean {
   return /PROVIDER_(?:RESULT_402|ERROR_402)/.test(code) &&
-    /tracking[\\s_-]*id/i.test(message ?? "");
+    /tracking[\s_-]*id/i.test(message ?? "");
 }
 
 /**
