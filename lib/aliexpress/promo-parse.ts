@@ -17,6 +17,14 @@ const first = (r: Rec, keys: string[]) => {
 
 export type Unwrapped = { ok: true; result: Rec } | { ok: false; code: string; message?: string | null };
 
+/** Only a provider rejection explicitly naming tracking_id merits a default-ID retry.
+ * Other 402 errors (source_values, permissions) must not trigger blind retries.
+ */
+export function isTrackingIdRejection(code: string, message: string | null): boolean {
+  return /PROVIDER_(?:RESULT_402|ERROR_402)/.test(code) &&
+    /tracking[\\s_-]*id/i.test(message ?? "");
+}
+
 /**
  * Provider error text is useful for diagnosis but may echo request values.
  * Remove URLs, the given secrets (tracking id, app key) and long tokens; keep
