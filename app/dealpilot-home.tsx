@@ -10,6 +10,7 @@ import FlightClock from "./flight-clock";
 import { flightCode, gateCode } from "./flight-bits";
 import { visibleTypes } from "../lib/preflight";
 import BannerStrip from "./banner-strip";
+import ProductPromoStrip from "./product-promo-strip";
 import type { Banner } from "../lib/aliexpress/banners";
 
 function AutopilotPanel() {
@@ -180,7 +181,8 @@ export default function DealPilotHome({
           </div>
         </section>
 
-        {banners && <BannerStrip banners={banners.banners} attributionConfirmed={banners.attributionConfirmed} />}
+        <ProductPromoStrip items={snapshot.items} />
+        {banners && banners.banners.some((b) => b.status === "published") && <BannerStrip banners={banners.banners.filter((b) => b.status === "published")} attributionConfirmed={banners.attributionConfirmed} />}
 
         <AutopilotPanel />
 
