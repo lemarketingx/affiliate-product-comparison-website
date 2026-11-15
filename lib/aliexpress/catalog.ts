@@ -71,15 +71,29 @@ export async function getDiscoveredCatalog(): Promise<CatalogSnapshot> {
   };
 }
 
+const BRAND_TARGET = 100;
+/**
+ * 2 pages × 50 candidates × 12 brands = 24 provider calls per cold refresh,
+ * subject to the existing per-instance 24/hour guard. 100 is a TARGET, not
+ * a guaranteed stock count. Only qualifying shop-matched products are shown.
+ */
 const fetchBrandBatch = unstable_cache(
-  async (term: string) => ({
-    products: await queryAffiliateProducts(term, 20),
-    fetchedAt: new Date().toISOString(),
-  }),
-  [
-    "dealpilot-brand-catalog-he-il-ils-v1",
-    process.env.DEALPILOT_CACHE_NAMESPACE ?? "default",
-  ],
+  async (term: string) => {
+    const products: AliProduct[] = [];
+    let incomplete = false;
+    for (let page = 1; page <= 2; page++) {
+      try {
+        const rows = await queryAffiliateProducts(term, 50, page);
+        products.push(...rows);
+        if (rows.length < 50) break;
+      } catch {
+        incomplete = true;
+        break;
+      }
+    }
+    return { products, incomplete, fetchedAt: new Date().toISOString() };
+  },
+  ["dealpilot-brand-paged-100-candidates-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
   { revalidate: 21600 },
 );
 
@@ -93,7 +107,9 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
   );
   const unique = new Map<string, CatalogItem>();
   const timestamps: string[] = [];
+  let queryPartial = false;
   responses.forEach((r) => {
+    if (r.status !== "fulfilled" || r.value.incomplete) queryPartial = true;
     if (r.status === "fulfilled") timestamps.push(r.value.fetchedAt);
   });
   const maxRows = Math.max(0, ...responses.map((r) =>
@@ -126,7 +142,7 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
     items: [...unique.values()],
     fetchedAt: timestamps.sort()[0] ?? null,
     available: timestamps.length > 0,
-    partial: timestamps.length > 0 && timestamps.length < brands.length,
+    partial: queryPartial || (timestamps.length > 0 && timestamps.length < brands.length),
     qualityFiltered: false,
   };
 }

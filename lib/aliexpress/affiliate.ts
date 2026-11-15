@@ -245,10 +245,13 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
 export async function queryAffiliateProducts(
   keywords: string,
   pageSize = 10,
+  pageNo = 1,
 ): Promise<AliProduct[]> {
   const key = process.env.ALIEXPRESS_APP_KEY?.trim();
   const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING", 503);
+  if (!Number.isInteger(pageNo) || pageNo < 1 || pageNo > 20 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50)
+    throw new AffiliateError("INVALID_PAGE_INPUT", 400);
   if (!allowRequest("aliexpress-products", 24, 3600000))
     throw new AffiliateError("PROVIDER_QUOTA_GUARD", 429);
   const params: Record<string, string> = {
@@ -259,7 +262,7 @@ export async function queryAffiliateProducts(
     v: "2.0",
     timestamp: timestampChina(),
     keywords,
-    page_no: "1",
+    page_no: String(pageNo),
     page_size: String(pageSize),
     sort: "LAST_VOLUME_DESC",
     ship_to_country: "IL",

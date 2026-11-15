@@ -20,10 +20,11 @@ else returned by the API is dropped before it reaches the page.
 
 ## Quota
 
-The brand catalog makes one API query per brand (12), cached for six hours. The
-admin discovery catalog still uses the category queries. Both share the in-process
-guard of 24 product queries per hour; adding many brands needs a larger guard or
-a scheduled refresh.
+The brand catalog now attempts **up to two pages × 50 provider candidates per brand** (up to 100 candidates each, 12 brands). A cold build can use up to 24 provider calls and is subject to the existing in-process 24 calls/hour guard, alongside admin queries. All results are cached for six hours.
+
+**100 sellable products per brand is not guaranteed.** AliExpress may return fewer than 100 unique products, or fewer products from the correctly named store, or incomplete data. Never backfill with generic products or claim a brand has 100 items unless 100 passed the actual quality/store filter.
+
+The Affiliate API used here does **not** reliably report warranty duration, provider, service country or service address. Never infer these from the brand name or "Official Store" text. Product-level manually verified terms may be entered into `lib/dealpilot/product-warranty.ts` with source URL and check date; otherwise show explicit unknown fields and link to warranty guidance.
 
 ## Market layout (v2)
 
