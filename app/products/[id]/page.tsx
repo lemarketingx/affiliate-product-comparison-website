@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink, ShieldQuestion, ArrowUpLeft } from "lucide-react";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
+import { getCurrentAffiliatePrice } from "../../../lib/aliexpress/affiliate";
 import { formatMoney } from "../../../lib/dealpilot/urls";
 import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
@@ -32,8 +33,16 @@ export default async function Product({
 }) {
   const { id } = await params;
   if (!/^\d{4,24}$/.test(id)) notFound();
-  const snapshot = await getCatalog(),
-    p = snapshot.items.find((p) => p.id === id);
+  const snapshot = await getCatalog();
+  const catalogProduct = snapshot.items.find((p) => p.id === id);
+  // A product page must not silently present a six-hour-old search quote as current.
+  const currentPrice = catalogProduct ? await getCurrentAffiliatePrice(id) : null;
+  const p = catalogProduct ? {
+    ...catalogProduct,
+    price: currentPrice?.price ?? null,
+    currency: currentPrice?.currency ?? null,
+    originalPrice: currentPrice?.originalPrice ?? null,
+  } : null;
   if (!p) {
     return (
       <PublicShell>
@@ -60,7 +69,7 @@ export default async function Product({
   const warranty = warrantyFor(p.id);
   const off = discountOf(p);
   const ali = Number(p.price);
-  const gap = il && Number.isFinite(ali) ? il.price - ali : null;
+  const gap = il && p.price !== null && Number.isFinite(ali) ? il.price - ali : null;
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
   const updated = snapshot.fetchedAt
     ? new Intl.DateTimeFormat("he-IL", {
@@ -109,7 +118,7 @@ export default async function Product({
               <StoreLine item={p} />
               <div className="og-price-row">
                 <div>
-                  <small>מחיר ספק באליאקספרס</small>
+                  <small>{currentPrice ? "מחיר מעודכן מבדיקת מוצר ב־AliExpress" : "לא התקבל מחיר מעודכן מ־AliExpress"}</small>
                   <strong dir="auto">{formatMoney(p.price, p.currency)}</strong>
                   {off && (
                     <span className="og-was">
@@ -139,7 +148,7 @@ export default async function Product({
                   </p>
                 </div>
               ) : null}
-              <p className="og-fine">המחיר הסופי, המסים והמשלוח נבדקים ב־AliExpress.</p>
+              <p className="og-fine">המחיר נבדק מחדש בעת פתיחת עמוד זה בממשק השותפים של AliExpress, אם הבקשה הצליחה. מחיר הווריאציה שתבחרו, מבצעים אישיים, מסים ומשלוח עשויים לשנות את הסכום לתשלום. בדקו את המחיר בעמוד המוצר ובקופה לפני רכישה.</p>
               {cta ?? <div className="og-notice">לא התקבל קישור מקור תקין.</div>}
               <p className="og-fine">
                 {p.affiliateUrl
@@ -168,7 +177,7 @@ export default async function Product({
                 <li>המחיר הסופי ותנאי המשלוח מוצגים בקופה ב־AliExpress</li>
               </ul>
               <p className="og-fine">
-                עדכון נתוני ספק: {updated}. הקטלוג מתרענן עד כל שש שעות.
+                עדכון נתוני הקטלוג: {updated}. מחיר המוצר נבדק בנפרד בעת פתיחת העמוד; מחיר קופה עשוי להשתנות לפי גרסה והטבות.
               </p>
             </div>
           </div>
@@ -194,7 +203,7 @@ export default async function Product({
         {cta && (
           <div className="og-buybar">
             <div>
-              <small dir="ltr">{p.category}</small>
+              <small>{p.category} · מחיר מדווח, לא סופי</small>
               <strong dir="auto">{formatMoney(p.price, p.currency)}</strong>
             </div>
             {cta}

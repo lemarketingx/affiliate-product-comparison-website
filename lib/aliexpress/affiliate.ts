@@ -295,3 +295,67 @@ export async function queryAffiliateProducts(
   }
   return normalizeProductResponse(json);
 }
+
+/**
+ * An uncached, product-ID-specific quote. We never reuse keyword search
+ * prices as a fresh price, and never silently fall back to an older quote.
+ * Note: a provider quote is not a user-specific checkout/variant quote.
+ */
+export async function getCurrentAffiliatePrice(productId: string): Promise<{
+  price: string;
+  currency: "ILS";
+  originalPrice: string | null;
+} | null> {
+  if (!/^\d{4,24}$/.test(productId)) return null;
+  const key = process.env.ALIEXPRESS_APP_KEY?.trim();
+  const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  if (!key || !secret || !allowRequest("aliexpress-price-detail", 120, 3600000)) return null;
+  const params: Record<string, string> = {
+    app_key: key,
+    method: "aliexpress.affiliate.productdetail.get",
+    sign_method: "hmac",
+    format: "json",
+    v: "2.0",
+    timestamp: timestampChina(),
+    product_ids: productId,
+    ship_to_country: "IL",
+    target_language: "HE",
+    target_currency: "ILS",
+  };
+  params.sign = signAffiliateParams(params, secret);
+  try {
+    const response = await fetch(GATEWAY, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: new URLSearchParams(params),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return null;
+    const root = record(await response.json());
+    const envelope = record(root?.aliexpress_affiliate_productdetail_get_response);
+    const dto = record(envelope?.resp_result);
+    if (text(dto?.resp_code) !== "200") return null;
+    const result = record(dto?.result);
+    const wrapper = record(result?.products);
+    const products = wrapper?.product ?? result?.products;
+    const rows = Array.isArray(products) ? products : products ? [products] : [];
+    const product = rows.map(record).find((p) => text(p?.product_id) === productId);
+    if (!product) return null;
+    const value = text(product.target_sale_price);
+    const currency = text(product.target_sale_price_currency);
+    if (!value || currency !== "ILS" || !Number.isFinite(Number(value)) || Number(value) <= 0) return null;
+    return {
+      price: value,
+      currency: "ILS",
+      originalPrice: pickOriginalPrice(
+        text(product.target_original_price),
+        text(product.target_original_price_currency),
+        value,
+        "ILS",
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
