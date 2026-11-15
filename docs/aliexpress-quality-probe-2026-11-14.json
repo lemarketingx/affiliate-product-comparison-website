@@ -1,0 +1,394 @@
+{
+  "date": "2026-11-14",
+  "scope": "one-off Vercel Preview, existing server-only credentials",
+  "maxRequests": 9,
+  "retries": 0,
+  "results": [
+    {
+      "label": "baseline",
+      "resultCode": 200,
+      "count": 10,
+      "fields": [
+        "app_sale_price",
+        "original_price",
+        "product_detail_url",
+        "product_small_image_urls",
+        "second_level_category_name",
+        "target_sale_price",
+        "second_level_category_id",
+        "discount",
+        "product_main_image_url",
+        "first_level_category_id",
+        "target_sale_price_currency",
+        "target_app_sale_price_currency",
+        "tax_rate",
+        "original_price_currency",
+        "shop_url",
+        "target_original_price_currency",
+        "product_id",
+        "target_original_price",
+        "product_video_url",
+        "first_level_category_name",
+        "promotion_link",
+        "sku_id",
+        "shop_name",
+        "sale_price",
+        "product_title",
+        "hot_product_commission_rate",
+        "shop_id",
+        "app_sale_price_currency",
+        "sale_price_currency",
+        "lastest_volume",
+        "target_app_sale_price",
+        "commission_rate"
+      ],
+      "products": [
+        {
+          "id": "1005013379226584",
+          "title": "360° Magnetic Car Phone Holder Magnet Smartphone Mobile Stand Cell GPS Support For iPhone 17 18 XR Xiaomi Mi Huawei Samsung LG",
+          "orders": 6,
+          "shipping": null,
+          "hasHebrew": false
+        },
+        {
+          "id": "1005013375149703",
+          "title": "Data Cable Charger Power Outlet Clear Storage Box Earphone Wire Organizer Case Mobile Phone Cord Pouch Transparent Dustproof Plastic Electronic Accessories Container For Desk Cable Management Office Travel Tech Cord Wires Organizer Box Storage Container",
+          "orders": 0,
+          "shipping": null,
+          "hasHebrew": false
+        },
+        {
+          "id": "1005013378462182",
+          "title": "Multifunctional Car Storage Pocket Between Seats PU Leather Handbag Holder Organizer Phone Tissue Bag Car Interior Accessories",
+          "orders": 0,
+          "shipping": null,
+          "hasHebrew": false
+        }
+      ]
+    },
+    {
+      "label": "sort-only",
+      "resultCode": 200,
+      "count": 10,
+      "fields": [
+        "app_sale_price",
+        "original_price",
+        "product_detail_url",
+        "product_small_image_urls",
+        "second_level_category_name",
+        "target_sale_price",
+        "second_level_category_id",
+        "discount",
+        "product_main_image_url",
+        "first_level_category_id",
+        "target_sale_price_currency",
+        "target_app_sale_price_currency",
+        "tax_rate",
+        "original_price_currency",
+        "shop_url",
+        "target_original_price_currency",
+        "product_id",
+        "target_original_price",
+        "product_video_url",
+        "first_level_category_name",
+        "promotion_link",
+        "sku_id",
+        "evaluate_rate",
+        "shop_name",
+        "sale_price",
+        "product_title",
+        "hot_product_commission_rate",
+        "shop_id",
+        "app_sale_price_currency",
+        "sale_price_currency",
+        "lastest_volume",
+        "target_app_sale_price",
+        "commission_rate"
+      ],
+      "products": [
+        {
+          "id": "1005010089214259",
+          "title": "Magnetic Finger Ring Holder For MagSafe Phone Smartphone Accessories for iPhone 17 16 15 Pro Max Magnet Phone Stand Grip Mount",
+          "orders": 10609,
+          "positiveRate": "98.0%",
+          "shipping": null,
+          "hasHebrew": false
+        },
+        {
+          "id": "1005010653224918",
+          "title": "Silicone Suction Cup Phone Mount Double-Sided, Sticky Grip Suction Case Mount, Hands-Free Accessories for Tiktok Videos & Selfie",
+          "orders": 32832,
+          "positiveRate": "98.0%",
+          "shipping": null,
+          "hasHebrew": false
+        },
+        {
+          "id": "1005008359205845",
+          "title": "Car Seat Gap Filler Side Seam Plug Strip Leak-proof Filling Strip For All Car Model Wallet Phone Holder Car Accessories",
+          "orders": 25346,
+          "positiveRate": "88.2%",
+          "shipping": null,
+          "hasHebrew": false
+        }
+      ]
+    },
+    {
+      "label": "israel-only",
+      "resultCode": 200,
+      "count": 10,
+      "fields": [
+        "app_sale_price",
+        "original_price",
+        "product_detail_url",
+        "product_small_image_urls",
+        "second_level_category_name",
+        "target_sale_price",
+        "second_level_category_id",
+        "discount",
+        "product_main_image_url",
+        "first_level_category_id",
+        "target_sale_price_currency",
+        "target_app_sale_price_currency",
+        "tax_rate",
+        "original_price_currency",
+        "shop_url",
+        "target_original_price_currency",
+        "product_id",
+        "target_original_price",
+        "product_video_url",
+        "first_level_category_name",
+        "promotion_link",
+        "sku_id",
+        "shop_name",
+        "sale_price",
+        "product_title",
+        "hot_product_commission_rate",
+        "shop_id",
+        "app_sale_price_currency",
+        "sale_price_currency",
+        "lastest_volume",
+        "target_app_sale_price",
+        "commission_rate"
+      ],
+      "products": [
+        {
+          "id": "1005013379226584",
+          "title": "360° Magnetic Car Phone Holder Magnet Smartphone Mobile Stand Cell GPS Support For iPhone 17 18 XR Xiaomi Mi Huawei Samsung LG",
+          "orders": 6,
+          "shipping": null,
+          "hasHebrew": false
+        },
+        {
+          "id": "1005013135856682",
+          "title": "Magnetic Ultra Thin Foldable Mobile Phone Holder Bracket Metal Alloy Desktop Cell Phone Stands Universal Phone Support Kickstand",
+          "orders": 10,
+          "positiveRate": "100.0%",
+          "shipping": null,
+          "hasHebrew": false
+        },
+        {
+          "id": "1005013378462182",
+          "title": "Multifunctional Car Storage Pocket Between Seats PU Leather Handbag Holder Organizer Phone Tissue Bag Car Interior Accessories",
+          "orders": 0,
+          "shipping": null,
+          "hasHebrew": false
+        }
+      ]
+    },
+    {
+      "label": "hebrew-only",
+      "resultCode": 200,
+      "count": 10,
+      "fields": [
+        "app_sale_price",
+        "original_price",
+        "product_detail_url",
+        "product_small_image_urls",
+        "second_level_category_name",
+        "target_sale_price",
+        "second_level_category_id",
+        "discount",
+        "product_main_image_url",
+        "first_level_category_id",
+        "target_sale_price_currency",
+        "target_app_sale_price_currency",
+        "tax_rate",
+        "original_price_currency",
+        "shop_url",
+        "target_original_price_currency",
+        "product_id",
+        "target_original_price",
+        "product_video_url",
+        "first_level_category_name",
+        "promotion_link",
+        "sku_id",
+        "shop_name",
+        "sale_price",
+        "product_title",
+        "hot_product_commission_rate",
+        "shop_id",
+        "app_sale_price_currency",
+        "sale_price_currency",
+        "lastest_volume",
+        "target_app_sale_price",
+        "commission_rate"
+      ],
+      "products": [
+        {
+          "id": "1005013379226584",
+          "title": "360 °   מעמד מגנטי לטלפון לרכב, מתאים לסמארטפונים, כולל תמיכה למכשירי GPS, מתאים לאייפון 17, 18, XR, שיאומי, מיהוואי, סמסונג, LG.",
+          "orders": 6,
+          "shipping": null,
+          "hasHebrew": true
+        },
+        {
+          "id": "1005013375149703",
+          "title": "קופסת אחסון שקופה לארגון כבלים, מארז לאחסון כבלי טלפון נייד, שקית כבלים שקופה ועמידה בפני אבק, מיכל לאביזרי אלקטרוניקה, קופסת אחסון לארגון כבלים למשרד, לנסיעות ולשימוש כללי.",
+          "orders": 0,
+          "shipping": null,
+          "hasHebrew": true
+        },
+        {
+          "id": "1005013378462182",
+          "title": "כיס אחסון רב-תכליתי לרכב, הממוקם בין המושבים, עשוי דמוי עור, משמש כמחזיק לתיקי יד, מארגן, ומארגן לטלפון ולקופסת טישו – אביזר פנימי לרכב.",
+          "orders": 0,
+          "shipping": null,
+          "hasHebrew": true
+        }
+      ]
+    },
+    {
+      "label": "combined",
+      "resultCode": 200,
+      "count": 10,
+      "fields": [
+        "app_sale_price",
+        "original_price",
+        "product_detail_url",
+        "product_small_image_urls",
+        "second_level_category_name",
+        "target_sale_price",
+        "second_level_category_id",
+        "discount",
+        "product_main_image_url",
+        "first_level_category_id",
+        "target_sale_price_currency",
+        "target_app_sale_price_currency",
+        "tax_rate",
+        "original_price_currency",
+        "shop_url",
+        "target_original_price_currency",
+        "product_id",
+        "target_original_price",
+        "product_video_url",
+        "first_level_category_name",
+        "promotion_link",
+        "sku_id",
+        "evaluate_rate",
+        "shop_name",
+        "sale_price",
+        "product_title",
+        "hot_product_commission_rate",
+        "shop_id",
+        "app_sale_price_currency",
+        "sale_price_currency",
+        "lastest_volume",
+        "target_app_sale_price",
+        "commission_rate"
+      ],
+      "products": [
+        {
+          "id": "1005010089214259",
+          "title": "טבעת אחיזה מגנטית לטלפון עבור MagSafe, אביזרים לסמארטפון לאייפון 17 16 15 פרו מקס, מעמד מגנטי לאחיזה לטלפון",
+          "orders": 10609,
+          "positiveRate": "98.0%",
+          "shipping": null,
+          "hasHebrew": true
+        },
+        {
+          "id": "1005007038168943",
+          "title": "50 יחידות ארגונית כבלים ניהול כבלים מגן סרט כבלים לקשירת חוטים אביזרי טלפון ארגונית כבלים",
+          "orders": 11059,
+          "positiveRate": "98.0%",
+          "shipping": null,
+          "hasHebrew": true
+        },
+        {
+          "id": "1005010653224918",
+          "title": "תושבת סיליקון לשאיבת טלפון דו צדדית, תושבת לשאיבת מקרה עם ידית דביקה, אביזרים ללא ידית עבור וידאו וסלפי",
+          "orders": 32832,
+          "positiveRate": "98.0%",
+          "shipping": null,
+          "hasHebrew": true
+        }
+      ]
+    },
+    {
+      "label": "israel-reviews",
+      "errorCode": "InsufficientPermission",
+      "subCode": ""
+    },
+    {
+      "label": "global-reviews",
+      "errorCode": "InsufficientPermission",
+      "subCode": ""
+    }
+  ],
+  "productDetailChecks": [
+    {
+      "label": "detail-baseline",
+      "errorCode": "ApiCallLimit",
+      "subCode": ""
+    },
+    {
+      "label": "detail-israel",
+      "resultCode": 200,
+      "count": 1,
+      "fields": [
+        "app_sale_price",
+        "original_price",
+        "product_detail_url",
+        "product_small_image_urls",
+        "second_level_category_name",
+        "target_sale_price",
+        "second_level_category_id",
+        "discount",
+        "product_main_image_url",
+        "first_level_category_id",
+        "target_sale_price_currency",
+        "target_app_sale_price_currency",
+        "tax_rate",
+        "original_price_currency",
+        "shop_url",
+        "target_original_price_currency",
+        "product_id",
+        "target_original_price",
+        "product_video_url",
+        "first_level_category_name",
+        "promotion_link",
+        "sku_id",
+        "evaluate_rate",
+        "shop_name",
+        "sale_price",
+        "product_title",
+        "hot_product_commission_rate",
+        "shop_id",
+        "app_sale_price_currency",
+        "sale_price_currency",
+        "lastest_volume",
+        "target_app_sale_price",
+        "commission_rate"
+      ],
+      "products": [
+        {
+          "id": "1005010089214259",
+          "title": "Magnetic Finger Ring Holder For MagSafe Phone Smartphone Accessories for iPhone 17 16 15 Pro Max Magnet Phone Stand Grip Mount",
+          "orders": 10609,
+          "positiveRate": "98.0%",
+          "shipping": null,
+          "hasHebrew": false
+        }
+      ]
+    }
+  ]
+}
