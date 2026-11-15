@@ -15,10 +15,10 @@ export default async function Brands() {
   return (
     <PublicShell>
       <main id="main" className="og-wrap og-section">
-        <span className="og-kicker">{brands.length} מותגים · רק חנויות רשמיות</span>
+        <span className="og-kicker">{brands.length} מותגים · חנויות מזוהות לפי שם</span>
         <h1 className="og-page-title">אינדקס המותגים.</h1>
         <p className="og-lead">
-          בחרו מותג ותראו רק מוצרים מהחנות הרשמית שלו ב־AliExpress. DealPilot
+          בחרו מותג ותראו מוצרים מחנויות ששמן מזוהה עם המותג ב־AliExpress. DealPilot
           אינו קשור למותגים; השמות מופיעים כדי לזהות את המוצרים.
         </p>
         <BrandDirectory counts={counts} />
