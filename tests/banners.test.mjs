@@ -114,3 +114,13 @@ test("retry default only for explicit tracking id rejection, not generic 402", (
   assert.equal(isTrackingIdRejection("PROVIDER_UNREACHABLE", "TrackingId input parameter error"), false);
   assert.equal(isTrackingIdRejection("PROVIDER_RESULT_402_INVALID_PARAMETER", null), false);
 });
+
+test("official campaign product responses support direct affiliate links and array shape", () => {
+  const products = parsePromoProducts({ products: [
+    { product_id: "1005001234567", product_title: "Festival product", product_detail_url: SRC, product_main_image_url: "https://ae01.alicdn.com/kf/a.jpg", promotion_link: "https://s.click.aliexpress.com/e/promo123" },
+    { product_id: "1005001234568", product_title: "Bad link", product_detail_url: SRC, promotion_link: "https://s.click.aliexpress.com.evil.test/e/x" },
+  ] });
+  assert.equal(products.length, 2);
+  assert.equal(products[0].promotionLink, "https://s.click.aliexpress.com/e/promo123");
+  assert.equal(products[1].promotionLink, null);
+});

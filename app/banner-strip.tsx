@@ -22,7 +22,7 @@ export default function BannerStrip({ banners, attributionConfirmed }: { banners
       <ul className="fp-banner-list">
         {banners.map((b) => {
           const external = b.source !== "category";
-          const href = external ? "/go/b/" + b.id + "?source=banner" : b.link!;
+          const href = external ? (b.link ?? "#") : b.link!;
           const body = (
             <>
               <span className={"fp-banner-media is-" + b.imageFit}>
@@ -43,7 +43,7 @@ export default function BannerStrip({ banners, attributionConfirmed }: { banners
                   <span className="fp-banner-dates">{b.endsAt ? "בתוקף עד " + date(b.endsAt) : "תוקף הקמפיין לא דווח"}</span>
                 )}
                 <span className="fp-banner-cta">
-                  {external ? <>לקמפיין ב־AliExpress <ExternalLink size={15} aria-hidden="true" /></> : <>לשער <ArrowUpLeft size={15} aria-hidden="true" /></>}
+                  {external ? <>למוצר מתוך הקמפיין <ExternalLink size={15} aria-hidden="true" /></> : <>לשער <ArrowUpLeft size={15} aria-hidden="true" /></>}
                 </span>
               </span>
             </>

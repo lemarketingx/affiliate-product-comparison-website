@@ -105,7 +105,7 @@ export function parseFeaturedPromos(result: Rec): { promos: FeaturedPromo[]; fie
   return { promos, fieldsSeen: [...fields].sort() };
 }
 
-export type PromoProduct = { id: string; title: string; image: string | null; productUrl: string | null };
+export type PromoProduct = { id: string; title: string; image: string | null; productUrl: string | null; promotionLink: string | null };
 const ALI_HOSTS = ["aliexpress.com", "aliexpress.us"];
 const IMG_HOSTS = ["alicdn.com", "aliexpress-media.com", "aliexpress.com"];
 export function safeHttps(raw: unknown, hosts: string[]): string | null {
@@ -121,12 +121,12 @@ export function safeHttps(raw: unknown, hosts: string[]): string | null {
   }
 }
 export function parsePromoProducts(result: Rec): PromoProduct[] {
-  return list(rec(result.products)?.product).flatMap((row) => {
+  return list(rec(result.products)?.product ?? result.products).flatMap((row) => {
     const r = rec(row);
     const id = r && str(r.product_id);
     const title = r && str(r.product_title);
     if (!r || !id || !/^\d{4,24}$/.test(id) || !title) return [];
-    return [{ id, title, image: safeHttps(r.product_main_image_url, IMG_HOSTS), productUrl: safeHttps(r.product_detail_url, ALI_HOSTS) }];
+    return [{ id, title, image: safeHttps(r.product_main_image_url, IMG_HOSTS), productUrl: safeHttps(r.product_detail_url, ALI_HOSTS), promotionLink: safeHttps(r.promotion_link, ["s.click.aliexpress.com"]) }];
   });
 }
 

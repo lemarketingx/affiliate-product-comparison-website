@@ -38,12 +38,14 @@ export type Banner = {
   reason: string | null;
   sourceUrl: string | null;
   link: string | null; // generated affiliate link (or internal path for category fallbacks)
-  trackingSource?: "configured" | "default"; // do not claim original ID attribution after fallback
+  trackingSource?: "configured" | "default" | "provider"; // provider link attribution requires Portals verification
   /** Source exactly as the provider returned it, before canonicalisation (admin diagnostics). */
   originalSource?: string | null;
   productCount: number | null;
 };
+export type CampaignRecord = { name: string; description: string | null; startsAt: string | null; endsAt: string | null; productCount: number | null; timing: BannerTiming };
 export type BannerSnapshot = {
+  campaigns: CampaignRecord[];
   checkedAt: string;
   apiConfigured: boolean;
   trackingConfigured: boolean;
@@ -145,6 +147,7 @@ async function build(): Promise<BannerSnapshot> {
   };
   const banners: Banner[] = [];
   let promosFound = 0;
+  let campaigns: CampaignRecord[] = [];
   let promoFieldsSeen: string[] = [];
 
   // 1. Owner-imported official Portals creatives.
@@ -168,8 +171,19 @@ async function build(): Promise<BannerSnapshot> {
         const { promos, fieldsSeen } = parseFeaturedPromos(got.result);
         promosFound = promos.length;
         promoFieldsSeen = fieldsSeen;
+        // Keep the complete provider list for a campaign calendar; dates are not invented.
+        campaigns = promos.map((p) => ({ ...p, timing: timing(p.startsAt, p.endsAt, now) }));
+        // Campaigns can arrive in arbitrary order. Prioritise dated, active campaigns,
+        // then named sale events; do not spend API quota on expired campaigns.
+        const candidatePromos = campaigns.filter((p) => p.timing === "active")
+          .sort((a, b) => {
+            const priority = (p: CampaignRecord) =>
+              (/11\.11|singles.?day|black friday|cyber monday|choice day|anniversary|summer sale/i.test(p.name) ? 2 : 0) +
+              (p.startsAt || p.endsAt ? 1 : 0);
+            return priority(b) - priority(a);
+          }).slice(0, MAX_PROMOS);
         const active: { banner: Banner; name: string }[] = [];
-        for (const [i, p] of promos.slice(0, MAX_PROMOS).entries()) {
+        for (const [i, p] of candidatePromos.entries()) {
           const t = timing(p.startsAt, p.endsAt, now);
           const banner: Banner = {
             id: "f-" + i + "-" + p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40),
@@ -195,6 +209,14 @@ async function build(): Promise<BannerSnapshot> {
             if (!top?.productUrl) { banner.reason = "לקמפיין לא הוחזר מוצר עם קישור תקין"; return; }
             banner.image = top.image;
             banner.sourceUrl = top.productUrl;
+            // The featured-promo product API itself can return an affiliate
+            // promotion_link. Use it directly when it is a validated https link
+            // to AliExpress, avoiding the failing link.generate endpoint.
+            if (top.promotionLink) {
+              banner.link = top.promotionLink;
+              banner.trackingSource = "provider";
+              banner.status = "published";
+            }
           } catch (e) {
             fail(codeOf(e));
             banner.reason = "שגיאה בשליפת מוצרי הקמפיין: " + codeOf(e);
@@ -209,7 +231,7 @@ async function build(): Promise<BannerSnapshot> {
   // 3. One affiliate link per banner via link.generate with the server's tracking id.
   // One call per source, so a single rejected URL cannot fail the others, and
   // sources are canonicalised (no locale subdomain, query or tracking params).
-  const pending = banners.filter((b) => b.timing === "active" && b.sourceUrl && !b.reason);
+  const pending = banners.filter((b) => b.timing === "active" && b.sourceUrl && !b.reason && !b.link);
   if (!tid) pending.forEach((b) => (b.reason = "ALIEXPRESS_TRACKING_ID לא מוגדר בשרת"));
   else if (!configured()) pending.forEach((b) => (b.reason = "חיבור ה־API אינו מוגדר"));
   else {
@@ -263,6 +285,7 @@ async function build(): Promise<BannerSnapshot> {
     trackingConfigured: Boolean(tid),
     trackingIdMasked: maskTrackingId(tid),
     promosFound,
+    campaigns,
     promoFieldsSeen,
     errors,
     errorDetails,
@@ -270,7 +293,7 @@ async function build(): Promise<BannerSnapshot> {
   };
 }
 
-const cached = unstable_cache(build, ["dealpilot-banners-v3-tracking-recheck", NS], { revalidate: 3600 });
+const cached = unstable_cache(build, ["dealpilot-banners-v4-featured-product-links", NS], { revalidate: 3600 });
 export async function getBannerSnapshot(): Promise<BannerSnapshot> {
   return cached();
 }
@@ -288,8 +311,9 @@ function categoryFallbacks(): Banner[] {
  * active right now. Expired campaigns disappear; if none remain, regular
  * category banners take their place (internal links, no affiliate claim).
  */
-export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise<{ banners: Banner[]; attributionConfirmed: boolean }> {
+export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise<{ banners: Banner[]; campaigns: CampaignRecord[]; attributionConfirmed: boolean }> {
   let live: Banner[] = [];
+  let campaigns: CampaignRecord[] = [];
   try {
     // Never hold the homepage for a cold banner build; finish it after the response.
     const pending = getBannerSnapshot();
@@ -298,13 +322,14 @@ export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise
       try {
         after(() => pending.then(() => undefined, () => undefined));
       } catch {}
-      return { banners: categoryFallbacks(), attributionConfirmed: ATTRIBUTION.confirmed };
+      return { banners: categoryFallbacks(), campaigns: [], attributionConfirmed: ATTRIBUTION.confirmed };
     }
+    campaigns = snap.campaigns;
     live = snap.banners.filter((b) => b.status === "published" && b.link && timing(b.startsAt, b.endsAt, now) === "active");
   } catch {
     live = [];
   }
-  return { banners: live.length ? live.slice(0, 6) : categoryFallbacks(), attributionConfirmed: ATTRIBUTION.confirmed };
+  return { banners: live.length ? live.slice(0, 6) : categoryFallbacks(), campaigns, attributionConfirmed: ATTRIBUTION.confirmed };
 }
 
 export async function findPublishedBanner(id: string, now = Date.now()): Promise<Banner | null> {
