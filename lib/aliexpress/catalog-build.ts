@@ -7,9 +7,9 @@ import { evaluateEligibility } from "./quality.ts";
 export const CATALOG_POLICY = {
   /** Public listing requires strictly more reported sales than this. */
   minimumReportedSalesExclusive: 5000,
-  target: 500,
+  target: 0,
   /** Stop requesting further pages once this many products are publishable. */
-  stopAt: 650,
+  stopAt: 300,
   /** Tried in order; the first size the provider accepts is used. */
   pageSizes: [50, 40, 20, 10],
   maxPagesPerTerm: 3,
