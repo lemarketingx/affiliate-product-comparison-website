@@ -120,7 +120,7 @@ export default function DealPilotHome({ snapshot }: { snapshot: CatalogSnapshot 
     <PublicShell>
       <main id="main">
         <div className="dp-hero og-hero og-wrap">
-          <h1 className="og-visually-hidden">DealPilot: המותגים שאתם מכירים, מהחנות הרשמית שלהם</h1>
+          <h1 className="og-visually-hidden">DealPilot: המותגים שאתם מכירים, מוכרים המזוהים בשם המותג שלהם</h1>
           <HeroCarousel slides={buildSlides(items)} />
         </div>
 
@@ -177,7 +177,7 @@ export default function DealPilotHome({ snapshot }: { snapshot: CatalogSnapshot 
         <section className="og-wrap og-trust" aria-label="למה DealPilot">
           <div>
             <BadgeCheck aria-hidden="true" />
-            <span><strong>רק חנויות רשמיות</strong>מוצר עולה רק מחנות בשם המותג</span>
+            <span><strong>מותגים נבחרים</strong>מוצר עולה רק מחנות בשם המותג</span>
           </div>
           <div>
             <Coins aria-hidden="true" />

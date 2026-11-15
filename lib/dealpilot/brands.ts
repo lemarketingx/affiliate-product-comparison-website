@@ -1,6 +1,6 @@
 /* Brands DealPilot sells. Owner-edited.
    storeMatch: lowercase fragments that must appear in the AliExpress shop name
-   (together with "official") for a product to be shown at all.
+   in order to corroborate the branded product title. "Official" is not proof.
    storeVerified: set to true ONLY after the owner manually confirmed the
    brand's official store on AliExpress. Until then the UI says the store was
    matched by name, never that it was verified.
@@ -55,7 +55,9 @@ export type StoreStatus = "verified" | "name-match" | "none";
 export function storeStatus(brand: Brand, shopName: string | null): StoreStatus {
   if (!shopName) return "none";
   const s = " " + shopName.toLowerCase() + " ";
-  const named = s.includes("official") && brand.storeMatch.some((m) => s.includes(m));
+  // Shop name plus product title corroboration is for brand discovery only.
+  // Do NOT call the shop official or the product authentic unless owner-verified.
+  const named = brand.storeMatch.some((m) => s.includes(m));
   if (!named) return "none";
   return brand.storeVerified ? "verified" : "name-match";
 }

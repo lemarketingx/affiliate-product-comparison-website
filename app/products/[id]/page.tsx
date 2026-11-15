@@ -5,7 +5,6 @@ import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { formatMoney } from "../../../lib/dealpilot/urls";
 import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
-import { evaluateEligibility } from "../../../lib/aliexpress/quality";
 import ProductGallery from "../../product-gallery";
 import { StoreLine } from "../../product-card";
 import { BrandChip, discountOf } from "../../product-card";
@@ -55,7 +54,7 @@ export default async function Product({
   const similar = snapshot.items
     .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
     .slice(0, 4);
-  const verified = evaluateEligibility(p).eligible;
+
   const brand = brandBySlug(p.categorySlug);
   const il = israelPriceFor(p.id);
   const warranty = warrantyFor(p.id);
@@ -77,7 +76,7 @@ export default async function Product({
       rel="sponsored noopener noreferrer"
       target="_blank"
     >
-      לחנות הרשמית ב־AliExpress <ExternalLink size={18} />
+      לצפייה במוצר ב־AliExpress <ExternalLink size={18} />
     </a>
   ) : p.productUrl ? (
     <a
@@ -139,9 +138,7 @@ export default async function Product({
                     לא כולל משלוח, מע״מ או מכס, אם יחולו.
                   </p>
                 </div>
-              ) : (
-                <p className="og-fine">עוד לא השווינו את המוצר הזה למחיר בחנויות בישראל.</p>
-              )}
+              ) : null}
               <p className="og-fine">המחיר הסופי, המסים והמשלוח נבדקים ב־AliExpress.</p>
               {cta ?? <div className="og-notice">לא התקבל קישור מקור תקין.</div>}
               <p className="og-fine">
@@ -150,51 +147,25 @@ export default async function Product({
                   : "לא התקבל קישור קידום למוצר."}
               </p>
             </div>
-            <div className={"dp-selection-policy og-notice " + (verified ? "is-go" : "")}>
-              <div>
-                <strong>{verified ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}</strong>
-                {!verified && <p>דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו. יש לבדוק אותם ב־AliExpress לפני רכישה.</p>}
-              </div>
-            </div>
-            {p.titleLanguage === "he" && (
-              <p className="og-fine">
-                מידע בעברית שהוחזר מ־AliExpress. יש לבדוק את המפרט המקורי לפני רכישה.
-              </p>
-            )}
-            <div className="og-warranty-box">
+            {warranty && <div className="og-warranty-box">
               <ShieldQuestion size={22} aria-hidden="true" />
               <div>
-                <strong>מי נותן אחריות ואיפה מממשים?</strong>
-                {warranty ? <>
-                  <p><b>נותן האחריות:</b> {warranty.provider}</p>
-                  <p><b>מדינת שירות:</b> {warranty.serviceCountry}</p>
-                  <p><b>כתובת שירות:</b> {warranty.serviceAddress ?? "לא נמסרה כתובת שירות מאומתת"}</p>
-                  <p><b>תקופת אחריות:</b> {warranty.durationMonths === null ? "לא צוינה בתקנון שנבדק" : warranty.durationMonths + " חודשים"}</p>
-                  {warranty.scope && <p><b>כיסוי:</b> {warranty.scope}</p>}
-                  <p><a href={warranty.sourceUrl} target="_blank" rel="noopener noreferrer">לתנאי האחריות שנבדקו</a> · עדכון: {warranty.checkedAt}</p>
-                </> : <>
-                  <p><b>נותן האחריות:</b> לא אומת. המותג, המוכר והיבואן בישראל אינם בהכרח אותו גורם.</p>
-                  <p><b>היכן מממשים אחריות:</b> לא אומת. יש לבדוק מול המוכר אם השירות בישראל או דורש משלוח לחו״ל ועל חשבון מי.</p>
-                  <p><b>תקופה ותנאים:</b> לא נמסרו נתוני אחריות מאומתים ב־Affiliate API.</p>
-                  <p>בקשו מהמוכר תנאי אחריות בכתב, כתובת שירות, תהליך טיפול ותנאי משלוח חזרה לפני התשלום.</p>
-                </>}
-                <Link className="og-link" href="/warranty">
-                  כל מה שכדאי לבדוק <ArrowUpLeft size={15} />
-                </Link>
+                <strong>שירות ואחריות למוצר</strong>
+                <p><b>נותן האחריות:</b> {warranty.provider}</p>
+                <p><b>מדינת השירות:</b> {warranty.serviceCountry}</p>
+                {warranty.serviceAddress && <p><b>כתובת שירות:</b> {warranty.serviceAddress}</p>}
+                {warranty.durationMonths !== null && <p><b>תקופת אחריות:</b> {warranty.durationMonths} חודשים</p>}
+                {warranty.scope && <p><b>כיסוי:</b> {warranty.scope}</p>}
+                <a href={warranty.sourceUrl} target="_blank" rel="noopener noreferrer">תנאי האחריות ומקור המידע <ExternalLink size={15}/></a>
               </div>
-            </div>
+            </div>}
             <div className="og-known">
-              <h2>מה ידוע, ומה כדאי לבדוק</h2>
+              <h2>פרטי מוצר וקנייה</h2>
               <ul>
-                <li>
-                  {p.orders !== null
-                    ? p.orders.toLocaleString("he-IL") +
-                      " הזמנות לפי נתוני הספק; התקופה ואיכות המוצר לא אומתו."
-                    : "נתוני הזמנות אינם זמינים."}
-                </li>
-                <li>משלוח לישראל, זמן אספקה, מלאי וגרסה מדויקת: יש לבדוק אצל המוכר.</li>
-                <li>לא ביצענו בדיקת שימוש עצמאית ולא התקבלו מפרט מלא או אישורי בטיחות.</li>
-                <li>נדרשת בדיקת ביקורות המוכר ומדיניות ההחזרה לפני רכישה.</li>
+                {p.orders !== null && <li>{p.orders.toLocaleString("he-IL")} הזמנות שדווחו על ידי AliExpress</li>}
+                {p.positiveFeedbackPercent !== null && <li>{p.positiveFeedbackPercent}% משוב חיובי שדווח על ידי הספק</li>}
+                {p.shopName && <li>מוכר: <span dir="ltr">{p.shopName}</span></li>}
+                <li>המחיר הסופי ותנאי המשלוח מוצגים בקופה ב־AliExpress</li>
               </ul>
               <p className="og-fine">
                 עדכון נתוני ספק: {updated}. הקטלוג מתרענן עד כל שש שעות.
@@ -206,7 +177,7 @@ export default async function Product({
           <section className="og-section">
             <div className="og-section-head">
               <div>
-                <span className="og-kicker">מאותה חנות רשמית</span>
+                <span className="og-kicker">מאותו מותג</span>
                 <h2>עוד מ־{brand?.he ?? p.category}</h2>
               </div>
               <Link className="og-link" href={"/brands/" + p.categorySlug}>
