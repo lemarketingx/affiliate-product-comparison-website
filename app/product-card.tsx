@@ -6,6 +6,7 @@ import ProductImage from "./product-image";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { israelPriceFor } from "../lib/dealpilot/israel-prices";
 import { brandBySlug } from "../lib/dealpilot/brands";
+import { BrandMark } from "./brand-mark";
 import { FavButton } from "./favorites";
 
 export function discountOf(item: Pick<CatalogItem, "price" | "originalPrice">) {
@@ -42,14 +43,7 @@ export function BrandChip({ slug, name }: { slug: string; name: string }) {
       style={{ "--accent": b?.accent ?? "#0b1730" } as React.CSSProperties}
       dir="ltr"
     >
-      {b?.logo ? (
-        <img className="og-chip-logo" src={b.logo} alt={name} loading="lazy" />
-      ) : (
-        <>
-          <i aria-hidden="true" />
-          {name}
-        </>
-      )}
+      <BrandMark slug={slug} name={name} className="og-chip-brand" />
     </Link>
   );
 }
