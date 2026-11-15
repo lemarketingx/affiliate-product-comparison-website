@@ -9,6 +9,7 @@ import {
   type AliProduct,
 } from "./affiliate";
 import { categories } from "../dealpilot/categories";
+import { identifyListedBrand } from "../dealpilot/brands";
 import { buildCatalog, type CatalogReport, type CatalogProduct, type PlanItem } from "./catalog-build";
 
 export type CatalogItem = AliProduct & {
@@ -47,7 +48,7 @@ async function providerPage(term: string, pageNo: number, pageSize: number) {
 }
 // Staggered lifetimes so deeper pages do not all refresh in the same burst.
 const pageCache = [21600, 28800, 36000].map((revalidate, i) =>
-  unstable_cache(providerPage, ["dealpilot-catalog-page-v5", "p" + (i + 1), NS], { revalidate }),
+  unstable_cache(providerPage, ["dealpilot-catalog-brand-page-v1", "p" + (i + 1), NS], { revalidate }),
 );
 const fetchPlanPage = (item: PlanItem, pageSize: number) =>
   pageCache[Math.min(item.pageNo, pageCache.length) - 1](item.term, item.pageNo, pageSize);
@@ -79,7 +80,7 @@ async function assemble(): Promise<CatalogSnapshot> {
 // The whole assembled catalog is one cache entry shared by all instances.
 // After the first build, visitors always get it instantly (stale-while-revalidate);
 // refreshes and provider calls happen in the background, never in a page view.
-const cachedSnapshot = unstable_cache(assemble, ["dealpilot-public-catalog-v6", NS], { revalidate: 21600 });
+const cachedSnapshot = unstable_cache(assemble, ["dealpilot-brand-catalog-v1", NS], { revalidate: 21600 });
 
 let memo: { at: number; snapshot: CatalogSnapshot } | null = null;
 let inflight: Promise<CatalogSnapshot> | null = null;
@@ -155,7 +156,7 @@ export async function getDiscoveredCatalog(): Promise<CatalogSnapshot> {
     });
   }
   return {
-    items: [...unique.values()],
+    items: [...unique.values()].filter((p) => identifyListedBrand(p) !== null),
     fetchedAt: timestamps.sort()[0] ?? null,
     available: timestamps.length > 0,
     partial: timestamps.length > 0 && timestamps.length < categories.length,

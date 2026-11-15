@@ -3,13 +3,14 @@
 import type { AliProduct } from "./affiliate.ts";
 import type { ProductPage } from "./query.ts";
 import { evaluateEligibility } from "./quality.ts";
+import { identifyListedBrand } from "../dealpilot/brands.ts";
 
 export const CATALOG_POLICY = {
   /** Public listing requires strictly more reported sales than this. */
   minimumReportedSalesExclusive: 5000,
-  target: 500,
+  target: 0,
   /** Stop requesting further pages once this many products are publishable. */
-  stopAt: 650,
+  stopAt: 300,
   /** Tried in order; the first size the provider accepts is used. */
   pageSizes: [50, 40, 20, 10],
   maxPagesPerTerm: 3,
@@ -28,7 +29,8 @@ export type RejectReason =
   | "price"
   | "image"
   | "product_url"
-  | "affiliate";
+  | "affiliate"
+  | "brand";
 export const REJECT_LABELS: Record<RejectReason, string> = {
   currency: "המחיר לא הוחזר בשקלים (ILS)",
   sales: "5,000 מכירות מדווחות או פחות (או נתון חסר)",
@@ -37,6 +39,7 @@ export const REJECT_LABELS: Record<RejectReason, string> = {
   image: "אין תמונה תקינה",
   product_url: "אין קישור מוצר תקין",
   affiliate: "אין קישור שותפים תקין",
+  brand: "מותג מוכר אינו מזוהה בהצלבת שם המוצר ונתוני הספק",
 };
 
 const AFFILIATE_HOSTS = ["s.click.aliexpress.com", "aliexpress.com", "aliexpress.us"];
@@ -57,6 +60,7 @@ export function validAffiliateUrl(raw: string | null, productUrl: string | null)
 /** All reasons a product cannot be listed publicly (empty = publishable). */
 export function publicRejections(p: AliProduct, minSales: number = CATALOG_POLICY.minimumReportedSalesExclusive): RejectReason[] {
   const out: RejectReason[] = [];
+  if (!identifyListedBrand(p)) out.push("brand");
   if (p.currency !== "ILS") out.push("currency");
   if (p.orders === null || !Number.isSafeInteger(p.orders) || p.orders <= minSales) out.push("sales");
   const blockers = evaluateEligibility(p).blockers;

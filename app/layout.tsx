@@ -5,9 +5,9 @@ import "./welcoming.css";
 import "./storefront.css";
 
 export const metadata: Metadata = {
-  title: "DealPilot | מוצרים חכמים והזדמנויות שוות",
+  title: "DealPilot | מותגים מוכרים ב־AliExpress",
   description:
-    "מוצרים שימושיים, גאדג׳טים והפתעות מ־AliExpress. מגלים מוצרים חכמים, עם נתוני ספק וגילוי שותפים ברור.",
+    "מוצרי מותגים מוכרים ב־AliExpress: טכנולוגיה, בית, אודיו ורכב. מחיר בשקלים, בדיקת עלות לישראל וגילוי שותפים ברור.",
   metadataBase: new URL(
     process.env.DEALPILOT_SITE_URL ||
       (process.env.VERCEL_URL
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
         : "http://localhost:3100"),
   ),
   openGraph: {
-    title: "DealPilot | מגלים מוצרים חכמים",
-    description: "קצת סקרנות. הרבה שימושיות. מוצרים מ־AliExpress במקום אחד.",
+    title: "DealPilot | מגלים מותגים מוכרים",
+    description: "מותגים מוכרים ומוצרים מזוהים ב־AliExpress במקום אחד, עם כלים לקנייה חכמה לישראל.",
     locale: "he_IL",
     type: "website",
   },

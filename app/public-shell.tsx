@@ -16,7 +16,6 @@ import {
 import { categories } from "../lib/dealpilot/categories";
 import { BrandMark, gateCode } from "./flight-bits";
 import FlightClock from "./flight-clock";
-import { visibleTypes } from "../lib/preflight";
 
 export function Brand({ light = false }: { light?: boolean }) {
   return (
@@ -34,7 +33,6 @@ export function Brand({ light = false }: { light?: boolean }) {
 }
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
-  const autopilot = visibleTypes().length > 0;
   return (
     <div className="fp">
       <a className="fp-skip" href="#main">
@@ -64,17 +62,15 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
             <input
               name="q"
               maxLength={80}
-              placeholder="לאן ממריאים היום? חפשו מוצר"
-              aria-label="חיפוש מוצרים"
+              placeholder="חיפוש מותג או מוצר ממותג"
+              aria-label="חיפוש מותגים ומוצרים"
             />
             <button type="submit" aria-label="חיפוש">
               <ArrowUpLeft size={18} />
             </button>
           </form>
           <nav className="fp-nav" aria-label="ניווט ראשי">
-            {autopilot && <Link href="/autopilot">טייס אוטומטי</Link>}
-            {autopilot && <Link href="/missions">יעדים</Link>}
-            <Link href="/deals">גלו מוצרים</Link>
+            <Link href="/brands">מותגים</Link><Link href="/deals">מוצרי מותגים</Link>
             <Link href="/categories">קטגוריות</Link>
             <Link href="/guides">מדריכים</Link>
           </nav>
@@ -83,9 +79,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
               <Menu />
             </summary>
             <nav aria-label="ניווט נייד">
-              {autopilot && <Link href="/autopilot">טייס אוטומטי</Link>}
-              {autopilot && <Link href="/missions">יעדים</Link>}
-              <Link href="/deals">גלו מוצרים</Link>
+              <Link href="/brands">מותגים</Link><Link href="/deals">מוצרי מותגים</Link>
               <Link href="/categories">כל הקטגוריות</Link>
               <Link href="/guides">מדריכים</Link>
             </nav>
@@ -101,12 +95,12 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
               <p>
                 מגלים מוצרים חכמים, בודקים לפני שממריאים.
                 <br />
-                אתר גילוי עצמאי בעברית למוצרי AliExpress.
+                אתר ישראלי למציאת מוצרים של מותגים מוכרים ב־AliExpress.
               </p>
             </div>
             <div>
               <strong>לגלות</strong>
-              <Link href="/deals">כל המוצרים</Link>
+              <Link href="/brands">מותגים</Link><Link href="/deals">מוצרי מותגים</Link>
               <Link href="/categories">קטגוריות</Link>
               <Link href="/guides">קונים חכם</Link>
             </div>

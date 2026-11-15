@@ -3,15 +3,14 @@ import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { validAffiliateUrl } from "../../../lib/aliexpress/catalog-build";
+import { identifyListedBrand } from "../../../lib/dealpilot/brands";
 import { formatMoney } from "../../../lib/dealpilot/urls";
 import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
 import { evaluateEligibility } from "../../../lib/aliexpress/quality";
 import ProductGallery from "../../product-gallery";
-import PreflightCheck from "../../preflight-check";
 import { Barcode, flightCode, gateCode } from "../../flight-bits";
 import { categories } from "../../../lib/dealpilot/categories";
-import { ProductBriefing } from "../../_preflight/product-briefing";
 import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { TaxBadge } from "../../tax-badge";
 import ProductCostCalculator from "../../product-cost-calculator";
@@ -59,6 +58,7 @@ export default async function Product({
     .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
     .slice(0, 3);
   const verified = evaluateEligibility(p).eligible;
+  const brand = identifyListedBrand(p);
   const gate = gateCode(Math.max(0, categories.findIndex((c) => c.slug === p.categorySlug)));
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
   const updated = snapshot.fetchedAt
@@ -85,6 +85,7 @@ export default async function Product({
                 <span className="fp-kicker">כרטיס עלייה למטוס</span>
                 <span dir="ltr" className="fp-ticket-code">{flightCode(p.id)}</span>
               </div>
+              {brand && <Link className="fp-product-brand-tag" href={"/brands/" + brand.slug} dir="ltr">{brand.name} · לכל מוצרי המותג</Link>}
               <h1 dir="auto">{p.title}</h1>
               <dl className="fp-ticket-grid">
                 <div>
@@ -108,7 +109,7 @@ export default async function Product({
               </dl>
               <div className={"dp-selection-policy fp-notice " + (verified ? "is-go" : "is-wait")}>
                 <div>
-                  <strong>{verified ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}</strong>
+                  <strong>{verified ? "בדיקות האיכות עברו" : "איכות ומקוריות לא אומתו"}</strong>
                   {!verified && <p>דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו. יש לבדוק אותם ב־AliExpress לפני רכישה.</p>}
                 </div>
               </div>
@@ -169,12 +170,6 @@ export default async function Product({
                   : "לא התקבל קישור קידום למוצר."}
               </p>
             </div>
-            <PreflightCheck />
-            <ProductBriefing
-              title={p.title}
-              priceILS={p.currency === "ILS" && Number.isFinite(Number(p.price)) && Number(p.price) > 0 ? Number(p.price) : null}
-              usdRate={usdRate}
-            />
             <div className="fp-known fp-buy-checks">
               <h2>לפני שלוחצים על קנייה</h2>
               <p className="fp-fine">נתונים שלא התקבלו מה־API מסומנים כלא מאומתים, ולא כהבטחה.</p>

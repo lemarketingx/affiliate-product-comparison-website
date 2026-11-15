@@ -44,11 +44,11 @@ export default function CatalogBrowser({
     <section className="fp-section fp-wrap fp-catalog" id="products">
       <div className="fp-section-head">
         <div>
-          <span className="fp-kicker">לוח הטיסות המלא</span>
-          <h1 className="fp-catalog-title">{title ?? "בואו למצוא משהו בשבילכם."}</h1>
+          <span className="fp-kicker">קטלוג מותגים מוכרים</span>
+          <h1 className="fp-catalog-title">{title ?? "מצאו את המותג שאתם מחפשים."}</h1>
           <p>
             {snapshot.available
-              ? "מוצרים מ־AliExpress במחירי ספק בשקלים. המחירים והזמינות עשויים להשתנות."
+              ? "מוצרי מותגים נבחרים מ־AliExpress, במחירי ספק בשקלים. מקוריות ומוכר מורשה טרם אומתו."
               : "הקטלוג אינו זמין כרגע. נסו שוב מאוחר יותר."}
           </p>
         </div>
@@ -56,9 +56,9 @@ export default function CatalogBrowser({
       <div className="dp-selection-policy fp-notice">
         <RadioTower size={18} aria-hidden="true" />
         <div>
-          <strong>מוצרים לגילוי · בדיקת האיכות טרם הושלמה</strong>
+          <strong>רק מותגים מזוהים · מקוריות המוצר טרם אומתה</strong>
           <p>
-            מוצגים רק מוצרים עם יותר מ־{fmt(CATALOG_POLICY.minimumReportedSalesExclusive)} מכירות מדווחות, מחיר בשקלים, כותרת בעברית וקישור
+            המוצרים עברו זיהוי מותג בהצלבת שם המוצר ונתוני חנות/ספק, עם יותר מ־{fmt(CATALOG_POLICY.minimumReportedSalesExclusive)} מכירות מדווחות, מחיר בשקלים, כותרת בעברית וקישור
             שותפים תקין. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.
           </p>
           <small>מכירות מדווחות הן נתון של הספק לתקופה אחרונה, לא בדיקת איכות. בדקו דירוג, ביקורות ומשלוח ב־AliExpress לפני רכישה.</small>
@@ -124,14 +124,6 @@ export default function CatalogBrowser({
           "ממתינים לחיבור הקטלוג"
         )}
       </p>
-      {snapshot.available && report && published < CATALOG_POLICY.target && !filtered && (
-        <div className="fp-notice is-wait fp-shortfall">
-          <strong>פורסמו {fmt(published)} מוצרים מתוך יעד של {fmt(CATALOG_POLICY.target)}.</strong>
-          <p>{report.shortfall.slice(1, 3).join(" ")}</p>
-          <Link href="/catalog-status">לדוח המלא: כמה נשלפו, כמה נפסלו ולמה</Link>
-        </div>
-      )}
-
       {snapshot.warming ? (
         <div className="fp-empty" role="status">
           <span><PackageSearch size={34} /></span>

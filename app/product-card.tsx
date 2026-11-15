@@ -6,11 +6,13 @@ import ProductImage from "./product-image";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { Barcode, flightCode } from "./flight-bits";
 import { TaxBadge } from "./tax-badge";
+import { identifyListedBrand } from "../lib/dealpilot/brands";
 import type { UsdRate } from "../lib/preflight/tax-estimate";
 
 /* A product is a boarding pass: image, ticket body, perforation, price stub. */
 export function ProductCard({ item, eager = false, usdRate = null }: { item: CatalogItem; eager?: boolean; usdRate?: UsdRate | null }) {
   const verified = evaluateEligibility(item).eligible;
+  const brand = identifyListedBrand(item);
   return (
     <article className="dp-product fp-pass">
       <Link
@@ -23,10 +25,11 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
         <span className="fp-pass-class">{item.category}</span>
       </Link>
       <div className="fp-pass-body">
+        {brand && <Link className="fp-product-brand-tag" href={"/brands/" + brand.slug} dir="ltr">{brand.name}</Link>}
         <div className="fp-pass-meta">
           <span dir="ltr">{flightCode(item.id)}</span>
           <span className={"fp-chip " + (verified ? "is-go" : "is-wait")}>
-            {verified ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}
+            {verified ? "בדיקות איכות עברו" : "איכות ומקוריות טרם אומתו"}
           </span>
         </div>
         <h3 dir="auto">

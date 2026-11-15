@@ -2530,3 +2530,53 @@
 .fp-buy-checks{border-radius:16px;border:1px solid var(--fp-line);background:var(--fp-card);padding:20px;}
 .fp-buy-checks ul{padding-inline-start:20px;}
 @media(max-width:480px){.fp-cost-tool{padding:15px;margin-block:16px}.fp-cost-fields{gap:10px}.fp-cost-fields label{font-size:12px}.fp-cost-fields input{padding:9px;font-size:16px}.fp-cost-total{flex-direction:column;align-items:flex-start}}
+
+
+/* BRAND-FIRST DEALPILOT 2026. Editorial premium layout; all imagery is catalog-derived. */
+.fp-brand-hero{background:linear-gradient(115deg,#111d2e 0%,#182e3a 65%,#0f2628 100%);color:#fff;overflow:hidden;}
+.fp-brand-hero-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(285px,.75fr);gap:clamp(26px,5vw,90px);align-items:center;padding-block:clamp(55px,7vw,108px);}
+.fp-brand-hero-copy h1{font-size:clamp(42px,6.4vw,84px);line-height:1.09;letter-spacing:-.04em;font-weight:800;max-width:840px;margin:16px 0 22px;color:#fff;}
+.fp-brand-hero-copy h1 span{display:block;color:#f3c678;}
+.fp-brand-hero-copy>p{font-size:clamp(15px,1.5vw,19px);line-height:1.8;max-width:660px;color:#d3dfdf;}
+.fp-brand-hero-label{display:inline-flex;gap:9px;align-items:center;color:#f3c678;font-size:14px;font-weight:700;letter-spacing:.02em}
+.fp-brand-hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0;}
+.fp-brand-hero-ctas .fp-btn{background:#f6c86c;color:#15202e;border-color:#f6c86c;}
+.fp-brand-hero-ctas .fp-btn.fp-btn-ghost{background:transparent;color:#fff;border-color:#7b969c;}
+.fp-brand-hero-disclosure{display:flex;align-items:start;gap:8px;font-size:12px!important;color:#cadada!important;}
+.fp-brand-hero-disclosure svg{flex:none;margin-top:3px;}
+.fp-brand-hero-board{border-radius:26px;padding:30px;display:grid;gap:26px;min-height:340px;background:linear-gradient(143deg,#fcfaf2 0%,#e4e9de 100%);color:#152537;box-shadow:22px 22px 0 #0002;transform:rotate(-2deg);}
+.fp-brand-board-top{font-weight:800;font-size:14px;display:inline-flex;gap:9px;align-items:center;}
+.fp-brand-hero-big{font-size:clamp(65px,8vw,114px);font-weight:900;line-height:1;letter-spacing:-.05em;}
+.fp-brand-hero-big small{font-size:13px;font-weight:600;letter-spacing:0;display:block;padding-top:10px;}
+.fp-brand-hero-pills{display:flex;flex-wrap:wrap;gap:8px;}
+.fp-brand-hero-pills a{background:#142a37;color:#f9e8b7;padding:8px 11px;border-radius:7px;font-size:13px;font-weight:800;transition:transform .15s;}
+.fp-brand-hero-pills a:hover{transform:translateY(-2px);}
+.fp-brand-board-bottom{border-top:1px solid #b3c6c5;padding-top:15px;font-size:12px;color:#465b60;}
+.fp-brand-discovery{padding-block:clamp(45px,6vw,80px);}
+.fp-brand-discovery .fp-section-head h2{font:800 clamp(33px,4.1vw,52px)/1.13 var(--fp-display);}
+.fp-brand-discovery .fp-section-head p{color:var(--fp-muted);margin-top:9px;}
+.fp-brand-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-block:22px;}
+.fp-brand-card{display:flex;flex-direction:column;gap:8px;min-height:162px;padding:20px;border-radius:17px;border:1.5px solid #c4d0cc;background:#fff;transition:transform .16s,box-shadow .16s,border-color .16s;}
+.fp-brand-card:hover{border-color:#253e4e;transform:translateY(-4px);box-shadow:0 12px 22px #16324220;}
+.fp-brand-card strong{font-size:clamp(20px,2.3vw,29px);letter-spacing:-.035em;color:#142737;font-weight:900;}
+.fp-brand-card-label{font-size:11px;color:#5b7b7b;font-weight:700;}
+.fp-brand-card>span:not(.fp-brand-card-label){font-size:13px;color:var(--fp-muted);}
+.fp-brand-card-arrow{display:flex;align-items:center;gap:5px;margin-top:auto;font-weight:800!important;color:#1f594f!important;}
+.fp-brand-benefits{background:#e5ece6;padding-block:32px;border-block:1px solid #cad9d2;}
+.fp-brand-benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;}
+.fp-brand-benefit-grid>div{display:grid;gap:9px;}
+.fp-brand-benefit-grid svg{color:#1d6459;}
+.fp-brand-benefit-grid strong{font-size:18px;}
+.fp-brand-benefit-grid p{font-size:14px;color:var(--fp-muted);}
+.fp-brand-last{padding-block:50px 70px;display:flex;justify-content:space-between;align-items:center;gap:32px;}
+.fp-brand-last>div:first-child{max-width:620px;}
+.fp-brand-last h2{font-size:clamp(28px,4vw,46px);line-height:1.1;}
+.fp-brand-last p{margin:15px 0 22px;color:var(--fp-muted);line-height:1.65;}
+.fp-brand-last-numbers{display:grid;grid-template-columns:auto auto;gap:8px 15px;align-items:baseline;background:#e7e8db;border-radius:18px;padding:27px;}
+.fp-brand-last-numbers strong{font-size:42px;font-weight:900;}
+.fp-brand-last-numbers span{font-size:13px;}
+.fp-brands-page .fp-lead{margin:15px 0 24px;max-width:830px;}
+.fp-brands-page .fp-brand-grid{margin-top:30px;}
+@media(max-width:1024px){.fp-brand-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.fp-brand-hero-grid{gap:24px;}.fp-brand-hero-board{padding:20px;}}
+@media(max-width:730px){.fp-brand-hero-grid{grid-template-columns:1fr;padding-block:45px;}.fp-brand-hero-board{transform:none;min-height:0;}.fp-brand-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.fp-brand-benefit-grid{grid-template-columns:1fr;gap:22px;}.fp-brand-last{flex-direction:column;align-items:stretch;}.fp-brand-hero-copy h1{font-size:clamp(38px,9.5vw,58px);}}
+@media(max-width:430px){.fp-brand-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.fp-brand-card{padding:13px;min-height:143px;}.fp-brand-card strong{font-size:20px;}.fp-brand-hero-ctas{flex-direction:column;}.fp-brand-hero-ctas .fp-btn{justify-content:center;}}
