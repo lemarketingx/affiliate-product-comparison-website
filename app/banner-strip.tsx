@@ -43,7 +43,7 @@ export default function BannerStrip({ banners, attributionConfirmed }: { banners
                   <span className="fp-banner-dates">{b.endsAt ? "בתוקף עד " + date(b.endsAt) : "תוקף הקמפיין לא דווח"}</span>
                 )}
                 <span className="fp-banner-cta">
-                  {external ? <>לקמפיין ב־AliExpress <ExternalLink size={15} aria-hidden="true" /></> : <>לשער <ArrowUpLeft size={15} aria-hidden="true" /></>}
+                  {external ? <>למוצר מתוך הקמפיין <ExternalLink size={15} aria-hidden="true" /></> : <>לשער <ArrowUpLeft size={15} aria-hidden="true" /></>}
                 </span>
               </span>
             </>
