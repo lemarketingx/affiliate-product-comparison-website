@@ -3,7 +3,6 @@ import { ChevronLeft, BadgeCheck, Store } from "lucide-react";
 import type { CatalogItem } from "../lib/aliexpress/catalog";
 import { formatMoney } from "../lib/dealpilot/urls";
 import ProductImage from "./product-image";
-import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { israelPriceFor } from "../lib/dealpilot/israel-prices";
 import { brandBySlug } from "../lib/dealpilot/brands";
 import { BrandMark } from "./brand-mark";
@@ -49,7 +48,6 @@ export function BrandChip({ slug, name }: { slug: string; name: string }) {
 }
 
 export function ProductCard({ item }: { item: CatalogItem }) {
-  const verified = evaluateEligibility(item).eligible;
   const il = israelPriceFor(item.id);
   const off = discountOf(item);
   const price = formatMoney(item.price, item.currency);
@@ -74,15 +72,7 @@ export function ProductCard({ item }: { item: CatalogItem }) {
           <Link href={"/products/" + item.id}>{item.title}</Link>
         </h3>
         <StoreLine item={item} />
-        <p className="og-card-meta">
-          {item.orders !== null
-            ? item.orders.toLocaleString("he-IL") + " הזמנות לפי הספק"
-            : "נתוני הזמנות אינם זמינים"}
-          {" · "}
-          <span className={verified ? "og-ok" : "og-pending"}>
-            {verified ? "מאומת לפי תנאי הסינון" : "טרם נבדק לפי תנאי הסינון שלך"}
-          </span>
-        </p>
+        {item.orders !== null && <p className="og-card-meta">{item.orders.toLocaleString("he-IL")} הזמנות מדווחות</p>}
       </div>
       <div className="dp-product-price og-card-price">
         <div>
@@ -102,9 +92,7 @@ export function ProductCard({ item }: { item: CatalogItem }) {
           למוצר <ChevronLeft size={16} />
         </Link>
       </div>
-      <small className="og-card-aff">
-        {item.affiliateUrl ? "כולל קישור שותפים" : "קישור שותפים אינו זמין"}
-      </small>
+      {item.affiliateUrl && <small className="og-card-aff">קישור שותפים</small>}
     </article>
   );
 }
