@@ -50,11 +50,17 @@ globalThis.fetch = async function (input, init) {
       return wrap(method, { products: { product: [{
         product_id: id, product_title: "TEST FIXTURE — " + name,
         product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-banner-${id}.jpg`,
-        product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://www.aliexpress.com/item/${id}.html`,
+        // Realistic: a localised detail URL with tracking-style query parameters.
+        product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://he.aliexpress.com/item/${id}.html?gatewayAdapt=glo2isr&aff_fixture=1`,
       }] } });
     }
     if (method === "aliexpress.affiliate.link.generate") {
       const sources = (params.get("source_values") ?? "").split(",").filter(Boolean);
+      // Simulated provider validation (TEST FIXTURE): tracking id required, canonical URLs only.
+      const bad = (msg) => Response.json({ aliexpress_affiliate_link_generate_response: { resp_result: { resp_code: 402, resp_msg: msg } } });
+      if (!params.get("tracking_id")) return bad("The input parameter tracking_id that is mandatory for processing this request is not supplied.");
+      if (sources.some((src) => src.includes("?") || !src.startsWith("https://www.aliexpress.com/")))
+        return bad("Invalid parameter source_values: " + sources.join(","));
       return wrap(method, {
         tracking_id: params.get("tracking_id"),
         total_result_count: sources.length,

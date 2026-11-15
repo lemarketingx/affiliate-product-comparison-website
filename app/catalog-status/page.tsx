@@ -127,6 +127,9 @@ export default async function CatalogStatus() {
                     {Object.entries(banners.errors).map(([code, n]) => (
                       <tr key={code}><td>שגיאת ספק <span dir="ltr">{code}</span></td><td className="num">{fmt(n)}</td></tr>
                     ))}
+                    {(banners.errorDetails ?? []).map((d) => (
+                      <tr key={d.code + d.message}><td>הודעת הספק ל־<span dir="ltr">{d.code}</span> (מסוננת)</td><td dir="auto">{d.message ?? "לא הוחזרה הודעה"}</td></tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

@@ -4,8 +4,12 @@ import { after } from "next/server";
 import { AffiliateError, callAffiliateMethod, configured } from "./affiliate";
 import { categories } from "../dealpilot/categories";
 import {
+  canonicalSource,
   checkGeneratedLink,
   classifyRedirect,
+  maskLink,
+  safeProviderMessage,
+  type GeneratedLinks,
   parseFeaturedPromos,
   parseGeneratedLinks,
   parsePromoProducts,
@@ -33,6 +37,8 @@ export type Banner = {
   reason: string | null;
   sourceUrl: string | null;
   link: string | null; // generated affiliate link (or internal path for category fallbacks)
+  /** Source exactly as the provider returned it, before canonicalisation (admin diagnostics). */
+  originalSource?: string | null;
   productCount: number | null;
 };
 export type BannerSnapshot = {
@@ -43,6 +49,8 @@ export type BannerSnapshot = {
   promosFound: number;
   promoFieldsSeen: string[];
   errors: Record<string, number>;
+  /** Provider messages with URLs, tracking id and keys removed. */
+  errorDetails: { code: string; message: string | null }[];
   banners: Banner[];
 };
 
@@ -55,12 +63,84 @@ function trackingId(): string | null {
   return t && /^[\w-]{1,64}$/.test(t) ? t : null;
 }
 const codeOf = (e: unknown) => (e instanceof AffiliateError ? e.code : "UNKNOWN");
+const secrets = () => [trackingId(), process.env.ALIEXPRESS_APP_KEY?.trim(), process.env.ALIEXPRESS_APP_SECRET?.trim()];
+
+type GenResult = { ok: true; gen: GeneratedLinks } | { ok: false; code: string; message: string | null };
+/** One link.generate call. Only documented parameter names are sent. */
+async function generateLink(source: string, tid: string | null, extra: Record<string, string>): Promise<GenResult> {
+  const params: Record<string, string> = { ...extra, source_values: source };
+  if (tid) params.tracking_id = tid;
+  try {
+    const got = unwrapResult(await callAffiliateMethod("aliexpress.affiliate.link.generate", params, GUARD), "aliexpress.affiliate.link.generate");
+    if (!got.ok) return { ok: false, code: got.code, message: got.message ?? null };
+    return { ok: true, gen: parseGeneratedLinks(got.result) };
+  } catch (e) {
+    return { ok: false, code: codeOf(e), message: null };
+  }
+}
+
+export type ProbeVariant = {
+  name: string;
+  changed: string;
+  params: Record<string, string>;
+  code: string | null;
+  message: string | null;
+  linkReturned: string | null; // masked
+  trackingEchoed: "same" | "different" | "missing" | null;
+  ok: boolean;
+};
+/**
+ * Admin diagnostic: one link.generate call per variant, changing one thing at
+ * a time against a known-good baseline. Values are described, never echoed:
+ * no keys, no tracking id, no full generated links.
+ */
+export async function probeLinkGenerate(rawSource: string): Promise<{ source: string; variants: ProbeVariant[] }> {
+  const tid = trackingId();
+  const canonical = canonicalSource(rawSource);
+  const describe = (p: Record<string, string>) =>
+    Object.fromEntries(Object.entries(p).map(([k, v]) => [k,
+      k === "tracking_id" ? `מוגדר (${v.length} תווים)` :
+      k === "source_values" ? (v === canonical ? "כתובת מוצר קנונית" : "כתובת כפי שהתקבלה מה־API") + " · " + maskLink(v) :
+      v]));
+  const plan: { name: string; changed: string; source: string; tid: string | null; extra: Record<string, string> }[] = [];
+  if (canonical) {
+    plan.push({ name: "A", changed: "בסיס: כתובת קנונית + tracking_id + promotion_link_type=0", source: canonical, tid, extra: { promotion_link_type: "0" } });
+    plan.push({ name: "B", changed: "בלי promotion_link_type", source: canonical, tid, extra: {} });
+    plan.push({ name: "C", changed: "promotion_link_type=2", source: canonical, tid, extra: { promotion_link_type: "2" } });
+    plan.push({ name: "D", changed: "בלי tracking_id (לבדיקה בלבד, לא לפרסום)", source: canonical, tid: null, extra: { promotion_link_type: "0" } });
+  }
+  if (rawSource !== canonical)
+    plan.push({ name: "E", changed: "הכתובת המקורית כפי שהתקבלה (לא קנונית)", source: rawSource, tid, extra: { promotion_link_type: "0" } });
+  const variants: ProbeVariant[] = [];
+  for (const v of plan) {
+    const r = await generateLink(v.source, v.tid, v.extra);
+    const params = describe({ ...v.extra, source_values: v.source, ...(v.tid ? { tracking_id: v.tid } : {}) });
+    if (!r.ok) {
+      variants.push({ name: v.name, changed: v.changed, params, code: r.code, message: safeProviderMessage(r.message, secrets()), linkReturned: null, trackingEchoed: null, ok: false });
+      continue;
+    }
+    const row = r.gen.links.find((l) => l.source === v.source) ?? r.gen.links[0];
+    const echoed = !r.gen.trackingId ? "missing" : tid && r.gen.trackingId === tid ? "same" : "different";
+    variants.push({
+      name: v.name, changed: v.changed, params, code: "200", message: null,
+      linkReturned: maskLink(row?.link ?? null), trackingEchoed: echoed,
+      ok: Boolean(tid && v.tid && checkGeneratedLink(r.gen, v.source, tid).ok),
+    });
+  }
+  return { source: maskLink(canonical ?? rawSource) ?? "", variants };
+}
 
 async function build(): Promise<BannerSnapshot> {
   const now = Date.now();
   const tid = trackingId();
   const errors: Record<string, number> = {};
-  const fail = (code: string) => (errors[code] = (errors[code] ?? 0) + 1);
+  const errorDetails: { code: string; message: string | null }[] = [];
+  const fail = (code: string, message?: string | null) => {
+    errors[code] = (errors[code] ?? 0) + 1;
+    const safe = safeProviderMessage(message, secrets());
+    if (!errorDetails.some((d) => d.code === code && d.message === safe) && errorDetails.length < 10)
+      errorDetails.push({ code, message: safe });
+  };
   const banners: Banner[] = [];
   let promosFound = 0;
   let promoFieldsSeen: string[] = [];
@@ -81,7 +161,7 @@ async function build(): Promise<BannerSnapshot> {
   if (configured()) {
     try {
       const got = unwrapResult(await callAffiliateMethod("aliexpress.affiliate.featuredpromo.get", {}, GUARD), "aliexpress.affiliate.featuredpromo.get");
-      if (!got.ok) fail(got.code);
+      if (!got.ok) fail(got.code, got.message);
       else {
         const { promos, fieldsSeen } = parseFeaturedPromos(got.result);
         promosFound = promos.length;
@@ -108,7 +188,7 @@ async function build(): Promise<BannerSnapshot> {
               }, GUARD),
               "aliexpress.affiliate.featuredpromo.products.get",
             );
-            if (!prods.ok) { fail(prods.code); banner.reason = "לא התקבלו מוצרי הקמפיין: " + prods.code; return; }
+            if (!prods.ok) { fail(prods.code, prods.message); banner.reason = "לא התקבלו מוצרי הקמפיין: " + prods.code; return; }
             const top = parsePromoProducts(prods.result)[0];
             if (!top?.productUrl) { banner.reason = "לקמפיין לא הוחזר מוצר עם קישור תקין"; return; }
             banner.image = top.image;
@@ -125,33 +205,32 @@ async function build(): Promise<BannerSnapshot> {
   }
 
   // 3. One affiliate link per banner via link.generate with the server's tracking id.
+  // One call per source, so a single rejected URL cannot fail the others, and
+  // sources are canonicalised (no locale subdomain, query or tracking params).
   const pending = banners.filter((b) => b.timing === "active" && b.sourceUrl && !b.reason);
   if (!tid) pending.forEach((b) => (b.reason = "ALIEXPRESS_TRACKING_ID לא מוגדר בשרת"));
   else if (!configured()) pending.forEach((b) => (b.reason = "חיבור ה־API אינו מוגדר"));
-  else if (pending.length) {
-    try {
-      const sources = [...new Set(pending.map((b) => b.sourceUrl!))];
-      const got = unwrapResult(
-        await callAffiliateMethod("aliexpress.affiliate.link.generate", {
-          promotion_link_type: "0", source_values: sources.join(","), tracking_id: tid,
-        }, GUARD),
-        "aliexpress.affiliate.link.generate",
-      );
-      if (!got.ok) {
-        fail(got.code);
-        pending.forEach((b) => (b.reason = got.code.includes("PERMISSION") ? "אין הרשאה ליצירת קישורים: " + got.code : "יצירת הקישור נכשלה: " + got.code));
-      } else {
-        const gen = parseGeneratedLinks(got.result);
-        for (const b of pending) {
-          const check = checkGeneratedLink(gen, b.sourceUrl!, tid);
-          if (!check.ok) { b.reason = check.reason; continue; }
-          b.link = gen.links.find((l) => l.source === b.sourceUrl)!.link;
-          b.status = "published";
+  else {
+    for (const b of pending) {
+      const canonical = canonicalSource(b.sourceUrl!);
+      b.originalSource = b.sourceUrl;
+      if (!canonical) b.reason = "כתובת המקור אינה כתובת AliExpress תקינה";
+      else b.sourceUrl = canonical;
+    }
+    const ready = pending.filter((b) => !b.reason);
+    for (let i = 0; i < ready.length; i += 3) {
+      await Promise.all(ready.slice(i, i + 3).map(async (b) => {
+        const r = await generateLink(b.sourceUrl!, tid, { promotion_link_type: "0" });
+        if (!r.ok) {
+          fail(r.code, r.message);
+          b.reason = (r.code.includes("PERMISSION") ? "אין הרשאה ליצירת קישורים: " : "יצירת הקישור נכשלה: ") + r.code;
+          return;
         }
-      }
-    } catch (e) {
-      fail(codeOf(e));
-      pending.forEach((b) => (b.reason = "יצירת הקישור נכשלה: " + codeOf(e)));
+        const check = checkGeneratedLink(r.gen, b.sourceUrl!, tid);
+        if (!check.ok) { b.reason = check.reason; return; }
+        b.link = r.gen.links.find((l) => l.source === b.sourceUrl)!.link;
+        b.status = "published";
+      }));
     }
   }
   for (const b of banners) if (b.status === "blocked" && !b.reason) b.reason = "לא נוצר קישור שותפים";
@@ -164,11 +243,12 @@ async function build(): Promise<BannerSnapshot> {
     promosFound,
     promoFieldsSeen,
     errors,
+    errorDetails,
     banners,
   };
 }
 
-const cached = unstable_cache(build, ["dealpilot-banners-v1", NS], { revalidate: 3600 });
+const cached = unstable_cache(build, ["dealpilot-banners-v2", NS], { revalidate: 3600 });
 export async function getBannerSnapshot(): Promise<BannerSnapshot> {
   return cached();
 }

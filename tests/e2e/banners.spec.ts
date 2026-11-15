@@ -64,12 +64,27 @@ test.describe("official campaigns (isolated fixture API on 3104)", () => {
     await expect(row("Ended Sale")).toContainText("הסתיים · הוסר");
     await expect(row("Broken")).toContainText("חסום");
     await expect(row("Hot Product")).toContainText("מפורסם (קישור תקין)");
-    await expect(row("Hot Product")).toContainText("https://s.click.aliexpress.com/e/TEST_BANNER_");
+    await expect(row("Hot Product")).toContainText("s.click.aliexpress.com/e/TE…");
+    await expect(page.locator("body")).not.toContainText("TEST_BANNER_"); // full tracking links never shown
     await expect(page.locator("body")).toContainText("ייחוס עמלות: טרם אומת");
     await page.getByRole("button", { name: "בדיקת הפניות של קישורי הבאנרים" }).click();
     await expect(page.getByRole("status").filter({ hasText: "נבדקו" })).toContainText("נבדקו 3 קישורים · 3 הפנו ל־AliExpress");
     await expect(page.locator("body")).toContainText("הפניות תקינות: 3 מתוך 3");
     await expect(row("Hot Product")).toContainText("302 s.click.aliexpress.com → 200 www.aliexpress.com");
+    // Parameter-by-parameter diagnosis against the (fixture) API.
+    await page.getByRole("button", { name: /אבחון link.generate/ }).click();
+    const probe = page.locator("table").filter({ hasText: "מה שונה" });
+    await expect(probe).toBeVisible();
+    const vrow = (n: string) => probe.locator("tbody tr").filter({ has: page.locator("td:first-child", { hasText: new RegExp("^" + n + "$") }) });
+    await expect(vrow("A")).toContainText("200 ✓");
+    await expect(vrow("A")).toContainText("כתובת מוצר קנונית");
+    await expect(vrow("A")).toContainText("הוחזר וזהה");
+    await expect(vrow("D")).toContainText("PROVIDER_RESULT_402_INVALID_PARAMETER");
+    await expect(vrow("D")).toContainText("tracking_id");
+    await expect(vrow("E")).toContainText("PROVIDER_RESULT_402_INVALID_PARAMETER");
+    await expect(vrow("E")).toContainText("[url]"); // provider echo of URLs is redacted
+    await expect(probe).not.toContainText("dealpilot-qa");
+    await expect(probe).not.toContainText("gatewayAdapt");
     await page.screenshot({ path: `${SHOTS}/admin-banners.png`, fullPage: true });
   });
 });

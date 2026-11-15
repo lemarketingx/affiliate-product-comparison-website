@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   unwrapResult, parseFeaturedPromos, parsePromoProducts, parseGeneratedLinks, checkGeneratedLink,
-  classifyRedirect, timing, parseProviderTime,
+  classifyRedirect, timing, parseProviderTime, canonicalSource, maskLink, safeProviderMessage,
 } from "../lib/aliexpress/promo-parse.ts";
 import { validPortalBanner, maskTrackingId, ATTRIBUTION, PORTAL_BANNERS } from "../lib/aliexpress/banner-config.ts";
 
@@ -11,8 +11,9 @@ const wrap = (method, result, code = 200, msg = "") => ({ [method.replace(/\./g,
 const SRC = "https://www.aliexpress.com/item/1005001234567.html";
 
 test("unwrap: provider errors and permission denials become codes, never success", () => {
-  assert.deepEqual(unwrapResult({ error_response: { code: "InsufficientPermission", msg: "secret detail" } }, M), { ok: false, code: "PROVIDER_ERROR_InsufficientPermission" });
-  assert.deepEqual(unwrapResult(wrap(M, {}, 402, "No permission to access"), M), { ok: false, code: "PROVIDER_RESULT_402_PERMISSION" });
+  assert.equal(unwrapResult({ error_response: { code: "InsufficientPermission", msg: "secret detail" } }, M).code, "PROVIDER_ERROR_InsufficientPermission");
+  assert.equal(unwrapResult(wrap(M, {}, 402, "No permission to access"), M).code, "PROVIDER_RESULT_402_PERMISSION");
+  assert.equal(unwrapResult(wrap(M, {}, 402, "No permission to access"), M).ok, false);
   assert.equal(unwrapResult({}, M).ok, false);
   assert.equal(unwrapResult(null, M).ok, false);
   assert.equal(unwrapResult(wrap(M, { a: 1 }), M).ok, true);
@@ -76,4 +77,31 @@ test("portal banners: validated; nothing preloaded or invented; attribution not 
     assert.notEqual(validPortalBanner({ ...ok, ...bad }), null, JSON.stringify(bad));
   assert.equal(maskTrackingId("dealpilot"), "de*****ot");
   assert.equal(maskTrackingId(null), null);
+});
+
+test("canonical source: locale subdomain, slugs, query and tracking params removed", () => {
+  assert.equal(canonicalSource("https://he.aliexpress.com/item/1005001234567.html?gatewayAdapt=glo2isr&aff_fcid=x"), "https://www.aliexpress.com/item/1005001234567.html");
+  assert.equal(canonicalSource("https://www.aliexpress.us/item/3256801234567890.html#x"), "https://www.aliexpress.com/item/3256801234567890.html");
+  assert.equal(canonicalSource("https://sale.aliexpress.com/__pc/sale.htm?spm=1"), "https://sale.aliexpress.com/__pc/sale.htm");
+  assert.equal(canonicalSource("https://evil.test/item/1005001234567.html"), null);
+  assert.equal(canonicalSource("http://www.aliexpress.com/item/1005001234567.html"), null);
+});
+test("safe diagnostics: provider text without URLs, tracking id, keys or long tokens", () => {
+  const m = safeProviderMessage("Invalid parameter source_values: https://he.aliexpress.com/item/1.html?aff=1 for tracking dealpilot-qa key 12345678 tok AbCdEfGhIjKlMnOpQrStUvWxYz123", ["dealpilot-qa", "12345678"]);
+  assert.ok(m.includes("source_values"));
+  assert.ok(!m.includes("aliexpress.com"));
+  assert.ok(!m.includes("dealpilot-qa"));
+  assert.ok(!m.includes("12345678"));
+  assert.ok(!m.includes("AbCdEfGhIjKlMnOpQrStUvWxYz123"));
+  assert.ok(m.length <= 200);
+  assert.equal(safeProviderMessage(null), null);
+  assert.equal(maskLink("https://s.click.aliexpress.com/e/_DlAbCdEf?x=1"), "s.click.aliexpress.com/e/_D…?…");
+  assert.equal(maskLink(null), null);
+});
+test("unwrap keeps the raw provider message for sanitising, plus error_response sub messages", () => {
+  const r = unwrapResult({ aliexpress_affiliate_link_generate_response: { resp_result: { resp_code: 402, resp_msg: "Invalid parameter tracking_id" } } }, M);
+  assert.equal(r.code, "PROVIDER_RESULT_402_INVALID_PARAMETER");
+  assert.equal(r.message, "Invalid parameter tracking_id");
+  const e = unwrapResult({ error_response: { code: "15", msg: "Remote service error", sub_code: "isv.invalid-parameter", sub_msg: "source_values illegal" } }, M);
+  assert.equal(e.message, "Remote service error · isv.invalid-parameter · source_values illegal");
 });

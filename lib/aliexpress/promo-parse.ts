@@ -15,21 +15,46 @@ const first = (r: Rec, keys: string[]) => {
   return null;
 };
 
-export type Unwrapped = { ok: true; result: Rec } | { ok: false; code: string };
+export type Unwrapped = { ok: true; result: Rec } | { ok: false; code: string; message?: string | null };
+
+/**
+ * Provider error text is useful for diagnosis but may echo request values.
+ * Remove URLs, the given secrets (tracking id, app key) and long tokens; keep
+ * parameter names and short words. Never returns more than 200 characters.
+ */
+export function safeProviderMessage(raw: unknown, secrets: (string | null | undefined)[] = []): string | null {
+  let s = str(raw);
+  if (!s) return null;
+  for (const secret of secrets) if (secret && secret.length >= 3) s = s.split(secret).join("[redacted]");
+  s = s
+    .replace(/https?:\/\/\S+/gi, "[url]")
+    .replace(/\b[\w-]*\.aliexpress\.[a-z]+\S*/gi, "[url]")
+    .replace(/\b[A-Za-z0-9_-]{24,}\b/g, "[token]")
+    .replace(/[\u0000-\u001f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return s.slice(0, 200) || null;
+}
 /** aliexpress.affiliate.x.y → aliexpress_affiliate_x_y_response.resp_result.result */
 export function unwrapResult(payload: unknown, method: string): Unwrapped {
   const root = rec(payload);
   if (!root) return { ok: false, code: "INVALID_RESPONSE" };
   const err = rec(root.error_response);
-  if (err) return { ok: false, code: "PROVIDER_ERROR_" + (str(err.code) ?? "UNKNOWN").replace(/[^\w-]/g, "").slice(0, 40) };
+  if (err)
+    return {
+      ok: false,
+      code: "PROVIDER_ERROR_" + (str(err.code) ?? "UNKNOWN").replace(/[^\w-]/g, "").slice(0, 40),
+      message: [str(err.msg), str(err.sub_code), str(err.sub_msg)].filter(Boolean).join(" · ") || null,
+    };
   const resp = rec(root[method.replace(/\./g, "_") + "_response"]);
   const rr = rec(resp?.resp_result);
   if (!rr) return { ok: false, code: "UNEXPECTED_RESPONSE_SHAPE" };
   const code = str(rr.resp_code);
   if (code !== "200") {
-    const msg = (str(rr.resp_msg) ?? "").toLowerCase();
+    const rawMsg = str(rr.resp_msg) ?? str(rr.msg) ?? null;
+    const msg = (rawMsg ?? "").toLowerCase();
     const hint = /permission|access|authori|权限|授权/.test(msg) ? "_PERMISSION" : /param|invalid|illegal|参数/.test(msg) ? "_INVALID_PARAMETER" : /track/.test(msg) ? "_TRACKING" : "";
-    return { ok: false, code: "PROVIDER_RESULT_" + (code ?? "UNKNOWN").replace(/[^\w-]/g, "") + hint };
+    return { ok: false, code: "PROVIDER_RESULT_" + (code ?? "UNKNOWN").replace(/[^\w-]/g, "") + hint, message: rawMsg };
   }
   return { ok: true, result: rec(rr.result) ?? {} };
 }
@@ -147,4 +172,30 @@ export function timing(startsAt: string | null, endsAt: string | null, now: numb
   if (endsAt && Date.parse(endsAt) <= now) return "expired";
   if (startsAt && Date.parse(startsAt) > now) return "upcoming";
   return "active";
+}
+
+/**
+ * Canonical source for link generation. Product URLs are reduced to
+ * https://www.aliexpress.com/item/<id>.html (no locale subdomain, no query,
+ * no tracking params). Other AliExpress pages keep host+path, drop query/hash.
+ */
+export function canonicalSource(raw: string): string | null {
+  const url = safeHttps(raw, ALI_HOSTS);
+  if (!url) return null;
+  const u = new URL(url);
+  const m = /\/item\/(?:[^/]*\/)?(\d{6,24})\.html$/i.exec(u.pathname);
+  if (m) return `https://www.aliexpress.com/item/${m[1]}.html`;
+  return `https://${u.hostname.toLowerCase()}${u.pathname}`;
+}
+
+/** Shows that a link exists without exposing its tracking key. */
+export function maskLink(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    const path = u.pathname.length > 6 ? u.pathname.slice(0, 5) + "…" : u.pathname;
+    return u.hostname + path + (u.search ? "?…" : "");
+  } catch {
+    return "[invalid]";
+  }
 }

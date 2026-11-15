@@ -2,6 +2,8 @@ import { requireAdmin } from "../../../../lib/dealpilot/auth";
 import { getBannerSnapshot, redirectChecks, type BannerStatus } from "../../../../lib/aliexpress/banners";
 import { ATTRIBUTION, PORTAL_BANNERS } from "../../../../lib/aliexpress/banner-config";
 import VerifyButton from "./verify-button";
+import ProbeButton from "./probe-button";
+import { maskLink } from "../../../../lib/aliexpress/promo-parse";
 
 export const dynamic = "force-dynamic";
 const STATUS: Record<BannerStatus, string> = {
@@ -44,7 +46,18 @@ export default async function BannersPage() {
           {Object.entries(snap.errors).map(([code, n]) => (
             <li key={code}>שגיאת ספק <code dir="ltr">{code}</code> × {n}</li>
           ))}
+          {(snap.errorDetails ?? []).map((d) => (
+            <li key={d.code + d.message}>הודעת ספק (מסוננת) ל־<code dir="ltr">{d.code}</code>: <span dir="auto">{d.message ?? "לא הוחזרה הודעה"}</span></li>
+          ))}
         </ul>
+      </section>
+      <section className="dp-panel">
+        <h2>אבחון יצירת קישורים</h2>
+        <p className="dp-muted">
+          עד 5 קריאות ל־<code>aliexpress.affiliate.link.generate</code>, ובכל אחת משתנה דבר אחד בלבד מול בקשת בסיס. לא מוצגים מפתחות, מזהה
+          המעקב או קישורים מלאים. בדיקה D (בלי tracking_id) נועדה לאבחון בלבד, והקישור שלה לא מתפרסם.
+        </p>
+        <ProbeButton />
       </section>
       <section className="dp-panel">
         <h2>אימות קישורים וייחוס</h2>
@@ -76,7 +89,7 @@ export default async function BannersPage() {
                       <td>{SOURCE[b.source]}</td>
                       <td>{STATUS[b.status]}{b.reason ? " · " + b.reason : ""}</td>
                       <td>{d(b.startsAt)} – {d(b.endsAt)}</td>
-                      <td dir="ltr" style={{ wordBreak: "break-all" }}>{b.link ?? "—"}</td>
+                      <td dir="ltr" style={{ wordBreak: "break-all" }}>{maskLink(b.link) ?? "—"}</td>
                       <td>{c ? (c.ok ? "תקין" : "לא תקין") + " · " + c.note + " · " + c.hops.map((h) => h.status + " " + h.host).join(" → ") : "לא נבדק"}</td>
                     </tr>
                   );
