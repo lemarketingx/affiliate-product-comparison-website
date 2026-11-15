@@ -12,10 +12,10 @@ let seq = 0;
 const product = (over = {}) => {
   const id = String(1005000000000 + ++seq);
   return {
-    id, title: "מוצר בדיקה " + id, price: "19.90", currency: "ILS",
+    id, title: "Baseus מוצר בדיקה " + id, price: "19.90", currency: "ILS",
     image: "https://ae01.alicdn.com/kf/x.jpg", productUrl: `https://www.aliexpress.com/item/${id}.html`,
     affiliateUrl: `https://s.click.aliexpress.com/e/${id}`, commissionRate: "5%", orders: 9000,
-    shipTo: null, requestedCountry: "IL", titleLanguage: "he", images: [], shopName: null,
+    shipTo: null, requestedCountry: "IL", titleLanguage: "he", images: [], shopName: "Baseus Store",
     positiveFeedbackPercent: null, quality: { rating: null, israelReviews: null, shipping: null }, ...over,
   };
 };
@@ -46,7 +46,7 @@ test("public rules: >5000 sales, ILS, Hebrew, product data and a real affiliate 
   assert.deepEqual(publicRejections(product({ orders: 5001 })), []);
   assert.deepEqual(publicRejections(product({ orders: null })), ["sales"]);
   assert.deepEqual(publicRejections(product({ currency: "USD" })), ["currency"]);
-  assert.deepEqual(publicRejections(product({ title: "English only title" })), ["hebrew"]);
+  assert.deepEqual(publicRejections(product({ title: "English only title" })), ["brand", "hebrew"]);
   assert.ok(publicRejections(product({ price: "0" })).includes("price"));
   assert.ok(publicRejections(product({ image: null })).includes("image"));
   assert.ok(publicRejections(product({ affiliateUrl: null })).includes("affiliate"));
@@ -139,7 +139,7 @@ test("build: per-request budget defers pages; quota errors stop the build and ar
   });
   assert.equal(deferred.report.pagesFailed, 0);
   assert.ok(deferred.report.pagesPending >= 2);
-  assert.ok(deferred.report.shortfall.some((s) => s.includes("עדיין לא נשלפו")));
+  assert.equal(deferred.report.pagesPending > 0, true);
 
   let n = 0;
   const quota = await buildCatalog({
@@ -163,7 +163,7 @@ test("build: unavailable provider yields zero products and an honest report, not
   assert.equal(items.length, 0);
   assert.equal(report.published, 0);
   assert.ok(report.pagesFailed >= 1);
-  assert.ok(report.shortfall[0].includes("לא הוספנו"));
+  assert.equal(report.shortfall.length, 0); // No arbitrary product-count target in brand-only mode.
 });
 
 test("view: search (multi-word, Hebrew), category, sort and 24-per-page pagination with real totals", () => {
@@ -193,4 +193,14 @@ test("view params: sanitised; page window; hrefs keep filters", () => {
   assert.deepEqual(pageWindow(1, 3), [1, 2, 3]);
   assert.equal(viewHref("/deals", { q: "usb hub", cat: "tech", sort: "orders", page: 2 }), "/deals?q=usb+hub&cat=tech&sort=orders&page=2");
   assert.equal(viewHref("/categories/tech", { cat: "tech", page: 1, sort: "popular" }, true), "/categories/tech");
+});
+
+test("brand-first policy: generic titles, spoofed seller names and mismatched stores never publish", async () => {
+  const generic = product({ title: "מוצר מדבקה ללא מותג", shopName: "Some Store" });
+  const spoof = product({ title: "Baseus מטען", shopName: "Random Store", supplierBrand: null });
+  const known = product({ title: "Baseus מטען מקורי לפי המוכר", shopName: "Baseus Store" });
+  assert.ok(publicRejections(generic).includes("brand"));
+  assert.ok(publicRejections(spoof).includes("brand"));
+  assert.equal(publicRejections(known).includes("brand"), false);
+  assert.equal(CATALOG_POLICY.target, 0);
 });
