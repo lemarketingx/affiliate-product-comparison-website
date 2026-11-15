@@ -252,7 +252,7 @@ export async function queryAffiliateProducts(
   if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING", 503);
   if (!Number.isInteger(pageNo) || pageNo < 1 || pageNo > 20 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50)
     throw new AffiliateError("INVALID_PAGE_INPUT", 400);
-  if (!allowRequest("aliexpress-products", 24, 3600000))
+  if (!allowRequest("aliexpress-products", 120, 3600000))
     throw new AffiliateError("PROVIDER_QUOTA_GUARD", 429);
   const params: Record<string, string> = {
     app_key: key,
