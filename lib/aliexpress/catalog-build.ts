@@ -3,6 +3,7 @@
 import type { AliProduct } from "./affiliate.ts";
 import type { ProductPage } from "./query.ts";
 import { evaluateEligibility } from "./quality.ts";
+import { identifyListedBrand } from "../dealpilot/brands.ts";
 
 export const CATALOG_POLICY = {
   /** Public listing requires strictly more reported sales than this. */
@@ -59,6 +60,7 @@ export function validAffiliateUrl(raw: string | null, productUrl: string | null)
 /** All reasons a product cannot be listed publicly (empty = publishable). */
 export function publicRejections(p: AliProduct, minSales: number = CATALOG_POLICY.minimumReportedSalesExclusive): RejectReason[] {
   const out: RejectReason[] = [];
+  if (!identifyListedBrand(p)) out.push("brand");
   if (p.currency !== "ILS") out.push("currency");
   if (p.orders === null || !Number.isSafeInteger(p.orders) || p.orders <= minSales) out.push("sales");
   const blockers = evaluateEligibility(p).blockers;
