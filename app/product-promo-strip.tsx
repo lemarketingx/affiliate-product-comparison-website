@@ -2,17 +2,19 @@ import Link from "next/link";
 import { ArrowUpLeft, ShieldCheck } from "lucide-react";
 import type { CatalogItem } from "../lib/aliexpress/catalog";
 import { formatMoney } from "../lib/dealpilot/urls";
+import { validAffiliateUrl } from "../lib/aliexpress/catalog-build";
 
 /**
  * Editorial product banners from already-published affiliate catalog entries.
  * These are NOT official AliExpress campaign creatives and advertise no discount.
- * The click uses the same server-validated /go route as catalog products.
+ * Links use supplier-provided validated promotion URLs directly. This avoids
+ * cold-cache /go 404s on independent Vercel serverless function instances.
  */
 export function selectAffiliateBannerProducts(items: CatalogItem[], count = 3): CatalogItem[] {
   const chosen: CatalogItem[] = [];
   const categories = new Set<string>();
   for (const item of items) {
-    if (!item.affiliateUrl || !item.image || !item.price || item.currency !== "ILS" || !item.title) continue;
+    if (!validAffiliateUrl(item.affiliateUrl, item.productUrl) || !item.image || !item.price || item.currency !== "ILS" || !item.title) continue;
     if (categories.has(item.categorySlug)) continue;
     categories.add(item.categorySlug);
     chosen.push(item);
@@ -39,7 +41,7 @@ export default function ProductPromoStrip({ items }: { items: CatalogItem[] }) {
           <a
             key={item.id}
             className={"fp-product-promo fp-product-promo-" + index}
-            href={"/go/" + item.id + "?source=product-banner"}
+            href={item.affiliateUrl!}
             target="_blank"
             rel="sponsored noopener noreferrer"
             aria-label={"צפייה ב־AliExpress: " + item.title}
