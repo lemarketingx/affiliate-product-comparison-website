@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
+import { validAffiliateUrl } from "../../../lib/aliexpress/catalog-build";
 import { formatMoney } from "../../../lib/dealpilot/urls";
 import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
@@ -137,10 +138,10 @@ export default async function Product({
               <p className="fp-fine">
                 המחיר הסופי והמשלוח נבדקים ב־AliExpress.
               </p>
-              {p.affiliateUrl ? (
+              {validAffiliateUrl(p.affiliateUrl, p.productUrl) ? (
                 <a
                   className="fp-btn fp-btn-block"
-                  href={"/go/" + id + "?source=catalog"}
+                  href={p.affiliateUrl!}
                   rel="sponsored noopener noreferrer"
                   target="_blank"
                 >
@@ -159,7 +160,7 @@ export default async function Product({
                 <div className="fp-notice">לא התקבל קישור מקור תקין.</div>
               )}
               <p className="fp-fine">
-                {p.affiliateUrl
+                {validAffiliateUrl(p.affiliateUrl, p.productUrl)
                   ? "קישור שותפים: ייתכן שנקבל עמלה. ייחוס העמלה טרם נבדק בחשבון."
                   : "לא התקבל קישור קידום למוצר."}
               </p>
