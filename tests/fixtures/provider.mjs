@@ -143,7 +143,11 @@ globalThis.fetch = async function (input, init) {
       const kind = Number(id.slice(-1));
       const base = {
         product_id: id,
-        product_title: `TEST FIXTURE — מוצר קטלוג ${row} עמוד ${pageNo} (${keywords})`,
+        // Brand-first fixture: reject intentionally unbranded candidates.
+        product_title: kind === 3
+          ? `TEST FIXTURE — מוצר גנרי ${row} עמוד ${pageNo}`
+          : `TEST FIXTURE — ${keywords.split(" ")[0]} מוצר קטלוג ${row} עמוד ${pageNo}`,
+        shop_name: kind === 3 ? "Generic Store" : keywords.split(" ")[0] + " Store",
         target_sale_price: (9.9 + (Number(id.slice(-3)) % 200) * 4).toFixed(2), // 9.90–805.90 ₪: exempt and taxable
         target_sale_price_currency: "ILS",
         lastest_volume: kind === 0 ? 3000 : 5001 + (Number(id.slice(-4)) * 7) % 40000,
