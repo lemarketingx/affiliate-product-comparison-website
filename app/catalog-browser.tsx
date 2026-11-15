@@ -6,6 +6,8 @@ import { CATALOG_POLICY } from "../lib/aliexpress/catalog-build";
 import { filterCatalog, pageWindow, SORTS, viewHref, type ViewParams } from "../lib/aliexpress/catalog-view";
 import { ProductCard } from "./product-card";
 import SortSelect from "./sort-select";
+import { IMPORT_TAX } from "../lib/preflight/import-tax";
+import { estimateImportTax, type UsdRate } from "../lib/preflight/tax-estimate";
 
 const fmt = (n: number) => n.toLocaleString("he-IL");
 
@@ -19,19 +21,25 @@ export default function CatalogBrowser({
   base,
   lockedCategory,
   title,
+  usdRate = null,
 }: {
   snapshot: CatalogSnapshot;
   params: ViewParams;
   base: string;
   lockedCategory?: string;
   title?: string;
+  usdRate?: UsdRate | null;
 }) {
-  const view = filterCatalog(snapshot.items, { ...params, cat: lockedCategory ?? params.cat });
+  const exemptOnly = params.tax === "exempt" && usdRate !== null;
+  const pool = exemptOnly
+    ? snapshot.items.filter((p) => estimateImportTax(p.currency === "ILS" ? Number(p.price) : null, usdRate, IMPORT_TAX).status === "exempt")
+    : snapshot.items;
+  const view = filterCatalog(pool, { ...params, cat: lockedCategory ?? params.cat });
   const published = snapshot.items.length;
   const report = snapshot.report;
   const href = (p: Partial<ViewParams>) => viewHref(base, { ...params, ...p }, Boolean(lockedCategory));
   const activeCat = lockedCategory ?? params.cat;
-  const filtered = Boolean(params.q || activeCat);
+  const filtered = Boolean(params.q || activeCat || exemptOnly);
   return (
     <section className="fp-section fp-wrap fp-catalog" id="products">
       <div className="fp-section-head">
@@ -57,14 +65,25 @@ export default function CatalogBrowser({
         </div>
       </div>
 
+      <p className="fp-tax-note">
+        {usdRate ? (
+          <>
+            מיסוי ביבוא אישי: עד {IMPORT_TAX.exemptionUsd}$ פטור, מעל זה מע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%. לכל מוצר מסומן אם הוא צפוי
+            להיות פטור, לפי השער היציג ({usdRate.rate} ₪, {new Date(usdRate.date).toLocaleDateString("he-IL")}). כמה פריטים מאותו מוכר נספרים יחד.{" "}
+            <a href={IMPORT_TAX.sources[0].url} target="_blank" rel="noopener noreferrer">מקור: רשות המסים</a>
+          </>
+        ) : (
+          <>שער הדולר אינו זמין כרגע, ולכן סימון המיסוי לכל מוצר לא חושב.</>
+        )}
+      </p>
       <form className="fp-filters" action={base} method="get" role="search" aria-label="סינון הקטלוג">
         {!lockedCategory && (
           <nav className="fp-tabs" aria-label="קטגוריות">
-            <Link href={viewHref(base, { q: params.q, sort: params.sort })} aria-current={!activeCat ? "page" : undefined}>
+            <Link href={viewHref(base, { q: params.q, sort: params.sort, tax: params.tax })} aria-current={!activeCat ? "page" : undefined}>
               הכול
             </Link>
             {categories.map((c) => (
-              <Link key={c.slug} href={viewHref(base, { q: params.q, sort: params.sort, cat: c.slug })} aria-current={activeCat === c.slug ? "page" : undefined}>
+              <Link key={c.slug} href={viewHref(base, { q: params.q, sort: params.sort, cat: c.slug, tax: params.tax })} aria-current={activeCat === c.slug ? "page" : undefined}>
                 {c.label}
               </Link>
             ))}
@@ -77,6 +96,12 @@ export default function CatalogBrowser({
             <input name="q" defaultValue={params.q} maxLength={80} placeholder="חיפוש בקטלוג" aria-label="סינון לפי שם מוצר" />
           </label>
           <SortSelect name="sort" value={params.sort} options={SORTS} />
+          {usdRate && (
+            <label className="fp-tax-toggle">
+              <input type="checkbox" name="tax" value="exempt" defaultChecked={params.tax === "exempt"} />
+              רק מוצרים פטורים ממסים (עד {IMPORT_TAX.exemptionUsd}$)
+            </label>
+          )}
           <button className="fp-btn fp-btn-sm" type="submit">סינון</button>
         </div>
       </form>
@@ -116,7 +141,7 @@ export default function CatalogBrowser({
       ) : view.items.length ? (
         <div className="fp-grid">
           {view.items.map((item, i) => (
-            <ProductCard item={item} key={item.id} eager={i < 4} />
+            <ProductCard item={item} key={item.id} eager={i < 4} usdRate={usdRate} />
           ))}
         </div>
       ) : (

@@ -11,7 +11,7 @@ export type Guide = {
   sections: { heading: string; claims: Claim[] }[];
 };
 
-const press = IMPORT_TAX.secondaryReports[0];
+const [calc, knesset] = IMPORT_TAX.sources;
 
 export const GUIDES: Guide[] = [
   {
@@ -86,11 +86,11 @@ export const GUIDES: Guide[] = [
       {
         heading: "מע\"מ ותקרת פטור",
         claims: [
-          IMPORT_TAX.verified && IMPORT_TAX.officialSource
-            ? { text: `תקרת הפטור ממע"מ: ${IMPORT_TAX.vatExemptionUsd}$.`, source: { ...IMPORT_TAX.officialSource, checkedAt: IMPORT_TAX.checkedAt } }
-            : { text: press.text, needsVerification: true, source: { url: press.url, title: press.title, checkedAt: press.checkedAt } },
+          { text: `ביבוא אישי עד ${IMPORT_TAX.exemptionUsd}$ אין מע"מ, מכס ומס קנייה. מעל התקרה משלמים מע"מ ${Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%.`, source: calc },
+          { text: "מבחן הפטור נעשה לפי ערך המוצרים בלי משלוח וביטוח. מעל התקרה, המע\"מ מחושב על המוצרים, המשלוח והביטוח.", source: knesset },
+          { text: `עד ${IMPORT_TAX.customsFreeUpToUsd}$ יש פטור ממכס. מעל זה ייתכנו מכס ומס קנייה, לפי סוג המוצר.`, source: knesset },
+          { text: `משלוחים מאותו ספק שמגיעים בתוך ${IMPORT_TAX.combineWindowHours} שעות מאוחדים לחישוב המס, ולכן פיצול הזמנה לא בהכרח עוקף את התקרה.`, source: knesset },
           { text: "התקרה ושיעורי המס השתנו כמה פעמים ב־2026. לפני הזמנה גדולה בדקו את העדכני באתר רשות המסים.", needsVerification: true },
-          { text: "פיצול הזמנה גדולה לכמה חבילות כדי להתחמק ממס עלול להיחשב עבירה. אל תעשו את זה.", needsVerification: true },
         ],
       },
     ],

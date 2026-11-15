@@ -184,8 +184,11 @@ test("view: search (multi-word, Hebrew), category, sort and 24-per-page paginati
   assert.equal(CATALOG_POLICY.perPage >= 24 && CATALOG_POLICY.perPage <= 36, true);
 });
 test("view params: sanitised; page window; hrefs keep filters", () => {
-  assert.deepEqual(parseViewParams({ q: "  usb  ", cat: "evil", sort: "x", page: "-3" }, ["tech"]), { q: "usb", cat: "", sort: "popular", page: 1 });
-  assert.deepEqual(parseViewParams({ q: ["a", "b"], cat: "tech", sort: "orders", page: "4" }, ["tech"]), { q: "a", cat: "tech", sort: "orders", page: 4 });
+  assert.deepEqual(parseViewParams({ q: "  usb  ", cat: "evil", sort: "x", page: "-3" }, ["tech"]), { q: "usb", cat: "", sort: "popular", page: 1, tax: "" });
+  assert.deepEqual(parseViewParams({ q: ["a", "b"], cat: "tech", sort: "orders", page: "4" }, ["tech"]), { q: "a", cat: "tech", sort: "orders", page: 4, tax: "" });
+  assert.equal(parseViewParams({ tax: "exempt" }, []).tax, "exempt");
+  assert.equal(parseViewParams({ tax: "yes" }, []).tax, "");
+  assert.equal(viewHref("/deals", { tax: "exempt", page: 2 }), "/deals?tax=exempt&page=2");
   assert.deepEqual(pageWindow(6, 20), [1, "gap", 4, 5, 6, 7, 8, "gap", 20]);
   assert.deepEqual(pageWindow(1, 3), [1, 2, 3]);
   assert.equal(viewHref("/deals", { q: "usb hub", cat: "tech", sort: "orders", page: 2 }), "/deals?q=usb+hub&cat=tech&sort=orders&page=2");

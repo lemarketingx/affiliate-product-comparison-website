@@ -28,6 +28,22 @@ test("500+ unique products: real counts, 24 per page, filters, search and pagina
   await expect(page.locator(".dp-product").first()).toContainText("כולל קישור שותפים");
   await expect(page.locator(".fp-shortfall")).toHaveCount(0);
 
+  // Every card states its personal-import tax outcome (fixture rate 3.2 ₪/$).
+  const taxLabels = await page.locator(".dp-product .fp-tax-label").allInnerTexts();
+  expect(taxLabels).toHaveLength(24);
+  expect(taxLabels.every((t) => /פטור ממסים|קרוב לתקרת הפטור|צפוי מע"מ 18%|מע"מ 18% וייתכן מכס/.test(t))).toBe(true);
+  await expect(page.locator(".fp-tax-note")).toContainText("עד 75$ פטור");
+  await page.getByText(/רק מוצרים פטורים ממסים/).click();
+  await page.getByRole("button", { name: "סינון", exact: true }).click();
+  await expect(page).toHaveURL(/tax=exempt/);
+  const exemptCount = Number((await page.locator(".fp-status-line strong").innerText()).replace(/[^\d]/g, ""));
+  expect(exemptCount).toBeGreaterThan(0);
+  expect(exemptCount).toBeLessThan(total);
+  expect((await page.locator(".dp-product .fp-tax-label").allInnerTexts()).every((t) => t.startsWith("פטור ממסים"))).toBe(true);
+  const prices = (await page.locator(".dp-product-price strong").allInnerTexts()).map((t) => Number(t.replace(/[^\d.]/g, "")));
+  expect(prices.every((p) => p / 3.2 <= 75 * 0.9)).toBe(true);
+  await page.goto("/deals");
+
   // Images: thumbnail requested and rendered.
   const img = page.locator(".dp-product img").first();
   await expect(img).toHaveAttribute("src", /_350x350\.jpg$/);

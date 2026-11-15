@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { categories } from "../../../lib/dealpilot/categories";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
+import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { parseViewParams } from "../../../lib/aliexpress/catalog-view";
 import { PublicShell } from "../../public-shell";
 import CatalogBrowser from "../../catalog-browser";
@@ -27,12 +28,14 @@ export default async function Category({
   const { slug } = await params;
   const c = categories.find((c) => c.slug === slug);
   if (!c) notFound();
+  const [catalog, usdRate] = await Promise.all([getCatalog(), getUsdRate()]);
   const view = parseViewParams(await searchParams, categories.map((x) => x.slug));
   return (
     <PublicShell>
       <main id="main">
         <CatalogBrowser
-          snapshot={await getCatalog()}
+          snapshot={catalog}
+          usdRate={usdRate}
           params={view}
           base={"/categories/" + slug}
           lockedCategory={slug}

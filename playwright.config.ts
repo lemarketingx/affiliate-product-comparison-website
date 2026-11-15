@@ -33,6 +33,7 @@ export default defineConfig({
         ALIEXPRESS_APP_KEY: "",
         ALIEXPRESS_APP_SECRET: "",
         ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
+        DEALPILOT_FX_DISABLED: "true",
       },
     },
     {

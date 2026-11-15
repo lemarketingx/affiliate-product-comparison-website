@@ -12,6 +12,7 @@ export default function LiveCatalog({
   initialQuery = "",
   initialCategory = "",
   total,
+  usdRate = null,
 }: {
   snapshot: CatalogSnapshot;
   compact?: boolean;
@@ -19,6 +20,7 @@ export default function LiveCatalog({
   initialCategory?: string;
   /** Size of the whole published catalog when only a slice is passed in. */
   total?: number;
+  usdRate?: import("../lib/preflight/tax-estimate").UsdRate | null;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery),
@@ -151,7 +153,7 @@ export default function LiveCatalog({
       {filtered.length ? (
         <div className="fp-grid">
           {filtered.map((item) => (
-            <ProductCard item={item} key={item.id} />
+            <ProductCard item={item} key={item.id} usdRate={usdRate} />
           ))}
         </div>
       ) : (

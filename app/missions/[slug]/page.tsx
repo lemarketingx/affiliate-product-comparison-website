@@ -8,6 +8,7 @@ import { buildPlan } from "../../../lib/preflight/plan";
 import { detectType } from "../../../lib/preflight/detect";
 import { pricesFor } from "../../../lib/preflight/israel-prices";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
+import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { Manifest } from "../../_preflight/manifest";
 import { SearchTerms } from "../../_preflight/search-terms";
 import { Briefing } from "../../_preflight/briefing";
@@ -31,7 +32,7 @@ export default async function Mission({ params }: { params: Promise<{ slug: stri
   if (!type) notFound();
   const plan = buildPlan(type);
   const all = visibleTypes();
-  const catalog = await getCatalog();
+  const [catalog, usdRate] = await Promise.all([getCatalog(), getUsdRate()]);
   const products = catalog.items.filter((p) => detectType(p.title, all)?.type.id === type.id).slice(0, 8);
   const questionTerms = [...new Set(type.questions.flatMap((q) => q.terms ?? []))];
   return (
@@ -74,6 +75,7 @@ export default async function Mission({ params }: { params: Promise<{ slug: stri
               apiPriceILS={null}
               accessories={plan.items.filter((i) => i.status === "required" && i.search).map((i) => i.label)}
               israelPrices={pricesFor(type.id)}
+              usdRate={usdRate}
             />
           </div>
         </div>
@@ -87,7 +89,7 @@ export default async function Mission({ params }: { params: Promise<{ slug: stri
           </div>
           {products.length ? (
             <>
-              <div className="fp-grid">{products.map((p) => <ProductCard key={p.id} item={p} />)}</div>
+              <div className="fp-grid">{products.map((p) => <ProductCard key={p.id} item={p} usdRate={usdRate} />)}</div>
               <p className="fp-fine">
                 השיוך ליעד מתבצע אוטומטית לפי מילים בכותרת הספק, ויכול לטעות. המוצרים כוללים קישורי שותפים: אם תקנו דרכם, ייתכן שנקבל עמלה. <Link href="/disclosure">גילוי נאות</Link>
               </p>

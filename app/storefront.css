@@ -2424,3 +2424,26 @@
   .fp-banner-list { grid-auto-flow: column; grid-auto-columns: 84%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; overscroll-behavior-x: contain; }
   .fp-banner { scroll-snap-align: start; }
 }
+
+/* ---------- personal-import tax indicator ---------- */
+.fp-tax { display: flex; flex-direction: column; gap: 4px; margin: 0 14px 8px; }
+.fp-tax-label {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--fp-paper-2);
+  color: var(--fp-ink);
+}
+.fp-tax.is-go .fp-tax-label { background: var(--fp-go-bg); color: var(--fp-go); }
+.fp-tax.is-wait .fp-tax-label { background: var(--fp-wait-bg); color: var(--fp-wait); }
+.fp-tax.is-tax .fp-tax-label { background: #fde3d6; color: var(--fp-signal-text); }
+.fp-tax-detail { font-size: 13px; line-height: 1.6; color: var(--fp-ink); }
+.fp-tax-box { display: grid; gap: 6px; margin: 12px 0; padding: 12px 14px; border: 1.5px dashed var(--fp-line); border-radius: var(--fp-r-md); background: var(--fp-paper); }
+.fp-tax-box .fp-tax { margin: 0; }
+.fp-tax-box small { font-size: 12px; color: var(--fp-muted); line-height: 1.6; }
+.fp-tax-box a, .fp-tax-note a { text-decoration: underline; text-underline-offset: 3px; }
+.fp-tax-note { font-size: 13px; color: var(--fp-muted); line-height: 1.6; margin: -10px 0 18px; }
+.fp-tax-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border: 1.5px solid var(--fp-line); border-radius: 999px; background: var(--fp-card); font-size: 14px; cursor: pointer; }
+.fp-tax-toggle input { width: 18px; height: 18px; accent-color: var(--fp-go); }

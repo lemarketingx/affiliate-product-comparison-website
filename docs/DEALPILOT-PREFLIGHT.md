@@ -41,18 +41,36 @@ Knowledge is written once per **trait** (for example "plugs into mains", "has a 
 - Search buttons are plain `aliexpress.com/w/wholesale-…` links, labelled "לא קישורי שותפים". The approved API used here returns promotion links for products only. Affiliate search links need `aliexpress.affiliate.link.generate` access to be verified first.
 - No scraping. No server storage of wizard answers: copy, WhatsApp and the URL carry the plan.
 
-## Import tax: not verified, so not computed
+## Import tax: verified and shown per product (2026-11-15)
 
-`gov.il` and Kol Zchut could not be reached from the build environment (network policy), so the VAT threshold and rate were **not** verified against an official source. `IMPORT_TAX.verified` is `false`, all values are `null`, and the calculator shows the tax line as "לא חושב" with the reason. Press reports (Bizportal and mako, read 2026-11-15) say the threshold returned to $75 in 2026 after temporary increases. They are shown only behind "למה המס לא חושב?" with a "נדרש אימות" label.
+**Sources** (`lib/preflight/import-tax.ts`):
+- [Israel Tax Authority personal-import tax calculator](https://shaarolami-query.customs.mof.gov.il/CustomspilotWeb/PersonalImportTax/Home/Item?id=89), read live on 2026-11-15: "מתחת ל־75$ פטור, מעל 75$ 18.00%".
+- [Knesset Research Center, 28.12.2025](https://fs.knesset.gov.il/globaldocs/MMM/51fb27d8-dddf-f011-a866-005056aa9911/2_51fb27d8-dddf-f011-a866-005056aa9911_11_21353.pdf). It gives the structure of the rules: the exemption test is on goods value without shipping and insurance; above the exemption, VAT applies to goods plus shipping plus insurance; customs is exempt up to $500; shipments from the same supplier within 72 hours are combined. It describes a temporary rise to $150, but the live official calculator shows $75 today.
+- Exchange rate: the Bank of Israel representative rate (public API), cached 6 hours. If the rate is unavailable, the label reads "מיסוי: לא חושב". A rate is never guessed.
 
-To activate: read the official Israel Tax Authority page, then set `verified: true`, `officialSource`, `vatExemptionUsd`, `vatRate`, `customsThresholdUsd`, `shippingIncluded` and `checkedAt` in `lib/preflight/import-tax.ts`. When verified, the calculator asks the visitor for a USD rate, because the threshold is in dollars and the site never fixes an exchange rate. Customs above the customs threshold is product-specific and stays "לא חושב".
+**Per product** (`lib/preflight/tax-estimate.ts`), based on the item price in ILS divided by the representative rate:
+
+| Value | Label |
+|---|---|
+| Up to 90% of $75 | "פטור ממסים (עד 75$)" |
+| From 90% of $75 up to $75 | "קרוב לתקרת הפטור" (variant, quantity or another item from the same seller can cross it) |
+| Above $75 | "צפוי מע"מ 18% · כ־X ₪" (on the item price, before shipping) |
+| Above $500 | "מע"מ 18% וייתכן מכס" |
+
+**Where it is shown:**
+- Every product card.
+- The product page, in the "מיסוי ביבוא אישי" box with sources.
+- The catalog note, plus a filter "רק מוצרים פטורים ממסים".
+- The landed-cost calculator, where the rate is pre-filled and tax is computed with these rules.
+
+Purchase tax on specific product types is noted as possible but not computed.
 
 ## Owner actions
 
 1. **Content approved.** The owner approved all destinations and guides on 2026-11-15 (`lib/preflight/approvals.ts`). They render in production builds. New destinations stay drafts until added there.
 2. **Israeli prices.** Add rows to `ISRAEL_PRICES` (store, exact item, price in ₪, https link, date checked). Invalid rows are ignored. Without a row no gap is shown, unless the visitor types a price they saw.
 3. **Verify "נדרש אימות" claims** (list below) and either attach a source or keep the label.
-4. **Tax config** as described above.
+4. **Tax rules**: re-check the official calculator when the government changes the threshold, and update `exemptionUsd`, `sources` and `checkedAt`.
 
 ### Claims marked "נדרש אימות"
 

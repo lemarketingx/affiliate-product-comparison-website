@@ -18,6 +18,9 @@ globalThis.fetch = async function (input, init) {
         ? input.href
         : input.url;
   const catalogSet = process.env.DEALPILOT_FIXTURE_SET === "catalog";
+  // TEST FIXTURE exchange rate (Bank of Israel public API shape); never a real quote.
+  if (url.startsWith("https://boi.org.il/PublicApi/GetExchangeRate"))
+    return Response.json({ key: "USD", currentExchangeRate: 3.2, currentChange: 0, unit: 1, lastUpdate: "2026-11-13T10:00:00Z" });
   // Simulated redirect chain for generated banner links (catalog fixture only).
   if (catalogSet && url.startsWith("https://s.click.aliexpress.com/e/TEST_BANNER_")) {
     const id = url.split("TEST_BANNER_")[1].replace(/\D/g, "");
@@ -141,7 +144,7 @@ globalThis.fetch = async function (input, init) {
       const base = {
         product_id: id,
         product_title: `TEST FIXTURE — מוצר קטלוג ${row} עמוד ${pageNo} (${keywords})`,
-        target_sale_price: (9.9 + (Number(id.slice(-3)) % 200)).toFixed(2),
+        target_sale_price: (9.9 + (Number(id.slice(-3)) % 200) * 4).toFixed(2), // 9.90–805.90 ₪: exempt and taxable
         target_sale_price_currency: "ILS",
         lastest_volume: kind === 0 ? 3000 : 5001 + (Number(id.slice(-4)) * 7) % 40000,
         commission_rate: "6%",

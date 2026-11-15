@@ -2,12 +2,13 @@ import { PublicShell } from "../public-shell";
 import { visibleTypes } from "../../lib/preflight";
 import { ISRAEL_PRICES, validIsraelPrice } from "../../lib/preflight/israel-prices";
 import Autopilot from "../_preflight/autopilot";
+import { getUsdRate } from "../../lib/dealpilot/fx";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "טייס אוטומטי לקנייה | DealPilot", alternates: { canonical: "/autopilot" } };
 
 export default async function AutopilotPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
+  const [sp, usdRate] = await Promise.all([searchParams, getUsdRate()]);
   const one = (v: string | string[] | undefined) => (typeof v === "string" ? v.slice(0, 400) : undefined);
   return (
     <PublicShell>
@@ -20,6 +21,7 @@ export default async function AutopilotPage({ searchParams }: { searchParams: Pr
         <Autopilot
           types={visibleTypes()}
           israelPrices={ISRAEL_PRICES.filter(validIsraelPrice)}
+          usdRate={usdRate}
           initial={{ q: one(sp.q), t: one(sp.t), a: one(sp.a) }}
         />
       </main>

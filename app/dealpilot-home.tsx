@@ -130,9 +130,11 @@ function DepartureBoard({ snapshot }: { snapshot: CatalogSnapshot }) {
 export default function DealPilotHome({
   snapshot,
   banners,
+  usdRate = null,
 }: {
   snapshot: CatalogSnapshot;
   banners?: { banners: Banner[]; attributionConfirmed: boolean };
+  usdRate?: import("../lib/preflight/tax-estimate").UsdRate | null;
 }) {
   return (
     <PublicShell>
@@ -213,7 +215,7 @@ export default function DealPilotHome({
           <CategoryLinks />
         </section>
 
-        <LiveCatalog snapshot={{ ...snapshot, report: undefined, items: snapshot.items.slice(0, 8) }} total={snapshot.items.length} compact />
+        <LiveCatalog snapshot={{ ...snapshot, report: undefined, items: snapshot.items.slice(0, 8) }} total={snapshot.items.length} usdRate={usdRate} compact />
 
         <section className="fp-wrap fp-section">
           <div className="fp-guide-pass">

@@ -8,7 +8,7 @@ export const SORTS: { key: SortKey; label: string }[] = [
   { key: "price-asc", label: "מחיר: מהנמוך לגבוה" },
   { key: "price-desc", label: "מחיר: מהגבוה לנמוך" },
 ];
-export type ViewParams = { q: string; cat: string; sort: SortKey; page: number };
+export type ViewParams = { q: string; cat: string; sort: SortKey; page: number; tax?: "" | "exempt" };
 type Item = { title: string; categorySlug: string; orders: number | null; price: string | null; shopName?: string | null };
 
 const one = (v: unknown) => (Array.isArray(v) ? v[0] : v);
@@ -22,6 +22,7 @@ export function parseViewParams(raw: Record<string, unknown>, validCats: readonl
     cat: validCats.includes(catRaw) ? catRaw : "",
     sort: (SORTS.some((s) => s.key === sortRaw) ? sortRaw : "popular") as SortKey,
     page: Number.isSafeInteger(pageRaw) && pageRaw >= 1 && pageRaw <= 10000 ? pageRaw : 1,
+    tax: one(raw.tax) === "exempt" ? "exempt" : "",
   };
 }
 
@@ -61,6 +62,7 @@ export function viewHref(base: string, p: Partial<ViewParams>, lockedCat = false
   if (p.q) sp.set("q", p.q);
   if (p.cat && !lockedCat) sp.set("cat", p.cat);
   if (p.sort && p.sort !== "popular") sp.set("sort", p.sort);
+  if (p.tax === "exempt") sp.set("tax", "exempt");
   if (p.page && p.page > 1) sp.set("page", String(p.page));
   const qs = sp.toString();
   return base + (qs ? "?" + qs : "");

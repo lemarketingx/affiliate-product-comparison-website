@@ -1,45 +1,48 @@
 // The single place for Israeli personal-import tax parameters.
-// RULE: values are used by the calculator ONLY when verified === true and an
-// official source with a check date is present. Until then the calculator shows
-// the tax component as "לא חושב" and explains why. Never fill these from memory.
+// RULE: values are used ONLY when verified === true and official sources with a
+// check date are present. Never fill these from memory.
+export type TaxSource = { url: string; title: string; checkedAt: string; note?: string };
 export type TaxConfig = {
   verified: boolean;
   checkedAt: string;
-  /** Official page where the values were read (gov.il / Israel Tax Authority). */
-  officialSource: { url: string; title: string } | null;
-  vatExemptionUsd: number | null;
+  /** Official sources the values were read from. */
+  sources: TaxSource[];
+  /** Personal imports valued up to this amount are exempt from VAT, purchase tax and customs. */
+  exemptionUsd: number | null;
   vatRate: number | null;
-  /** Above this declared value customs/purchase tax may apply; product-specific, not computed. */
-  customsThresholdUsd: number | null;
-  /** Whether shipping counts toward the declared value. */
-  shippingIncluded: boolean | null;
+  /** Up to this value customs duty is exempt; above it customs may apply (product-specific). */
+  customsFreeUpToUsd: number | null;
+  /** The exemption test uses the goods' value without shipping and insurance. */
+  thresholdIncludesShipping: boolean | null;
+  /** Above the exemption, VAT is charged on goods + shipping + insurance (+ purchase tax). */
+  vatBaseIncludesShipping: boolean | null;
+  /** Shipments from the same supplier arriving within this many hours are combined. */
+  combineWindowHours: number | null;
   unverifiedReason: string;
-  /** Press reports found during research. Shown only with a "needs verification" label. */
-  secondaryReports: { text: string; url: string; title: string; checkedAt: string }[];
 };
 
 export const IMPORT_TAX: TaxConfig = {
-  verified: false,
+  verified: true,
   checkedAt: "2026-11-15",
-  officialSource: null,
-  vatExemptionUsd: null,
-  vatRate: null,
-  customsThresholdUsd: null,
-  shippingIncluded: null,
-  unverifiedReason:
-    "לא הצלחנו לקרוא את העמוד הרשמי של רשות המסים ב־gov.il, ולכן לא אימתנו את תקרת הפטור ואת שיעור המע\"מ. ב־2026 התקרה השתנתה כמה פעמים, ולכן אנחנו לא מחשבים מס מהזיכרון.",
-  secondaryReports: [
+  sources: [
     {
-      text: "כתבות מ־2026 מדווחות שתקרת הפטור ממע\"מ ביבוא אישי חזרה ל־75 דולר להזמנה, אחרי תקופה של העלאה זמנית. מעל התקרה המע\"מ חל על כל ערך החבילה כולל המשלוח.",
-      url: "https://www.bizportal.co.il/additives/302/personal-import-tax-.html",
-      title: "Bizportal (מקור משני)",
+      url: "https://shaarolami-query.customs.mof.gov.il/CustomspilotWeb/PersonalImportTax/Home/Item?id=89",
+      title: "רשות המסים בישראל: מחשבון מסי יבוא אישי",
       checkedAt: "2026-11-15",
+      note: "בבדיקה ב־15.11.2026: \"מתחת ל־75$ פטור, מעל 75$ 18.00%\" (נבדקו כמה פריטים, למשל הלבשה כללי, מסגרות לתמונות ומיחם).",
     },
     {
-      text: "דיווח על ביטול ההעלאה והחזרת התקרה ל־75 דולר.",
-      url: "https://www.mako.co.il/finances-consumer/Article-e5b962bc9e28e91026.htm",
-      title: "mako (מקור משני)",
+      url: "https://fs.knesset.gov.il/globaldocs/MMM/51fb27d8-dddf-f011-a866-005056aa9911/2_51fb27d8-dddf-f011-a866-005056aa9911_11_21353.pdf",
+      title: "מרכז המחקר והמידע של הכנסת: תיאור וניתוח העלאת תקרת הפטור ממיסים ביבוא אישי (28.12.2025)",
       checkedAt: "2026-11-15",
+      note: "מבנה הכללים: מבחן הפטור לפי ערך החבילה ללא משלוח וביטוח; מעל הפטור המע\"מ מחושב כולל משלוח וביטוח; פטור ממכס עד 500$; משלוחים מאותו ספק בתוך 72 שעות מאוחדים. המסמך מתאר העלאה ל־150$ מדצמבר 2025; המחשבון הרשמי מציג כיום 75$.",
     },
   ],
+  exemptionUsd: 75,
+  vatRate: 0.18,
+  customsFreeUpToUsd: 500,
+  thresholdIncludesShipping: false,
+  vatBaseIncludesShipping: true,
+  combineWindowHours: 72,
+  unverifiedReason: "",
 };

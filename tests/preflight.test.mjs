@@ -62,25 +62,28 @@ test("powerbank: real charges below naive ratio; >100Wh flagged; invalid input r
   assert.equal(estimateCharges({ bankMah: 10000, phoneMah: 4000, efficiency: 1.5 }).ok, false);
 });
 
-const verifiedTax = {
-  ...IMPORT_TAX,
-  verified: true,
-  officialSource: { url: "https://example.test/official", title: "test" },
-  vatExemptionUsd: 75,
-  vatRate: 0.18,
-  customsThresholdUsd: 500,
-  shippingIncluded: true,
-};
+const verifiedTax = IMPORT_TAX;
+const unverifiedTax = { ...IMPORT_TAX, verified: false, exemptionUsd: null, vatRate: null, sources: [], unverifiedReason: "לא אומת" };
 const input = (over = {}) => ({
   itemPriceILS: 200, itemFromApi: true, shippingILS: 20, accessories: [], usdIlsRate: 3.7,
   israelPrice: { priceILS: 600, origin: "owner", label: "חנות" }, ...over,
 });
 
-test("landed cost: shipped config is unverified, so tax is never computed and no gap is shown", () => {
-  assert.equal(IMPORT_TAX.verified, false);
-  assert.equal(IMPORT_TAX.vatExemptionUsd, null);
-  assert.equal(IMPORT_TAX.vatRate, null);
-  const r = landedCost(input(), IMPORT_TAX);
+test("tax config: verified from official sources with check dates (Tax Authority calculator, Knesset research)", () => {
+  assert.equal(IMPORT_TAX.verified, true);
+  assert.equal(IMPORT_TAX.exemptionUsd, 75);
+  assert.equal(IMPORT_TAX.vatRate, 0.18);
+  assert.equal(IMPORT_TAX.customsFreeUpToUsd, 500);
+  assert.equal(IMPORT_TAX.thresholdIncludesShipping, false);
+  assert.equal(IMPORT_TAX.vatBaseIncludesShipping, true);
+  assert.ok(IMPORT_TAX.sources.length >= 2);
+  for (const s of IMPORT_TAX.sources) {
+    assert.match(s.url, /^https:\/\/[^/]*\.gov\.il\//);
+    assert.match(s.checkedAt, /^\d{4}-\d{2}-\d{2}$/);
+  }
+});
+test("landed cost: an unverified config never computes tax and shows no gap", () => {
+  const r = landedCost(input(), unverifiedTax);
   const tax = r.lines.find((l) => l.id === "tax");
   assert.equal(tax.state, "not_computed");
   assert.equal(tax.amount, null);
@@ -89,18 +92,24 @@ test("landed cost: shipped config is unverified, so tax is never computed and no
   assert.match(r.gapReason, /לא מוצג פער/);
 });
 test("landed cost: verified config computes VAT above threshold on item + shipping", () => {
-  const r = landedCost(input({ itemPriceILS: 400, shippingILS: 30 }), verifiedTax); // 430/3.7 ≈ 116$
+  const r = landedCost(input({ itemPriceILS: 400, shippingILS: 30 }), verifiedTax); // 400/3.7 ≈ 108$ > 75
   const tax = r.lines.find((l) => l.id === "tax");
-  assert.equal(tax.amount, 77.4);
+  assert.equal(tax.amount, 77.4); // 18% of 430 (VAT base includes shipping)
   assert.equal(r.subtotal, 507.4);
   assert.equal(r.complete, true);
   assert.equal(r.gap, 92.6);
+});
+test("landed cost: the exemption test ignores shipping (goods value only)", () => {
+  // goods 270 ILS / 3.7 = 73$ (exempt) even though goods + shipping = 82$
+  const r = landedCost(input({ itemPriceILS: 270, shippingILS: 35 }), verifiedTax);
+  assert.equal(r.lines.find((l) => l.id === "tax").amount, 0);
 });
 test("landed cost: under threshold is zero tax with a check-at-checkout note", () => {
   const r = landedCost(input(), verifiedTax); // 220/3.7 ≈ 59$
   const tax = r.lines.find((l) => l.id === "tax");
   assert.equal(tax.amount, 0);
-  assert.match(tax.note, /בקופה/);
+  assert.match(tax.note, /פטור/);
+  assert.match(tax.note, /72 שעות/);
   assert.equal(r.gap, 380);
 });
 test("landed cost: missing shipping, accessory, rate or Israel price blocks the gap", () => {
@@ -249,4 +258,28 @@ test("Israeli prices: none invented; invalid owner entries are ignored", () => {
   for (const bad of [{ priceILS: 0 }, { priceILS: NaN }, { url: "http://x" }, { checkedAt: "15/11/2026" }, { store: " " }])
     assert.equal(validIsraelPrice({ ...good, ...bad }), false);
   assert.deepEqual(pricesFor("dashcam", [good, { ...good, priceILS: -1 }, { ...good, typeId: "x" }]), [good]);
+});
+
+import { estimateImportTax } from "../lib/preflight/tax-estimate.ts";
+test("per-product tax estimate: exempt / near the threshold / VAT / VAT+customs / unknown", () => {
+  const rate = { rate: 3.2, date: "2026-11-13T10:19:11Z", source: "test" };
+  const e = (ils, r = rate, cfg = IMPORT_TAX) => estimateImportTax(ils, r, cfg);
+  assert.equal(e(100).status, "exempt"); // 31$
+  assert.equal(e(100).vatIls, 0);
+  assert.match(e(100).label, /פטור/);
+  assert.equal(e(216).status, "exempt"); // 67.5$ = exactly 90% of 75
+  assert.equal(e(230).status, "near"); // 71.9$
+  assert.equal(e(240).status, "near"); // 75$ exactly → still exempt (up to 75)
+  const v = e(320); // 100$
+  assert.equal(v.status, "vat");
+  assert.equal(v.vatIls, 58); // 18% of 320, before shipping
+  assert.match(v.label, /18%/);
+  assert.equal(e(1700).status, "vat_customs"); // 531$
+  assert.match(e(1700).detail, /מכס/);
+  assert.equal(e(null).status, "unknown");
+  assert.equal(e(0).status, "unknown");
+  assert.equal(e(100, null).status, "unknown");
+  assert.equal(e(100, { ...rate, rate: NaN }).status, "unknown");
+  assert.equal(e(100, rate, { ...IMPORT_TAX, verified: false }).status, "unknown");
+  assert.match(e(100, null).label, /לא חושב/);
 });

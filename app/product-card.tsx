@@ -5,9 +5,11 @@ import { formatMoney } from "../lib/dealpilot/urls";
 import ProductImage from "./product-image";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { Barcode, flightCode } from "./flight-bits";
+import { TaxBadge } from "./tax-badge";
+import type { UsdRate } from "../lib/preflight/tax-estimate";
 
 /* A product is a boarding pass: image, ticket body, perforation, price stub. */
-export function ProductCard({ item, eager = false }: { item: CatalogItem; eager?: boolean }) {
+export function ProductCard({ item, eager = false, usdRate = null }: { item: CatalogItem; eager?: boolean; usdRate?: UsdRate | null }) {
   const verified = evaluateEligibility(item).eligible;
   return (
     <article className="dp-product fp-pass">
@@ -57,6 +59,7 @@ export function ProductCard({ item, eager = false }: { item: CatalogItem; eager?
           <ArrowUpLeft size={20} />
         </Link>
       </div>
+      <TaxBadge price={item.currency === "ILS" ? item.price : null} usdRate={usdRate} />
       <small className="fp-pass-aff">
         {item.affiliateUrl ? "כולל קישור שותפים" : "קישור שותפים אינו זמין"}
       </small>
