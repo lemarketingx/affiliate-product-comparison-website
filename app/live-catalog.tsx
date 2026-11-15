@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, PackageSearch, ArrowUpLeft, BadgeCheck } from "lucide-react";
+import { Search, PackageSearch, ArrowUpLeft } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 import { brands } from "../lib/dealpilot/brands";
 import { shelfBySlug } from "../lib/dealpilot/shelves";
@@ -55,7 +55,7 @@ export default function LiveCatalog({
     <section className="og-section og-wrap og-catalog" id="products">
       <div className="og-section-head">
         <div>
-          <span className="og-kicker">מהחנויות הרשמיות</span>
+          <span className="og-kicker">מותגים נבחרים</span>
           <h2>
             {title ??
               (currentShelf
@@ -77,20 +77,6 @@ export default function LiveCatalog({
             כל המוצרים <ArrowUpLeft size={16} />
           </Link>
         )}
-      </div>
-      <div className="dp-selection-policy og-notice">
-        <BadgeCheck size={18} aria-hidden="true" />
-        <div>
-          <strong>רק מחנויות שמזוהות כרשמיות · בדיקת האיכות טרם הושלמה</strong>
-          <p>
-            מוצג מוצר רק כשהחנות שלו נושאת את שם המותג ו־Official Store. דירוג
-            4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.
-          </p>
-          <small>
-            יש לבדוק דירוג, ביקורות, אחריות ותנאי משלוח בעמוד המוצר ב־AliExpress
-            לפני רכישה.
-          </small>
-        </div>
       </div>
       <div className="og-filters">
         {!hideTabs && (
