@@ -14,6 +14,7 @@ import { categories } from "../../../lib/dealpilot/categories";
 import { ProductBriefing } from "../../_preflight/product-briefing";
 import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { TaxBadge } from "../../tax-badge";
+import ProductCostCalculator from "../../product-cost-calculator";
 import { IMPORT_TAX } from "../../../lib/preflight/import-tax";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -56,7 +57,7 @@ export default async function Product({
   }
   const similar = snapshot.items
     .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
-    .slice(0, 4);
+    .slice(0, 3);
   const verified = evaluateEligibility(p).eligible;
   const gate = gateCode(Math.max(0, categories.findIndex((c) => c.slug === p.categorySlug)));
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
@@ -125,6 +126,9 @@ export default async function Product({
                 </div>
                 <Barcode seed={p.id} />
               </div>
+              {p.currency === "ILS" && p.price && Number(p.price) > 0 ? (
+                <ProductCostCalculator key={p.id} priceILS={Number(p.price)} usdRate={usdRate} />
+              ) : <div className="fp-notice is-wait">אין מחיר בשקלים ולכן אי אפשר לחשב עלות רכישה.</div>}
               <div className="fp-tax-box" aria-label="מיסוי ביבוא אישי">
                 <strong>מיסוי ביבוא אישי</strong>
                 <TaxBadge price={p.currency === "ILS" ? p.price : null} usdRate={usdRate} detail />
@@ -171,8 +175,9 @@ export default async function Product({
               priceILS={p.currency === "ILS" && Number.isFinite(Number(p.price)) && Number(p.price) > 0 ? Number(p.price) : null}
               usdRate={usdRate}
             />
-            <div className="fp-known">
-              <h2>מה ידוע, ומה כדאי לבדוק</h2>
+            <div className="fp-known fp-buy-checks">
+              <h2>לפני שלוחצים על קנייה</h2>
+              <p className="fp-fine">נתונים שלא התקבלו מה־API מסומנים כלא מאומתים, ולא כהבטחה.</p>
               <ul>
                 <li>
                   {p.orders !== null
@@ -188,7 +193,10 @@ export default async function Product({
                   לא ביצענו בדיקת שימוש עצמאית ולא התקבלו מפרט מלא או אישורי
                   בטיחות.
                 </li>
-                <li>נדרשת בדיקת ביקורות המוכר ומדיניות ההחזרה לפני רכישה.</li>
+                <li>בדקו ביקורות אמיתיות, את מספר המדרגים ואת תיאור המוצר הספציפי. כמות מכירות אינה דירוג איכות.</li>
+                <li>ודאו שהווריאציה שבחרתם כוללת את האביזרים הדרושים ושמחירה בקופה תואם למחיר שחישבתם.</li>
+                <li>בדקו האם נדרש אישור יבוא או תקן מיוחד (לדוגמה ציוד תקשורת, סוללות או חלקי רכב).</li>
+                <li>בדקו מדיניות החזרות, אחריות ועמלות שחרור של חברת השילוח לפני התשלום.</li>
               </ul>
               <p className="fp-fine">
                 עדכון נתוני ספק: {updated}. הקטלוג מתרענן עד כל שש שעות.
@@ -201,7 +209,8 @@ export default async function Product({
             <div className="fp-section-head">
               <div>
                 <span className="fp-kicker">טיסות נוספות מאותו שער</span>
-                <h2>עוד באותה קטגוריה</h2>
+                <h2>השוו לפני שבוחרים</h2>
+                <p className="fp-fine">שלוש חלופות מקטגוריה דומה, עם מחירים לפי הספק וקישורי שותפים. לא דירוג איכות או הבטחת התאמה.</p>
               </div>
             </div>
             <div className="fp-grid">
