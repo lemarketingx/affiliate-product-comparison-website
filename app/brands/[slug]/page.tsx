@@ -5,7 +5,7 @@ import { brands, brandBySlug } from "../../../lib/dealpilot/brands";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { PublicShell } from "../../public-shell";
 import LiveCatalog from "../../live-catalog";
-import { Guilloche, Seal } from "../../og-bits";
+import { shelves } from "../../../lib/dealpilot/shelves";
 
 export function generateStaticParams() {
   return brands.map((b) => ({ slug: b.slug }));
@@ -31,10 +31,9 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
   return (
     <PublicShell>
       <main id="main">
-        <section className="og-brand-hero">
-          <Guilloche className="og-brand-bg" size={700} rings={6} />
-          <div className="og-wrap og-brand-grid">
-            <div>
+        <section className="og-wrap">
+          <div className="og-brand-hero" style={{ "--accent": b.accent } as React.CSSProperties}>
+            <div className="og-brand-copy">
               <nav className="og-crumbs" aria-label="מיקום">
                 <Link href="/brands">מותגים</Link> <span>/</span> <span>{b.he}</span>
               </nav>
@@ -42,30 +41,43 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
               <p className="og-brand-he">{b.he} · מהחנות הרשמית ב־AliExpress</p>
               <p className="og-brand-known">{b.knownFor}</p>
               <ul className="og-shelves">
-                {b.shelves.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
+                {shelves
+                  .filter((s) => own.some((p) => p.shelf === s.slug))
+                  .map((s) => (
+                    <li key={s.slug}>
+                      <Link href={"/categories/" + s.slug}>{s.label}</Link>
+                    </li>
+                  ))}
               </ul>
             </div>
+            <div className="og-brand-art" aria-hidden="true">
+              {own.slice(0, 3).map((p, k) =>
+                p.image ? (
+                  <span className={"og-slide-img k" + k} key={p.id}>
+                    <img src={p.image} alt="" referrerPolicy="no-referrer" />
+                  </span>
+                ) : null,
+              )}
+            </div>
             <aside className="og-brand-card">
-              <Seal id={"brand-" + b.slug} size={96} />
-              <h2>{b.storeVerified ? "חנות רשמית מאומתת" : "חנות רשמית לפי שם החנות"}</h2>
+              <strong>
+                {b.storeVerified ? <BadgeCheck size={17} /> : <Store size={17} />}{" "}
+                {b.storeVerified ? "חנות רשמית מאומתת" : "חנות רשמית לפי שם החנות"}
+              </strong>
               <p>
                 {b.storeVerified
                   ? "בדקנו ידנית את החנות הרשמית של המותג ב־AliExpress."
-                  : "מוצגים רק מוצרים מחנות שהשם שלה כולל את שם המותג ו־Official Store. עדיין לא אימתנו ידנית את החנות."}
+                  : "מוצגים רק מוצרים מחנות ששמה כולל את שם המותג ו־Official Store. עדיין לא אימתנו ידנית את החנות."}
               </p>
               {stores.length > 0 && (
                 <ul className="og-store-list">
                   {stores.map((s) => (
-                    <li key={s} dir="ltr">
-                      {b.storeVerified ? <BadgeCheck size={15} /> : <Store size={15} />} {s}
-                    </li>
+                    <li key={s} dir="ltr">{s}</li>
                   ))}
                 </ul>
               )}
               <Link className="og-link" href="/warranty">
-                אחריות ביבוא אישי <ArrowUpLeft size={16} />
+                אחריות ביבוא אישי <ArrowUpLeft size={15} />
               </Link>
             </aside>
           </div>

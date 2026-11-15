@@ -8,7 +8,8 @@ import { ProductCard } from "../../product-card";
 import { evaluateEligibility } from "../../../lib/aliexpress/quality";
 import ProductGallery from "../../product-gallery";
 import { StoreLine } from "../../product-card";
-import { Guilloche, Seal, serial } from "../../og-bits";
+import { BrandChip, discountOf } from "../../product-card";
+import { FavButton } from "../../favorites";
 import { brandBySlug } from "../../../lib/dealpilot/brands";
 import { israelPriceFor } from "../../../lib/dealpilot/israel-prices";
 export const dynamic = "force-dynamic";
@@ -56,6 +57,7 @@ export default async function Product({
   const verified = evaluateEligibility(p).eligible;
   const brand = brandBySlug(p.categorySlug);
   const il = israelPriceFor(p.id);
+  const off = discountOf(p);
   const ali = Number(p.price);
   const gap = il && Number.isFinite(ali) ? il.price - ali : null;
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
@@ -68,7 +70,7 @@ export default async function Product({
     : "לא זמין";
   const cta = p.affiliateUrl ? (
     <a
-      className="og-btn og-btn-block"
+      className="og-btn og-btn-go og-btn-block"
       href={"/go/" + id + "?source=catalog"}
       rel="sponsored noopener noreferrer"
       target="_blank"
@@ -98,12 +100,9 @@ export default async function Product({
           <ProductGallery images={images} title={p.title} />
           <div className="og-detail-side">
             <div className="og-certificate">
-              <Guilloche className="og-certificate-bg" size={480} rings={4} />
               <div className="og-certificate-top">
-                <Link href={"/brands/" + p.categorySlug} className="og-certificate-brand" dir="ltr">
-                  {p.category}
-                </Link>
-                <span dir="ltr" className="og-tag-serial">{serial(p.id)}</span>
+                <BrandChip slug={p.categorySlug} name={p.category} />
+                <FavButton fav={{ id: p.id, title: p.title, image: p.image, price: formatMoney(p.price, p.currency), brand: p.category }} />
               </div>
               <h1 dir="auto">{p.title}</h1>
               <StoreLine item={p} />
@@ -111,8 +110,13 @@ export default async function Product({
                 <div>
                   <small>מחיר ספק באליאקספרס</small>
                   <strong dir="auto">{formatMoney(p.price, p.currency)}</strong>
+                  {off && (
+                    <span className="og-was">
+                      <s dir="auto">{formatMoney(p.originalPrice, p.currency)}</s>
+                      <b>‎-{off}%</b> הנחה לפי מחיר המקור שדווח
+                    </span>
+                  )}
                 </div>
-                <Seal id={"p-" + p.id} size={88} />
               </div>
               {il ? (
                 <div className="og-compare">

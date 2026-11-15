@@ -32,3 +32,11 @@ test("Israeli prices: missing and stale entries are hidden", () => {
   assert.equal(israelPriceFor("stale", now), null);
   israelPrices.length = 0;
 });
+
+test("shelves: titles map to cross-brand categories", async () => {
+  const { shelfFor } = await import("../lib/dealpilot/shelves.ts");
+  assert.equal(shelfFor("שואב רובוטי Roborock Q7"), "robot-vacuums");
+  assert.equal(shelfFor("Anker 65W GaN charger"), "charging");
+  assert.equal(shelfFor("מחזיק טלפון לרכב"), "car");
+  assert.equal(shelfFor("something else"), "more");
+});

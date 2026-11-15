@@ -8,11 +8,14 @@ import {
 import { categories } from "../dealpilot/categories";
 import { evaluateEligibility } from "./quality";
 import { brands, storeStatus, type StoreStatus } from "../dealpilot/brands";
+import { shelfFor } from "../dealpilot/shelves";
 export type CatalogItem = AliProduct & {
   category: string;
   categorySlug: string;
   /* Brand catalog only: the brand slug equals categorySlug. */
   storeStatus?: StoreStatus;
+  /* Cross-brand shopping category, see lib/dealpilot/shelves.ts. */
+  shelf?: string;
 };
 export type CatalogSnapshot = {
   items: CatalogItem[];
@@ -115,6 +118,7 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
         category: brand.name,
         categorySlug: brand.slug,
         storeStatus: status,
+        shelf: shelfFor(product.title),
       });
     });
   }

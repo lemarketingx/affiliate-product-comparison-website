@@ -24,3 +24,13 @@ The brand catalog makes one API query per brand (12), cached for six hours. The
 admin discovery catalog still uses the category queries. Both share the in-process
 guard of 24 product queries per hour; adding many brands needs a larger guard or
 a scheduled refresh.
+
+## Market layout (v2)
+
+- **Categories** are cross-brand shelves in `lib/dealpilot/shelves.ts`; a product
+  gets the first shelf whose keywords appear in its title. Edit keywords there.
+- **Discount badges** use only the provider's `target_original_price` in the same
+  currency and higher than the sale price. No discount is ever computed from a guess.
+- **Brand chips** use the brand name in the site font plus an accent colour
+  (`accent` in brands.ts). Never add real logos.
+- **Favorites** are stored only in the visitor's browser (localStorage).

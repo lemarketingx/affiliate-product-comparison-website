@@ -36,3 +36,15 @@ export function formatMoney(price: string | null, currency: string | null) {
     return `${price} ${currency}`;
   }
 }
+
+/* Provider's pre-discount price: kept only in the same currency and when higher. */
+export function pickOriginalPrice(
+  raw: string | null,
+  rawCurrency: string | null,
+  price: string | null,
+  currency: string | null,
+) {
+  if (!raw || !price || !currency || rawCurrency !== currency) return null;
+  const o = Number(raw), p = Number(price);
+  return Number.isFinite(o) && Number.isFinite(p) && p > 0 && o > p ? raw : null;
+}

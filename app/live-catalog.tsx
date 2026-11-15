@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Search, PackageSearch, ArrowUpLeft, BadgeCheck } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 import { brands } from "../lib/dealpilot/brands";
+import { shelfBySlug } from "../lib/dealpilot/shelves";
+import { discountOf } from "./product-card";
 import { ProductCard } from "./product-card";
 
 export default function LiveCatalog({
@@ -13,6 +15,8 @@ export default function LiveCatalog({
   initialCategory = "",
   hideTabs = false,
   title,
+  shelf = "",
+  initialSort = "source",
 }: {
   snapshot: CatalogSnapshot;
   compact?: boolean;
@@ -20,15 +24,18 @@ export default function LiveCatalog({
   initialCategory?: string;
   hideTabs?: boolean;
   title?: string;
+  shelf?: string;
+  initialSort?: string;
 }) {
   const [query, setQuery] = useState(initialQuery),
     [brand, setBrand] = useState(initialCategory),
-    [sort, setSort] = useState("source");
+    [sort, setSort] = useState(initialSort);
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase();
     const rows = snapshot.items.filter(
       (p) =>
         (!brand || p.categorySlug === brand) &&
+        (!shelf || p.shelf === shelf) &&
         (!q ||
           p.title.toLocaleLowerCase().includes(q) ||
           p.category.toLocaleLowerCase().includes(q) ||
@@ -36,11 +43,14 @@ export default function LiveCatalog({
     );
     if (sort === "orders")
       rows.sort((a, b) => (b.orders ?? -1) - (a.orders ?? -1));
+    if (sort === "discount")
+      rows.sort((a, b) => (discountOf(b) ?? 0) - (discountOf(a) ?? 0));
     if (sort === "price")
       rows.sort((a, b) => Number(a.price ?? Infinity) - Number(b.price ?? Infinity));
     return compact ? rows.slice(0, 8) : rows;
-  }, [snapshot.items, query, brand, sort, compact]);
+  }, [snapshot.items, query, brand, sort, compact, shelf]);
   const current = brands.find((b) => b.slug === brand);
+  const currentShelf = shelfBySlug(shelf);
   return (
     <section className="og-section og-wrap og-catalog" id="products">
       <div className="og-section-head">
@@ -48,7 +58,9 @@ export default function LiveCatalog({
           <span className="og-kicker">מהחנויות הרשמיות</span>
           <h2>
             {title ??
-              (current
+              (currentShelf
+                ? currentShelf.label + (current ? " של " + current.he : " מכל המותגים")
+                : current
                 ? "כל המוצרים של " + current.he
                 : compact
                   ? "מה קונים עכשיו מהמותגים."
@@ -61,8 +73,8 @@ export default function LiveCatalog({
           </p>
         </div>
         {compact && (
-          <Link className="og-link" href="/deals">
-            לכל המוצרים <ArrowUpLeft size={17} />
+          <Link className="og-pill-link" href="/deals">
+            כל המוצרים <ArrowUpLeft size={16} />
           </Link>
         )}
       </div>
@@ -115,6 +127,7 @@ export default function LiveCatalog({
           >
             <option value="source">סדר הספק</option>
             <option value="orders">הזמנות לפי הספק</option>
+            <option value="discount">הנחה לפי הספק</option>
             <option value="price">מחיר: מהנמוך</option>
           </select>
         </div>
