@@ -12,6 +12,7 @@ import { BrandChip, discountOf } from "../../product-card";
 import { FavButton } from "../../favorites";
 import { brandBySlug } from "../../../lib/dealpilot/brands";
 import { israelPriceFor } from "../../../lib/dealpilot/israel-prices";
+import { warrantyFor } from "../../../lib/dealpilot/product-warranty";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -57,6 +58,7 @@ export default async function Product({
   const verified = evaluateEligibility(p).eligible;
   const brand = brandBySlug(p.categorySlug);
   const il = israelPriceFor(p.id);
+  const warranty = warrantyFor(p.id);
   const off = discountOf(p);
   const ali = Number(p.price);
   const gap = il && Number.isFinite(ali) ? il.price - ali : null;
@@ -71,7 +73,7 @@ export default async function Product({
   const cta = p.affiliateUrl ? (
     <a
       className="og-btn og-btn-go og-btn-block"
-      href={"/go/" + id + "?source=catalog"}
+      href={p.affiliateUrl}
       rel="sponsored noopener noreferrer"
       target="_blank"
     >
@@ -162,12 +164,20 @@ export default async function Product({
             <div className="og-warranty-box">
               <ShieldQuestion size={22} aria-hidden="true" />
               <div>
-                <strong>אחריות ביבוא אישי</strong>
-                <p>
-                  מוצר שנקנה מהחנות הרשמית באליאקספרס בדרך כלל אינו מכוסה באחריות
-                  היבואן הרשמי בישראל. בדקו את תנאי האחריות של המוכר, בחרו גרסה
-                  גלובלית ותקע מתאים.
-                </p>
+                <strong>מי נותן אחריות ואיפה מממשים?</strong>
+                {warranty ? <>
+                  <p><b>נותן האחריות:</b> {warranty.provider}</p>
+                  <p><b>מדינת שירות:</b> {warranty.serviceCountry}</p>
+                  <p><b>כתובת שירות:</b> {warranty.serviceAddress ?? "לא נמסרה כתובת שירות מאומתת"}</p>
+                  <p><b>תקופת אחריות:</b> {warranty.durationMonths === null ? "לא צוינה בתקנון שנבדק" : warranty.durationMonths + " חודשים"}</p>
+                  {warranty.scope && <p><b>כיסוי:</b> {warranty.scope}</p>}
+                  <p><a href={warranty.sourceUrl} target="_blank" rel="noopener noreferrer">לתנאי האחריות שנבדקו</a> · עדכון: {warranty.checkedAt}</p>
+                </> : <>
+                  <p><b>נותן האחריות:</b> לא אומת. המותג, המוכר והיבואן בישראל אינם בהכרח אותו גורם.</p>
+                  <p><b>היכן מממשים אחריות:</b> לא אומת. יש לבדוק מול המוכר אם השירות בישראל או דורש משלוח לחו״ל ועל חשבון מי.</p>
+                  <p><b>תקופה ותנאים:</b> לא נמסרו נתוני אחריות מאומתים ב־Affiliate API.</p>
+                  <p>בקשו מהמוכר תנאי אחריות בכתב, כתובת שירות, תהליך טיפול ותנאי משלוח חזרה לפני התשלום.</p>
+                </>}
                 <Link className="og-link" href="/warranty">
                   כל מה שכדאי לבדוק <ArrowUpLeft size={15} />
                 </Link>
