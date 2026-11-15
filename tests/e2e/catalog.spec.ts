@@ -13,19 +13,20 @@ test.beforeAll(async () => {
   await mkdir(SHOTS, { recursive: true });
 });
 
-test("500+ unique products: real counts, 24 per page, filters, search and pagination", async ({ page }) => {
+test("brand-only products: no generic products, 24 per page, filters, search and pagination", async ({ page }) => {
   await images(page);
   await page.goto("/deals");
   const status = page.locator(".fp-status-line");
   await expect(status).toContainText("מוצרים בקטלוג");
   const total = Number((await status.locator("strong").innerText()).replace(/[^\d]/g, ""));
-  expect(total).toBeGreaterThanOrEqual(500);
+  expect(total).toBeGreaterThanOrEqual(24);
   await expect(page.locator(".dp-product")).toHaveCount(24);
   await expect(status).toContainText("מוצגים 1–24");
   // No duplicates on a page; every card is a published fixture with an affiliate link.
   const ids = await page.locator(".dp-product .fp-pass-go").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(new Set(ids).size).toBe(24);
   await expect(page.locator(".dp-product").first()).toContainText("כולל קישור שותפים");
+  await expect(page.locator(".dp-product").first().locator(".fp-product-brand-tag")).toBeVisible();
   await expect(page.locator(".fp-shortfall")).toHaveCount(0);
 
   // Every card states its personal-import tax outcome (fixture rate 3.2 ₪/$).
@@ -65,18 +66,18 @@ test("500+ unique products: real counts, 24 per page, filters, search and pagina
 
   // Category filter + search keep real filtered counts.
   await page.goto("/deals");
-  await page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: "רכב ואביזרים" }).click();
+  await page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: "מותגים לרכב" }).click();
   await expect(page).toHaveURL(/cat=car/);
   await expect(page.locator(".fp-status-line")).toContainText("מוצרים עברו את הסינון מתוך");
   const carCount = Number((await page.locator(".fp-status-line strong").innerText()).replace(/[^\d]/g, ""));
   expect(carCount).toBeGreaterThan(0);
   expect(carCount).toBeLessThan(total);
-  await page.getByRole("textbox", { name: "סינון לפי שם מוצר" }).fill("organizer");
+  await page.getByRole("textbox", { name: "סינון לפי שם מוצר" }).fill("70mai");
   await page.getByRole("button", { name: "סינון", exact: true }).click();
   await expect(page).toHaveURL(/cat=car.*q=|q=.*cat=car/);
   const searched = Number((await page.locator(".fp-status-line strong").innerText()).replace(/[^\d]/g, ""));
   expect(searched).toBeLessThan(carCount);
-  for (const title of await page.locator(".dp-product h3").allInnerTexts()) expect(title).toContain("organizer");
+  for (const title of await page.locator(".dp-product h3").allInnerTexts()) expect(title).toContain("70mai");
   await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");
   await expect(page).toHaveURL(/sort=orders/);
   const orders = (await page.locator(".dp-product .fp-pass-orders").allInnerTexts()).map((t) => Number(t.replace(/[^\d]/g, "")));
@@ -101,11 +102,12 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
     Number((await page.locator(".fp-report-kpis div", { hasText: label }).locator("dd").innerText()).replace(/[^\d]/g, ""));
   const unique = await kpi("מוצרים ייחודיים");
   const rejected = await kpi("נפסלו");
-  const published = await kpi("פורסמו בפועל");
+  const published = await kpi("פורסמו מוצרי מותג");
   expect(unique).toBe(rejected + published);
-  expect(published).toBeGreaterThanOrEqual(500);
+  expect(published).toBeGreaterThanOrEqual(24);
   expect(await kpi("שורות שהתקבלו")).toBeGreaterThan(unique);
   await expect(page.locator("table").first()).toContainText("אין קישור שותפים תקין");
+  await expect(page.locator("table").first()).toContainText("מותג מוכר אינו מזוהה");
   await expect(page.locator("table").first()).toContainText("5,000 מכירות מדווחות או פחות");
   await expect(page.getByText(/גודל עמוד שנוסה/)).toBeVisible();
 
