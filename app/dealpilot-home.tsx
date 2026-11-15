@@ -18,7 +18,7 @@ export function ChannelCta() {
       <div>
         <span className="og-kicker">בלי לפספס</span>
         <h2>מוצרים חדשים מהמותגים, ישר לטלפון.</h2>
-        <p>ערוץ עדכונים שקט: רק מהחנויות הרשמיות, בלי ספאם.</p>
+        <p>ערוץ עדכונים שקט: מותגים מזוהים לפי שם החנות, בלי ספאם.</p>
       </div>
       <div className="og-channel-actions">
         {whatsapp && (
@@ -60,9 +60,9 @@ function buildSlides(items: CatalogItem[]): Slide[] {
   const slides: Slide[] = [
     {
       key: "intro",
-      kicker: "רק מהחנויות הרשמיות",
+      kicker: "מותגים מזוהים לפי שם החנות",
       title: "המותגים שאתם מכירים, במחירים של אליאקספרס.",
-      subtitle: "שיאומי, אנקר, דרימי, יוגרין ועוד. מוצרים מקוריים, מחירים בשקלים, בלי ניחושים.",
+      subtitle: "שיאומי, אנקר, דרימי, יוגרין ועוד. מחירים בשקלים; מקוריות ומעמד החנות דורשים אימות.",
       cta: "לכל המותגים",
       href: "/brands",
       accent: "#ff6900",
@@ -87,7 +87,7 @@ function buildSlides(items: CatalogItem[]): Slide[] {
     if (!b) continue;
     slides.push({
       key: "brand-" + slug,
-      kicker: "מהחנות הרשמית ב־AliExpress",
+      kicker: "מוכרים המזוהים בשם המותג ב־AliExpress",
       wordmark: b.name,
       logo: b.logo,
       title: b.knownFor,
@@ -128,7 +128,7 @@ export default function DealPilotHome({ snapshot }: { snapshot: CatalogSnapshot 
           <div className="og-head">
             <div>
               <h2 id="brands-title">המותגים שאתם מכירים</h2>
-              <p>רק מוצרים מהחנויות הרשמיות של המותגים ב־AliExpress, במחירים בשקלים.</p>
+              <p>רק מוצרים מחנויות ששמן מזוהה עם המותג, במחירים בשקלים. סטטוס רשמי אינו מאומת.</p>
             </div>
             <Link className="og-pill-link" href="/brands">
               כל המותגים <ChevronLeft size={16} />
@@ -201,7 +201,7 @@ export default function DealPilotHome({ snapshot }: { snapshot: CatalogSnapshot 
             <section key={b.slug} className="og-wrap og-block og-brandrow" style={{ "--accent": b.accent } as React.CSSProperties}>
               <SectionHead
                 title={`${b.he} · ${b.name}`}
-                sub={"מהחנות הרשמית: " + b.knownFor}
+                sub={"מחנויות בשם המותג: " + b.knownFor}
                 href={"/brands/" + b.slug}
                 cta={"לכל המוצרים של " + b.he}
               />
@@ -220,7 +220,7 @@ export default function DealPilotHome({ snapshot }: { snapshot: CatalogSnapshot 
               <span className="og-kicker">לפני שחוסכים</span>
               <h2>זול יותר. ומה עם האחריות?</h2>
               <p>
-                מוצר מהחנות הרשמית של המותג הוא מקורי, אבל בדרך כלל אינו מכוסה באחריות של
+                שם חנות שנראה רשמי אינו מוכיח מקוריות. קנייה ביבוא אישי בדרך כלל אינה כוללת אחריות של
                 היבואן הרשמי בישראל. לפעמים ההפרש שווה את זה, ולפעמים לא. אנחנו מסבירים מה
                 לבדוק, ואתם מחליטים.
               </p>
