@@ -37,9 +37,11 @@ export default function Autopilot({
   types,
   israelPrices,
   initial,
+  usdRate = null,
 }: {
   types: VisibleType[];
   israelPrices: IsraelPrice[];
+  usdRate?: import("../../lib/preflight/tax-estimate").UsdRate | null;
   initial: { q?: string; t?: string; a?: string };
 }) {
   const initialType = types.find((t) => t.id === initial.t) ?? null;
@@ -211,6 +213,7 @@ export default function Autopilot({
             apiPriceILS={null}
             accessories={plan.items.filter((i) => i.status === "required" && !i.have && i.search).map((i) => i.label)}
             israelPrices={israelPrices.filter((p) => p.typeId === type.id)}
+            usdRate={usdRate}
           />
           <div className="fp-ap-share">
             <h3>שמרו או שתפו את התוכנית</h3>

@@ -11,6 +11,9 @@ import PreflightCheck from "../../preflight-check";
 import { Barcode, flightCode, gateCode } from "../../flight-bits";
 import { categories } from "../../../lib/dealpilot/categories";
 import { ProductBriefing } from "../../_preflight/product-briefing";
+import { getUsdRate } from "../../../lib/dealpilot/fx";
+import { TaxBadge } from "../../tax-badge";
+import { IMPORT_TAX } from "../../../lib/preflight/import-tax";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -31,8 +34,8 @@ export default async function Product({
 }) {
   const { id } = await params;
   if (!/^\d{4,24}$/.test(id)) notFound();
-  const snapshot = await getCatalog(),
-    p = snapshot.items.find((p) => p.id === id);
+  const [snapshot, usdRate] = await Promise.all([getCatalog(), getUsdRate()]);
+  const p = snapshot.items.find((p) => p.id === id);
   if (!p) {
     return (
       <PublicShell>
@@ -121,8 +124,18 @@ export default async function Product({
                 </div>
                 <Barcode seed={p.id} />
               </div>
+              <div className="fp-tax-box" aria-label="מיסוי ביבוא אישי">
+                <strong>מיסוי ביבוא אישי</strong>
+                <TaxBadge price={p.currency === "ILS" ? p.price : null} usdRate={usdRate} detail />
+                <small>
+                  לפי רשות המסים: עד {IMPORT_TAX.exemptionUsd}$ פטור, מעל זה מע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}% (כולל על המשלוח).
+                  {usdRate ? ` שער יציג ${usdRate.rate} ₪ (${new Date(usdRate.date).toLocaleDateString("he-IL")}).` : ""} ההערכה מתייחסת לפריט אחד
+                  במחיר המוצג; גרסה אחרת, כמות או פריטים נוספים מאותו מוכר בתוך {IMPORT_TAX.combineWindowHours} שעות משנים את החישוב.{" "}
+                  <a href={IMPORT_TAX.sources[0].url} target="_blank" rel="noopener noreferrer">מחשבון רשות המסים</a>
+                </small>
+              </div>
               <p className="fp-fine">
-                המחיר הסופי, המסים והמשלוח נבדקים ב־AliExpress.
+                המחיר הסופי והמשלוח נבדקים ב־AliExpress.
               </p>
               {p.affiliateUrl ? (
                 <a
@@ -155,6 +168,7 @@ export default async function Product({
             <ProductBriefing
               title={p.title}
               priceILS={p.currency === "ILS" && Number.isFinite(Number(p.price)) && Number(p.price) > 0 ? Number(p.price) : null}
+              usdRate={usdRate}
             />
             <div className="fp-known">
               <h2>מה ידוע, ומה כדאי לבדוק</h2>
@@ -191,7 +205,7 @@ export default async function Product({
             </div>
             <div className="fp-grid">
               {similar.map((item) => (
-                <ProductCard key={item.id} item={item} />
+                <ProductCard key={item.id} item={item} usdRate={usdRate} />
               ))}
             </div>
           </section>

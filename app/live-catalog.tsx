@@ -11,11 +11,16 @@ export default function LiveCatalog({
   compact = false,
   initialQuery = "",
   initialCategory = "",
+  total,
+  usdRate = null,
 }: {
   snapshot: CatalogSnapshot;
   compact?: boolean;
   initialQuery?: string;
   initialCategory?: string;
+  /** Size of the whole published catalog when only a slice is passed in. */
+  total?: number;
+  usdRate?: import("../lib/preflight/tax-estimate").UsdRate | null;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery),
@@ -88,7 +93,7 @@ export default function LiveCatalog({
           <RadioTower size={18} aria-hidden="true" />
           <div>
           <strong>מוצרים לגילוי · בדיקת האיכות טרם הושלמה</strong>
-          <p>מוצגים מוצרים עם יותר מ־500 רכישות מדווחות. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
+          <p>מוצגים מוצרים עם יותר מ־5,000 מכירות מדווחות וקישור שותפים תקין. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.</p>
           <small>יש לבדוק דירוג, ביקורות ותנאי משלוח בעמוד המוצר ב־AliExpress לפני רכישה.</small>
           </div>
         </div>
@@ -131,7 +136,9 @@ export default function LiveCatalog({
       </div>
       <p className="fp-status-line" role="status">
         {snapshot.available
-          ? filtered.length + " מוצרים בתצוגה"
+          ? total !== undefined
+            ? total.toLocaleString("he-IL") + " מוצרים בקטלוג · " + filtered.length + " בתצוגה כאן"
+            : filtered.length + " מוצרים בתצוגה"
           : "ממתינים לחיבור הקטלוג"}
         {snapshot.partial ? " · חלק מהקטגוריות אינן זמינות" : ""}
         {snapshot.fetchedAt
@@ -146,7 +153,7 @@ export default function LiveCatalog({
       {filtered.length ? (
         <div className="fp-grid">
           {filtered.map((item) => (
-            <ProductCard item={item} key={item.id} />
+            <ProductCard item={item} key={item.id} usdRate={usdRate} />
           ))}
         </div>
       ) : (
@@ -155,7 +162,9 @@ export default function LiveCatalog({
             <PackageSearch size={34} />
           </span>
           <h3>
-            {snapshot.available &&
+            {snapshot.warming
+              ? "הקטלוג מתעדכן ממש עכשיו"
+              : snapshot.available &&
             snapshot.qualityFiltered &&
             snapshot.items.length === 0
               ? "המוצרים הבאים שלנו עדיין בבדיקה"
@@ -164,7 +173,9 @@ export default function LiveCatalog({
                 : "קצת סבלנות, הגילוי בדרך."}
           </h3>
           <p>
-            {snapshot.available &&
+            {snapshot.warming
+              ? "המוצרים נשלפים מ־AliExpress ברקע. רעננו את הדף בעוד כחצי דקה."
+              : snapshot.available &&
             snapshot.qualityFiltered &&
             snapshot.items.length === 0
               ? "נציג כאן רק מוצרים שעברו את כל התנאים: רכישות, דירוג, ביקורת ישראלית ומשלוח לישראל. אפשר לחזור בהמשך."

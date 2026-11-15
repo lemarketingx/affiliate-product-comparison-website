@@ -8,6 +8,14 @@ The storefront uses owner-authorized discovery mode: products with more than 500
 
 `/autopilot`, `/missions` and the per-product "מה כנראה לא בקופסה" block turn an Israeli need into a buying plan: what to buy, what is usually not in the box, how to search, Israel fit, when to buy locally and an honest landed-cost estimate. All destinations and guides are owner-approved (`lib/preflight/approvals.ts`); new ones stay hidden until approved. Import-tax values are not computed until verified from an official source. See [pre-flight engine](docs/DEALPILOT-PREFLIGHT.md).
 
+## Public catalog
+
+Up to ~650 published products from staged, cached, quota-bounded AliExpress searches (>5000 reported sales, ILS, Hebrew, valid affiliate link), 24 per page with search, filters and a public build report at `/catalog-status`. See [catalog](docs/DEALPILOT-CATALOG.md).
+
+## Official banners
+
+Homepage campaign banners from `featuredpromo.get` and owner-imported Portals creatives, each with a `link.generate` affiliate link using `ALIEXPRESS_TRACKING_ID`; published only with a valid link and echoed tracking id, removed when expired, replaced by category banners. Admin: `/admin/banners`. Attribution is reported separately. See [banners](docs/DEALPILOT-BANNERS.md).
+
 ## Run and verify
 
 Node 22+:

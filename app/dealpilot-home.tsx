@@ -9,6 +9,8 @@ import LiveCatalog from "./live-catalog";
 import FlightClock from "./flight-clock";
 import { flightCode, gateCode } from "./flight-bits";
 import { visibleTypes } from "../lib/preflight";
+import BannerStrip from "./banner-strip";
+import type { Banner } from "../lib/aliexpress/banners";
 
 function AutopilotPanel() {
   const types = visibleTypes();
@@ -127,8 +129,12 @@ function DepartureBoard({ snapshot }: { snapshot: CatalogSnapshot }) {
 
 export default function DealPilotHome({
   snapshot,
+  banners,
+  usdRate = null,
 }: {
   snapshot: CatalogSnapshot;
+  banners?: { banners: Banner[]; attributionConfirmed: boolean };
+  usdRate?: import("../lib/preflight/tax-estimate").UsdRate | null;
 }) {
   return (
     <PublicShell>
@@ -174,6 +180,8 @@ export default function DealPilotHome({
           </div>
         </section>
 
+        {banners && <BannerStrip banners={banners.banners} attributionConfirmed={banners.attributionConfirmed} />}
+
         <AutopilotPanel />
 
         <section className="fp-preflight" aria-labelledby="preflight-title">
@@ -207,7 +215,7 @@ export default function DealPilotHome({
           <CategoryLinks />
         </section>
 
-        <LiveCatalog snapshot={snapshot} compact />
+        <LiveCatalog snapshot={{ ...snapshot, report: undefined, items: snapshot.items.slice(0, 8) }} total={snapshot.items.length} usdRate={usdRate} compact />
 
         <section className="fp-wrap fp-section">
           <div className="fp-guide-pass">

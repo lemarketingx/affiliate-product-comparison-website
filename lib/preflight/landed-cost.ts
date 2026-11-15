@@ -53,26 +53,29 @@ export function landedCost(input: LandedCostInput, tax: TaxConfig): LandedCostRe
   });
 
   // Import tax: only with verified official parameters.
-  const parcel = (lines[0].amount ?? NaN) + (lines[1].amount ?? NaN);
-  if (!tax.verified || tax.vatExemptionUsd === null || tax.vatRate === null || !tax.officialSource) {
-    lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: tax.unverifiedReason });
+  const item = lines[0].amount;
+  const ship = lines[1].amount;
+  if (!tax.verified || tax.exemptionUsd === null || tax.vatRate === null || !tax.sources.length) {
+    lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: tax.unverifiedReason || "כללי המיסוי לא אומתו." });
     missing.push("מס יבוא (לא אומת)");
-  } else if (!Number.isFinite(parcel)) {
-    lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: "נדרשים מחיר ומשלוח כדי לבדוק מול התקרה." });
+  } else if (item === null || (tax.vatBaseIncludesShipping && ship === null)) {
+    lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: "נדרשים מחיר ומשלוח כדי לחשב." });
     missing.push("מס יבוא");
   } else if (!money(input.usdIlsRate) || input.usdIlsRate <= 0) {
-    lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: "התקרה נקבעת בדולרים. הזינו שער דולר עדכני כדי לבדוק." });
+    lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: "התקרה נקבעת בדולרים. נדרש שער דולר." });
     missing.push("שער דולר");
   } else {
-    const declared = tax.shippingIncluded === false ? lines[0].amount! : parcel;
-    const usd = declared / input.usdIlsRate;
-    if (tax.customsThresholdUsd !== null && usd > tax.customsThresholdUsd) {
-      lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: `ערך של כ־${Math.round(usd)}$ עובר את סף המכס. המכס ומס הקנייה תלויים בסוג המוצר, ולכן לא חישבנו.` });
+    // Exemption test: goods value (without shipping, per the rules); VAT base: goods + shipping.
+    const testValue = tax.thresholdIncludesShipping ? item + (ship ?? 0) : item;
+    const usd = testValue / input.usdIlsRate;
+    const base = tax.vatBaseIncludesShipping ? item + (ship ?? 0) : item;
+    if (tax.customsFreeUpToUsd !== null && usd > tax.customsFreeUpToUsd) {
+      lines.push({ id: "tax", label: "מע\"מ / מכס ביבוא אישי", amount: null, state: "not_computed", note: `ערך של כ־${Math.round(usd)}$ עובר את ${tax.customsFreeUpToUsd}$. המכס ומס הקנייה תלויים בסוג המוצר, ולכן לא חישבנו.` });
       missing.push("מכס (תלוי מוצר)");
-    } else if (usd <= tax.vatExemptionUsd) {
-      lines.push({ id: "tax", label: "מע\"מ ביבוא אישי", amount: 0, state: "known", note: `ערך של כ־${Math.round(usd)}$, עד התקרה של ${tax.vatExemptionUsd}$. ייתכן פטור. בדקו אם אליאקספרס גובה מע\"מ כבר בקופה.` });
+    } else if (usd <= tax.exemptionUsd) {
+      lines.push({ id: "tax", label: "מע\"מ ביבוא אישי", amount: 0, state: "known", note: `ערך של כ־${Math.round(usd)}$ (ללא משלוח), עד התקרה של ${tax.exemptionUsd}$: פטור. הזמנות מאותו מוכר שמגיעות בתוך ${tax.combineWindowHours ?? 72} שעות נספרות יחד.` });
     } else {
-      lines.push({ id: "tax", label: "מע\"מ ביבוא אישי", amount: round(declared * tax.vatRate), state: "known", note: `ערך של כ־${Math.round(usd)}$, מעל התקרה של ${tax.vatExemptionUsd}$. מע\"מ ${Math.round(tax.vatRate * 100)}%. ייתכן שנגבה כבר בקופה, ואז אל תשלמו פעמיים.` });
+      lines.push({ id: "tax", label: "מע\"מ ביבוא אישי", amount: round(base * tax.vatRate), state: "known", note: `ערך של כ־${Math.round(usd)}$, מעל התקרה של ${tax.exemptionUsd}$. מע"מ ${Math.round(tax.vatRate * 100)}% על המוצר והמשלוח. במוצרים מסוימים ייתכן גם מס קנייה. אם המע"מ נגבה כבר בקופה, לא משלמים שוב.` });
     }
   }
 

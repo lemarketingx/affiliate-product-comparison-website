@@ -22,10 +22,10 @@ test("discovery products disclose missing verification while private review and 
   await expect(page.locator(".dp-product")).toHaveCount(1);
   await expect(page.locator(".dp-product-price")).toContainText("₪");
   await expect(page.locator(".dp-product-price")).not.toContainText("$");
-  await expect(page.getByRole("button", { name: "אופנה ואביזרים", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "אופנה ואביזרים", exact: true }).click();
+  await expect(page.getByRole("link", { name: "אופנה ואביזרים", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "אופנה ואביזרים", exact: true }).click();
   await expect(page.locator(".dp-product")).toHaveCount(1);
-  await page.getByRole("button", { name: "הכול", exact: true }).click();
+  await page.getByRole("link", { name: "הכול", exact: true }).click();
   await expect(page.locator(".dp-product")).toContainText("טרם נבדק לפי תנאי הסינון שלך");
   await expect(page.locator(".dp-selection-policy")).toContainText("טרם אומתו");
   await expect(page.locator(".dp-product")).not.toContainText("מאומת לפי תנאי הסינון");
@@ -150,7 +150,7 @@ test("discovery products disclose missing verification while private review and 
   await expect(adminMenu).toHaveAttribute("aria-expanded", "true");
   await expect(
     page.getByRole("navigation", { name: "ניהול DealPilot" }).getByRole("link"),
-  ).toHaveCount(8);
+  ).toHaveCount(9);
   await expect(
     page.getByRole("link", { name: "הגדרות", exact: true }),
   ).toBeVisible();

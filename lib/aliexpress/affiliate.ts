@@ -2,6 +2,15 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { allowRequest } from "../dealpilot/rate-limit";
 import { unknownQuality, type QualityEvidence } from "./quality";
+import {
+  AffiliateError,
+  parsePageMeta,
+  validateProductQuery,
+  type ProductPage,
+  type ProductQuery,
+} from "./query";
+export { AffiliateError, PAGE_NO_LIMIT, PAGE_SIZE_LIMIT, validateProductQuery } from "./query";
+export type { PageMeta, ProductPage, ProductQuery } from "./query";
 
 const GATEWAY = "https://api-sg.aliexpress.com/sync";
 const METHOD = "aliexpress.affiliate.product.query";
@@ -115,14 +124,6 @@ export function validAdminToken(candidate: string | null): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export class AffiliateError extends Error {
-  constructor(
-    public code: string,
-    public status: number = 502,
-  ) {
-    super(code);
-  }
-}
 
 export function normalizeProductResponse(payload: unknown): AliProduct[] {
   const root = record(payload);
@@ -231,14 +232,18 @@ export function normalizeProductResponse(payload: unknown): AliProduct[] {
     .filter((p): p is AliProduct => p !== null);
 }
 
-export async function queryAffiliateProducts(
-  keywords: string,
-  pageSize = 10,
-): Promise<AliProduct[]> {
+/** Products plus the provider's paging counters (when returned). */
+export function parseProductPage(payload: unknown, pageNo: number, pageSize: number): ProductPage {
+  return { products: normalizeProductResponse(payload), meta: parsePageMeta(payload, pageNo, pageSize) };
+}
+
+export async function queryAffiliateProductsPage(query: ProductQuery): Promise<ProductPage> {
+  const { keywords, pageNo, pageSize } = validateProductQuery(query);
   const key = process.env.ALIEXPRESS_APP_KEY?.trim();
   const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING", 503);
-  if (!allowRequest("aliexpress-products", 24, 3600000))
+  const guard = query.guard ?? { key: "aliexpress-products", limit: 24, periodMs: 3600000 };
+  if (!allowRequest(guard.key, guard.limit, guard.periodMs))
     throw new AffiliateError("PROVIDER_QUOTA_GUARD", 429);
   const params: Record<string, string> = {
     app_key: key,
@@ -248,8 +253,9 @@ export async function queryAffiliateProducts(
     v: "2.0",
     timestamp: timestampChina(),
     keywords,
-    page_no: "1",
+    page_no: String(pageNo),
     page_size: String(pageSize),
+    // Prefer products with the highest reported recent sales.
     sort: "LAST_VOLUME_DESC",
     ship_to_country: "IL",
     target_language: "HE",
@@ -267,7 +273,7 @@ export async function queryAffiliateProducts(
       },
       body: new URLSearchParams(params),
       cache: "no-store",
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(8000),
     });
   } catch {
     throw new AffiliateError("PROVIDER_UNREACHABLE", 503);
@@ -279,5 +285,59 @@ export async function queryAffiliateProducts(
   } catch {
     throw new AffiliateError("INVALID_JSON");
   }
-  return normalizeProductResponse(json);
+  return parseProductPage(json, pageNo, pageSize);
+}
+
+export async function queryAffiliateProducts(
+  keywords: string,
+  pageSize = 10,
+  pageNo = 1,
+): Promise<AliProduct[]> {
+  return (await queryAffiliateProductsPage({ keywords, pageSize, pageNo })).products;
+}
+
+/**
+ * Signed call to any affiliate method (featured promos, link generation...).
+ * Returns the raw JSON; callers parse it with the pure helpers in promo-parse.ts.
+ * Transport and HTTP failures become AffiliateError codes, never provider text.
+ */
+export async function callAffiliateMethod(
+  method: string,
+  extra: Record<string, string>,
+  guard: { key: string; limit: number; periodMs: number },
+): Promise<unknown> {
+  if (!/^aliexpress\.affiliate\.[a-z.]+$/.test(method)) throw new AffiliateError("INVALID_METHOD", 400);
+  const key = process.env.ALIEXPRESS_APP_KEY?.trim();
+  const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING", 503);
+  if (!allowRequest(guard.key, guard.limit, guard.periodMs))
+    throw new AffiliateError("PROVIDER_QUOTA_GUARD", 429);
+  const params: Record<string, string> = {
+    app_key: key,
+    method,
+    sign_method: "hmac",
+    format: "json",
+    v: "2.0",
+    timestamp: timestampChina(),
+    ...extra,
+  };
+  params.sign = signAffiliateParams(params, secret);
+  let resp: Response;
+  try {
+    resp = await fetch(GATEWAY, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: new URLSearchParams(params),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch {
+    throw new AffiliateError("PROVIDER_UNREACHABLE", 503);
+  }
+  if (!resp.ok) throw new AffiliateError("PROVIDER_HTTP_" + resp.status);
+  try {
+    return await resp.json();
+  } catch {
+    throw new AffiliateError("INVALID_JSON");
+  }
 }

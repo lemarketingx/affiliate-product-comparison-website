@@ -9,13 +9,13 @@ import { ClaimList, DraftBanner } from "./claim";
 import { CostCalc } from "./cost-calc";
 
 /** Per-product "what's probably not in the box" + Israel fit + landed cost. */
-export function ProductBriefing({ title, priceILS }: { title: string; priceILS: number | null }) {
+export function ProductBriefing({ title, priceILS, usdRate = null }: { title: string; priceILS: number | null; usdRate?: import("../../lib/preflight/tax-estimate").UsdRate | null }) {
   const types = visibleTypes();
   const found = detectType(title, types);
   if (!found) {
     return (
       <section className="fp-calc-wrap" aria-label="עלות כוללת">
-        <CostCalc apiPriceILS={priceILS} accessories={[]} israelPrices={[]} />
+        <CostCalc apiPriceILS={priceILS} accessories={[]} israelPrices={[]} usdRate={usdRate} />
       </section>
     );
   }
@@ -63,6 +63,7 @@ export function ProductBriefing({ title, priceILS }: { title: string; priceILS: 
         apiPriceILS={priceILS}
         accessories={plan.items.filter((i) => i.status === "required" && i.search).map((i) => i.label)}
         israelPrices={pricesFor(type.id)}
+        usdRate={usdRate}
       />
     </section>
   );

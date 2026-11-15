@@ -106,7 +106,8 @@ test("destination page: manifest, transparent disk calculator, terms, sources an
   await page.goto("/guides/shipping-customs");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("משלוח");
   await expect(page.getByText("נדרש אימות").first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /Bizportal \(מקור משני\)/ }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /רשות המסים בישראל: מחשבון מסי יבוא אישי/ }).first()).toBeVisible();
+  await expect(page.locator("body")).toContainText("ביבוא אישי עד 75$ אין מע\"מ");
 });
 
 for (const width of [304, 375, 768, 1440]) {
@@ -135,9 +136,11 @@ test.describe("typed catalog products (isolated fixture server)", () => {
     await cost.getByRole("textbox", { name: /משלוח לישראל/ }).fill("0");
     await cost.getByRole("textbox", { name: /כרטיס microSD/ }).fill("40");
     await cost.getByRole("textbox", { name: "המחיר שראיתם בישראל (₪)" }).fill("450");
-    await expect(cost.locator(".fp-cost-table")).toContainText("לא חושב");
-    await expect(cost).toContainText("לא מוצג פער");
-    await expect(cost).not.toContainText("חיסכון");
+    // Verified tax rules + (fixture) representative rate: 149.9 ₪ ≈ 47$ → exempt, so the gap is computed.
+    await expect(cost.locator(".fp-cost-table tr", { hasText: "מע\"מ ביבוא אישי" })).toContainText("עד התקרה של 75$: פטור");
+    await expect(cost).toContainText("פער משוער");
+    await expect(cost).toContainText("זו הערכה ולא חיסכון מובטח");
+    await expect(page.locator(".fp-tax-box")).toContainText("פטור ממסים (עד 75$)");
     await expect(page.getByText("קישור שותפים: ייתכן שנקבל עמלה")).toBeVisible();
     const go = await request.get("/go/1005005550001", { maxRedirects: 0 });
     expect(go.status()).toBe(307);

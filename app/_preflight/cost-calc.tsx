@@ -3,7 +3,6 @@ import { useId, useState } from "react";
 import { landedCost } from "../../lib/preflight/landed-cost";
 import { IMPORT_TAX } from "../../lib/preflight/import-tax";
 import type { IsraelPrice } from "../../lib/preflight/israel-prices";
-import { ClaimText } from "./claim";
 
 const fmt = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(n);
 const parse = (v: string) => (v.trim() === "" ? null : Number(v.replace(",", ".")));
@@ -17,16 +16,18 @@ export function CostCalc({
   apiPriceILS,
   accessories,
   israelPrices,
+  usdRate = null,
 }: {
   apiPriceILS: number | null;
   accessories: string[];
   israelPrices: IsraelPrice[];
+  usdRate?: { rate: number; date: string; source: string } | null;
 }) {
   const id = useId();
   const [price, setPrice] = useState(apiPriceILS ? String(apiPriceILS) : "");
   const [shipping, setShipping] = useState("");
   const [acc, setAcc] = useState<Record<string, string>>({});
-  const [rate, setRate] = useState("");
+  const [rate, setRate] = useState(usdRate ? String(usdRate.rate) : "");
   const [israelChoice, setIsraelChoice] = useState(israelPrices.length ? "0" : "visitor");
   const [israelTyped, setIsraelTyped] = useState("");
   const owner = israelChoice !== "visitor" ? israelPrices[Number(israelChoice)] : null;
@@ -58,7 +59,7 @@ export function CostCalc({
           <label key={a}><span>{a} (₪)</span><input inputMode="decimal" value={acc[a] ?? ""} placeholder="0 אם יש לכם" onChange={(e) => setAcc((s) => ({ ...s, [a]: e.target.value }))} /></label>
         ))}
         {IMPORT_TAX.verified && (
-          <label><span>שער דולר יציג (₪)</span><input inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
+          <label><span>שער דולר (₪){usdRate ? ` · יציג ${new Date(usdRate.date).toLocaleDateString("he-IL")}` : ""}</span><input inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
         )}
         <label>
           <span>מחיר להשוואה בישראל</span>
@@ -105,17 +106,22 @@ export function CostCalc({
           </p>
         )}
       </div>
-      {!IMPORT_TAX.verified && (
-        <details className="fp-cost-tax">
-          <summary>למה המס לא חושב?</summary>
-          <p>{IMPORT_TAX.unverifiedReason}</p>
-          <ul>
-            {IMPORT_TAX.secondaryReports.map((s) => (
-              <li key={s.url}><ClaimText claim={{ text: s.text, needsVerification: true, source: s }} /></li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <details className="fp-cost-tax">
+        <summary>איך מחושב המס?</summary>
+        <p>
+          יבוא אישי עד {IMPORT_TAX.exemptionUsd}$ (ערך המוצרים בלי משלוח) פטור ממסים. מעל זה משלמים מע&quot;מ{" "}
+          {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}% על המוצרים והמשלוח, ומעל {IMPORT_TAX.customsFreeUpToUsd}$ ייתכן גם מכס. הזמנות
+          מאותו מוכר שמגיעות בתוך {IMPORT_TAX.combineWindowHours} שעות נספרות יחד.
+        </p>
+        <ul>
+          {IMPORT_TAX.sources.map((s) => (
+            <li key={s.url}>
+              <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a> · נבדק {s.checkedAt}
+            </li>
+          ))}
+          {usdRate && <li>{usdRate.source}, עדכון {new Date(usdRate.date).toLocaleDateString("he-IL")}</li>}
+        </ul>
+      </details>
       <p className="fp-fine">שום נתון מהמחשבון לא נשלח לשרת. הכול נשאר בדפדפן שלכם.</p>
     </section>
   );
