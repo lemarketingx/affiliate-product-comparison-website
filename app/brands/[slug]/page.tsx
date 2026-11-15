@@ -70,7 +70,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
             <aside className="og-brand-card">
               <strong>
                 {b.storeVerified ? <BadgeCheck size={17} /> : <Store size={17} />}{" "}
-                {b.storeVerified ? "חנות שנבדקה ידנית" : "חנות רשמית לפי שם החנות"}
+                {b.storeVerified ? "חנות שנבדקה ידנית" : "שם החנות תואם למותג"}
               </strong>
               <p>
                 {b.storeVerified
