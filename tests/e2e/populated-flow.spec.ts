@@ -150,7 +150,7 @@ test("discovery products disclose missing verification while private review and 
   await expect(adminMenu).toHaveAttribute("aria-expanded", "true");
   await expect(
     page.getByRole("navigation", { name: "ניהול DealPilot" }).getByRole("link"),
-  ).toHaveCount(8);
+  ).toHaveCount(9);
   await expect(
     page.getByRole("link", { name: "הגדרות", exact: true }),
   ).toBeVisible();

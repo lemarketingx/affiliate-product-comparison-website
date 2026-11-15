@@ -295,3 +295,49 @@ export async function queryAffiliateProducts(
 ): Promise<AliProduct[]> {
   return (await queryAffiliateProductsPage({ keywords, pageSize, pageNo })).products;
 }
+
+/**
+ * Signed call to any affiliate method (featured promos, link generation...).
+ * Returns the raw JSON; callers parse it with the pure helpers in promo-parse.ts.
+ * Transport and HTTP failures become AffiliateError codes, never provider text.
+ */
+export async function callAffiliateMethod(
+  method: string,
+  extra: Record<string, string>,
+  guard: { key: string; limit: number; periodMs: number },
+): Promise<unknown> {
+  if (!/^aliexpress\.affiliate\.[a-z.]+$/.test(method)) throw new AffiliateError("INVALID_METHOD", 400);
+  const key = process.env.ALIEXPRESS_APP_KEY?.trim();
+  const secret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  if (!key || !secret) throw new AffiliateError("CREDENTIALS_MISSING", 503);
+  if (!allowRequest(guard.key, guard.limit, guard.periodMs))
+    throw new AffiliateError("PROVIDER_QUOTA_GUARD", 429);
+  const params: Record<string, string> = {
+    app_key: key,
+    method,
+    sign_method: "hmac",
+    format: "json",
+    v: "2.0",
+    timestamp: timestampChina(),
+    ...extra,
+  };
+  params.sign = signAffiliateParams(params, secret);
+  let resp: Response;
+  try {
+    resp = await fetch(GATEWAY, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: new URLSearchParams(params),
+      cache: "no-store",
+      signal: AbortSignal.timeout(12000),
+    });
+  } catch {
+    throw new AffiliateError("PROVIDER_UNREACHABLE", 503);
+  }
+  if (!resp.ok) throw new AffiliateError("PROVIDER_HTTP_" + resp.status);
+  try {
+    return await resp.json();
+  } catch {
+    throw new AffiliateError("INVALID_JSON");
+  }
+}

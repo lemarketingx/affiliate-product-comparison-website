@@ -14,6 +14,7 @@ import {
   ReceiptText,
   ChevronDown,
   Menu,
+  Megaphone,
 } from "lucide-react";
 
 const navigation = [
@@ -21,6 +22,7 @@ const navigation = [
   ["products", "בדיקת מוצרים", PackageSearch],
   ["discovery", "Product Scout", Radar],
   ["content", "סטודיו תוכן", FileText],
+  ["banners", "באנרים וקמפיינים", Megaphone],
   ["channels", "ערוצי הפצה", Radio],
   ["orders", "הזמנות ועמלות", ReceiptText],
   ["automations", "אוטומציות", Workflow],

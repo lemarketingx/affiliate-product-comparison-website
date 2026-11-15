@@ -9,6 +9,8 @@ import LiveCatalog from "./live-catalog";
 import FlightClock from "./flight-clock";
 import { flightCode, gateCode } from "./flight-bits";
 import { visibleTypes } from "../lib/preflight";
+import BannerStrip from "./banner-strip";
+import type { Banner } from "../lib/aliexpress/banners";
 
 function AutopilotPanel() {
   const types = visibleTypes();
@@ -127,8 +129,10 @@ function DepartureBoard({ snapshot }: { snapshot: CatalogSnapshot }) {
 
 export default function DealPilotHome({
   snapshot,
+  banners,
 }: {
   snapshot: CatalogSnapshot;
+  banners?: { banners: Banner[]; attributionConfirmed: boolean };
 }) {
   return (
     <PublicShell>
@@ -173,6 +177,8 @@ export default function DealPilotHome({
             <DepartureBoard snapshot={snapshot} />
           </div>
         </section>
+
+        {banners && <BannerStrip banners={banners.banners} attributionConfirmed={banners.attributionConfirmed} />}
 
         <AutopilotPanel />
 

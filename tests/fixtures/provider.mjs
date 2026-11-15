@@ -17,9 +17,51 @@ globalThis.fetch = async function (input, init) {
       : input instanceof URL
         ? input.href
         : input.url;
+  const catalogSet = process.env.DEALPILOT_FIXTURE_SET === "catalog";
+  // Simulated redirect chain for generated banner links (catalog fixture only).
+  if (catalogSet && url.startsWith("https://s.click.aliexpress.com/e/TEST_BANNER_")) {
+    const id = url.split("TEST_BANNER_")[1].replace(/\D/g, "");
+    return new Response(null, { status: 302, headers: { location: `https://www.aliexpress.com/item/${id}.html?aff_fixture=1` } });
+  }
+  if (catalogSet && url.startsWith("https://www.aliexpress.com/item/")) return new Response("<html>fixture item</html>", { status: 200 });
   if (url !== "https://api-sg.aliexpress.com/sync")
     return originalFetch(input, init);
   const params = new URLSearchParams(String(init?.body ?? ""));
+  const wrap = (method, result) =>
+    Response.json({ [method.replace(/\./g, "_") + "_response"]: { resp_result: { resp_code: 200, resp_msg: "ok", result } } });
+  if (catalogSet && params.get("app_key") === "fixture-only-never-real" && init?.method === "POST") {
+    const method = params.get("method");
+    if (method === "aliexpress.affiliate.featuredpromo.get")
+      return wrap(method, { promos: { promo: [
+        { promo_name: "TEST FIXTURE Hot Product", promo_desc: "קמפיין בדיקה בלבד", product_num: 1200 },
+        { promo_name: "TEST FIXTURE Ended Sale", promo_desc: "הסתיים", product_num: 30, promo_end_time: "2026-01-01 00:00:00" },
+        { promo_name: "TEST FIXTURE Weekly Deals", product_num: 400, promo_start_time: "2026-01-01 00:00:00", promo_end_time: "2030-12-31 23:59:59" },
+        { promo_name: "TEST FIXTURE Broken", product_num: 5 },
+        { promo_name: "TEST FIXTURE Best Seller", product_num: 900 },
+      ] } });
+    if (method === "aliexpress.affiliate.featuredpromo.products.get") {
+      const name = params.get("promotion_name") ?? "";
+      let h = 11;
+      for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 99991;
+      const id = String(1005200000000 + h);
+      return wrap(method, { products: { product: [{
+        product_id: id, product_title: "TEST FIXTURE — " + name,
+        product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-banner-${id}.jpg`,
+        product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://www.aliexpress.com/item/${id}.html`,
+      }] } });
+    }
+    if (method === "aliexpress.affiliate.link.generate") {
+      const sources = (params.get("source_values") ?? "").split(",").filter(Boolean);
+      return wrap(method, {
+        tracking_id: params.get("tracking_id"),
+        total_result_count: sources.length,
+        promotion_links: { promotion_link: sources.map((src) => ({
+          source_value: src,
+          promotion_link: "https://s.click.aliexpress.com/e/TEST_BANNER_" + src.replace(/\D/g, ""),
+        })) },
+      });
+    }
+  }
   if (
     init?.method !== "POST" ||
     params.get("method") !== "aliexpress.affiliate.product.query" ||

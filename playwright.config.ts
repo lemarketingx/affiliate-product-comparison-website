@@ -86,6 +86,7 @@ export default defineConfig({
         ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
         DEALPILOT_FIXTURE_SET: "catalog",
         DEALPILOT_CATALOG_REQUEST_BUDGET: "200",
+        ALIEXPRESS_TRACKING_ID: "dealpilot-qa",
         DEALPILOT_CACHE_NAMESPACE: `qa-catalog-${Date.now()}`,
       },
     },
