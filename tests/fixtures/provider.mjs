@@ -1,7 +1,7 @@
 // Explicit Node preload for the isolated populated-flow test server only.
 // This module is never imported by application code and provides no HTTP bypass or route.
 if (
-  process.env.NEXTAUTH_URL !== "http://127.0.0.1:3102" ||
+  !["http://127.0.0.1:3102", "http://127.0.0.1:3103"].includes(process.env.NEXTAUTH_URL ?? "") ||
   process.env.ALIEXPRESS_APP_KEY !== "fixture-only-never-real" ||
   process.env.ALIEXPRESS_APP_SECRET !== "fixture-only-never-real"
 ) {
@@ -71,6 +71,33 @@ globalThis.fetch = async function (input, init) {
     product_detail_url: "https://www.aliexpress.com/item/1005001111111.html",
     promotion_link: "https://s.click.aliexpress.com/e/TEST_USD_FIXTURE_ONLY",
   });
+  // Separate isolated server (3103) for pre-flight briefing checks: typed products only.
+  if (process.env.DEALPILOT_FIXTURE_SET === "missions") {
+    const mission = (id, title, price) => ({
+      ...products[0],
+      product_id: id,
+      product_title: title,
+      target_sale_price: price,
+      product_main_image_url: "https://ae01.alicdn.com/dealpilot-test-fixture-cable.png",
+      product_detail_url: `https://www.aliexpress.com/item/${id}.html`,
+      promotion_link: `https://s.click.aliexpress.com/e/TEST_MISSION_${id}`,
+    });
+    return Response.json({
+      aliexpress_affiliate_product_query_response: {
+        resp_result: {
+          resp_code: 200,
+          result: {
+            products: {
+              product: [
+                mission("1005005550001", "TEST FIXTURE — מצלמת דרך קדמית ואחורית Dash Cam 4K", "149.90"),
+                mission("1005005550002", "TEST FIXTURE — מקליט NVR 8CH PoE H.265 למצלמות", "389.00"),
+              ],
+            },
+          },
+        },
+      },
+    });
+  }
   const custom = {
     ...products[0],
     product_id: "1005003333333",

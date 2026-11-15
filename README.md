@@ -4,6 +4,10 @@ Hebrew RTL AliExpress affiliate product discovery and a separate private adminis
 
 The storefront uses owner-authorized discovery mode: products with more than 500 reported purchases and complete Hebrew core data are visible with a pending-verification label. A verified badge still requires 4.7 stars, an Israeli review and verified Israel shipping with fresh official evidence. Missing evidence never becomes a verified badge. Review permissions and rating/delivery evidence remain unavailable. See [live quality checks and required access](docs/ALIEXPRESS-QUALITY.md).
 
+## Pre-flight engine (autopilot, destinations, landed cost)
+
+`/autopilot`, `/missions` and the per-product "מה כנראה לא בקופסה" block turn an Israeli need into a buying plan: what to buy, what is usually not in the box, how to search, Israel fit, when to buy locally and an honest landed-cost estimate. All content is a draft hidden in production until approved in `lib/preflight/approvals.ts`. Import-tax values are not computed until verified from an official source. See [pre-flight engine](docs/DEALPILOT-PREFLIGHT.md).
+
 ## Run and verify
 
 Node 22+:

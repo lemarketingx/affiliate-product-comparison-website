@@ -10,6 +10,7 @@ import ProductGallery from "../../product-gallery";
 import PreflightCheck from "../../preflight-check";
 import { Barcode, flightCode, gateCode } from "../../flight-bits";
 import { categories } from "../../../lib/dealpilot/categories";
+import { ProductBriefing } from "../../_preflight/product-briefing";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -151,6 +152,10 @@ export default async function Product({
               </p>
             </div>
             <PreflightCheck />
+            <ProductBriefing
+              title={p.title}
+              priceILS={p.currency === "ILS" && Number.isFinite(Number(p.price)) && Number(p.price) > 0 ? Number(p.price) : null}
+            />
             <div className="fp-known">
               <h2>מה ידוע, ומה כדאי לבדוק</h2>
               <ul>
