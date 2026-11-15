@@ -92,7 +92,7 @@ const sleep = (ms: number) => new Promise<null>((r) => setTimeout(() => r(null),
  * is still being built it gets a "warming" snapshot and the build continues
  * after the response (next/server `after`).
  */
-export async function getCatalog(): Promise<CatalogSnapshot> {
+export async function getCatalog(options: { waitMs?: number } = {}): Promise<CatalogSnapshot> {
   if (!configured()) return { items: [], fetchedAt: null, available: false, partial: false, qualityFiltered: false };
   const now = Date.now();
   if (memo && now - memo.at < MEMO_MS) return memo.snapshot;
@@ -108,7 +108,8 @@ export async function getCatalog(): Promise<CatalogSnapshot> {
       });
   }
   const pending = inflight;
-  const result = await Promise.race([pending, sleep(WAIT_MS)]);
+  const waitMs = Math.min(20000, Math.max(0, options.waitMs ?? WAIT_MS));
+  const result = await Promise.race([pending, sleep(waitMs)]);
   if (result) return result;
   try {
     after(() => pending.then(() => undefined));
