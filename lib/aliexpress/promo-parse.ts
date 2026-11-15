@@ -121,7 +121,7 @@ export function safeHttps(raw: unknown, hosts: string[]): string | null {
   }
 }
 export function parsePromoProducts(result: Rec): PromoProduct[] {
-  return list(rec(result.products)?.product).flatMap((row) => {
+  return list(rec(result.products)?.product ?? result.products).flatMap((row) => {
     const r = rec(row);
     const id = r && str(r.product_id);
     const title = r && str(r.product_title);
