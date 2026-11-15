@@ -1,254 +1,61 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpLeft, Plane } from "lucide-react";
+import { ArrowUpLeft, BadgeCheck, ShieldCheck, Tags, Search, Calculator, ArrowLeft } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
+import { BRANDS, identifyListedBrand } from "../lib/dealpilot/brands";
 import { categories } from "../lib/dealpilot/categories";
-import { formatMoney } from "../lib/dealpilot/urls";
-import { evaluateEligibility } from "../lib/aliexpress/quality";
-import { PublicShell, CategoryLinks } from "./public-shell";
-import LiveCatalog from "./live-catalog";
-import FlightClock from "./flight-clock";
-import { flightCode, gateCode } from "./flight-bits";
-import { visibleTypes } from "../lib/preflight";
-import BannerStrip from "./banner-strip";
-import CampaignShowcase from "./campaign-showcase";
-import ProductPromoStrip from "./product-promo-strip";
 import type { Banner, CampaignRecord } from "../lib/aliexpress/banners";
+import { PublicShell } from "./public-shell";
+import { ProductCard } from "./product-card";
 
-function AutopilotPanel() {
-  const types = visibleTypes();
-  if (!types.length) return null;
-  const featured = ["security-recorder", "wireless-camera", "charger", "smart-home", "dashcam", "clothing"]
-    .map((id) => types.find((t) => t.id === id))
-    .filter((t): t is (typeof types)[number] => !!t);
-  return (
-    <section className="fp-ap-home" aria-labelledby="ap-home-title">
-      <div className="fp-wrap fp-ap-home-grid">
-        <div>
-          <span className="fp-kicker fp-kicker-light">טייס אוטומטי לקנייה</span>
-          <h2 id="ap-home-title">יודעים מה הבעיה, לא יודעים מה לחפש?</h2>
-          <p>
-            ספרו לנו מה אתם צריכים, ונחזיר תוכנית קנייה: מה לקנות, מה לרוב לא בקופסה (כמו הדיסק שלא מגיע עם המקליט), איך מחפשים את זה
-            באנגלית, אם זה מתאים לישראל, וכמה זה עולה באמת.
-          </p>
-        </div>
-        <div className="fp-ap fp-ap-mini">
-          <div className="fp-ap-bar" aria-hidden="true"><span>AUTOPILOT</span><span>TLV→???</span><span>מוכן</span></div>
-          <form action="/autopilot" className="fp-ap-ask" role="search">
-            <label className="fp-sr" htmlFor="home-ap-q">מה אתם צריכים?</label>
-            <input id="home-ap-q" name="q" maxLength={120} placeholder="למשל: מצלמה לחצר בלי חשמל" autoComplete="off" />
-            <button className="fp-btn" type="submit">המראה <ArrowLeft size={18} aria-hidden="true" /></button>
-          </form>
-          <div className="fp-ap-groups">
-            <fieldset>
-              <legend>יעדים נפוצים</legend>
-              {featured.map((t) => (
-                <Link key={t.id} className="fp-ap-chip" href={"/autopilot?t=" + t.id}>{t.name}</Link>
-              ))}
-            </fieldset>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const checks = [
-  ["גרסה מדויקת", "צבע, גודל, כמות ואביזרים: בוחרים את מה שצריך."],
-  ["מחיר סופי", "משווים בקופה, עם משלוח ותוספות, לא רק בכותרת."],
-  ["משלוח לישראל", "מוודאים יעד, שיטת משלוח והערכת זמן אצל המוכר."],
-  ["תנאי החזרה", "יודעים מי המוכר ומה קורה אם משהו לא מתאים."],
-] as const;
-
-function DepartureBoard({ snapshot }: { snapshot: CatalogSnapshot }) {
-  const gateOf = (slug: string) =>
-    gateCode(Math.max(0, categories.findIndex((c) => c.slug === slug)));
-  const rows = snapshot.items.slice(0, 6);
-  return (
-    <div className="fp-board" aria-label="לוח המראות: מוצרים אחרונים בקטלוג">
-      <div className="fp-board-head">
-        <span>
-          <Plane size={16} aria-hidden="true" /> המראות
-          <em dir="ltr">DEPARTURES</em>
-        </span>
-        <FlightClock />
-      </div>
-      <div className="fp-board-cols" aria-hidden="true">
-        <span>שער</span>
-        <span>מוצר</span>
-        <span>מחיר</span>
-        <span>סטטוס</span>
-      </div>
-      <ol className="fp-board-rows">
-        {rows.length
-          ? rows.map((p, i) => {
-              const verified = evaluateEligibility(p).eligible;
-              return (
-                <li key={p.id} style={{ "--i": i } as React.CSSProperties}>
-                  <Link href={"/products/" + p.id}>
-                    <span className="fp-flap fp-flap-gate" dir="ltr">
-                      {gateOf(p.categorySlug)}
-                    </span>
-                    <span className="fp-flap fp-flap-title" dir="auto">
-                      {p.title}
-                      <small dir="ltr">{flightCode(p.id)}</small>
-                    </span>
-                    <span className="fp-flap fp-flap-price" dir="auto">
-                      {formatMoney(p.price, p.currency)}
-                    </span>
-                    <span
-                      className={
-                        "fp-flap fp-status " +
-                        (verified ? "is-go" : "is-wait")
-                      }
-                    >
-                      {verified ? "מאומת" : "בבדיקה"}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })
-          : categories.slice(0, 6).map((c, i) => (
-              <li key={c.slug} style={{ "--i": i } as React.CSSProperties}>
-                <Link href={"/categories/" + c.slug}>
-                  <span className="fp-flap fp-flap-gate" dir="ltr">
-                    {gateCode(i)}
-                  </span>
-                  <span className="fp-flap fp-flap-title">{c.label}</span>
-                  <span className="fp-flap fp-flap-price">—</span>
-                  <span className="fp-flap fp-status is-hold">ממתין</span>
-                </Link>
-              </li>
-            ))}
-      </ol>
-      <p className="fp-board-foot">
-        {rows.length
-          ? "נתוני ספק בשקלים. ״בבדיקה״ = דירוג, ביקורות ומשלוח טרם אומתו."
-          : "הקטלוג ממתין לחיבור. אין טיסות מוצגות, ואנחנו לא ממציאים אותן."}
-      </p>
-    </div>
-  );
-}
-
-export default function DealPilotHome({
-  snapshot,
-  banners,
-  usdRate = null,
-}: {
+export default function DealPilotHome({ snapshot, usdRate = null }: {
   snapshot: CatalogSnapshot;
   banners?: { banners: Banner[]; campaigns: CampaignRecord[]; attributionConfirmed: boolean };
   usdRate?: import("../lib/preflight/tax-estimate").UsdRate | null;
 }) {
-  return (
-    <PublicShell>
-      <main id="main">
-        <section className="dp-hero fp-hero">
-          <div className="fp-wrap fp-hero-grid">
-            <div className="fp-hero-copy">
-              <span className="fp-kicker">
-                <span className="fp-dot" /> עלייה למטוס פתוחה
-              </span>
-              <h1>
-                מגלים מוצרים חכמים.
-                <em>בודקים. ממריאים.</em>
-              </h1>
-              <p>
-                אתר הגילוי היחיד שעושה איתכם צ׳ק־ליסט לפני כל קנייה ב־AliExpress.
-                גאדג׳טים, בית, רכב ופנאי, עם מידע ברור על מה נבדק ומה עוד לא.
-              </p>
-              <div className="fp-actions">
-                <Link className="fp-btn" href="/deals">
-                  גלו מוצרים <ArrowLeft size={19} />
-                </Link>
-                <Link className="fp-btn fp-btn-ghost" href="/categories">
-                  לשערי הקטגוריות
-                </Link>
-              </div>
-              <dl className="fp-hero-facts">
-                <div>
-                  <dt>מחירים</dt>
-                  <dd>בשקלים</dd>
-                </div>
-                <div>
-                  <dt>שערים</dt>
-                  <dd dir="ltr">{String(categories.length).padStart(2, "0")}</dd>
-                </div>
-                <div>
-                  <dt>בדיקות לפני קנייה</dt>
-                  <dd dir="ltr">04</dd>
-                </div>
-              </dl>
-            </div>
-            <DepartureBoard snapshot={snapshot} />
+  const brandCounts = new Map<string, number>();
+  for (const item of snapshot.items) {
+    const b = identifyListedBrand(item);
+    if (b) brandCounts.set(b.slug, (brandCounts.get(b.slug) ?? 0) + 1);
+  }
+  const available = BRANDS.filter(b => (brandCounts.get(b.slug) ?? 0) > 0);
+  const featured = [...snapshot.items].sort((a,b) => (b.orders ?? 0) - (a.orders ?? 0)).slice(0,8);
+  return <PublicShell><main id="main">
+    <section className="fp-brand-hero">
+      <div className="fp-wrap fp-brand-hero-grid">
+        <div className="fp-brand-hero-copy">
+          <span className="fp-brand-hero-label"><BadgeCheck size={17} aria-hidden="true" /> מותגים מוכרים. קנייה מחושבת.</span>
+          <h1>המותגים שאתם מכירים.<span>המחירים שכדאי לבדוק.</span></h1>
+          <p>מותגי אלקטרוניקה, אודיו, בית ורכב ב־AliExpress. בלי מוצרים אנונימיים, בלי הנחות מומצאות. עם מחירים בשקלים, מחשבון מיסוי ובדיקות לפני הקנייה.</p>
+          <div className="fp-brand-hero-ctas">
+            <Link className="fp-btn" href="/brands">גלו מותגים <ArrowUpLeft size={19} aria-hidden="true" /></Link>
+            <Link className="fp-btn fp-btn-ghost" href="/deals">לכל מוצרי המותג <ArrowLeft size={19} aria-hidden="true" /></Link>
           </div>
-        </section>
-
-        <CampaignShowcase campaigns={banners?.campaigns ?? []} banners={banners?.banners ?? []} />
-        <ProductPromoStrip items={snapshot.items} />
-        {banners && banners.banners.some((b) => b.status === "published") && <BannerStrip banners={banners.banners.filter((b) => b.status === "published")} attributionConfirmed={banners.attributionConfirmed} />}
-
-        <AutopilotPanel />
-
-        <section className="fp-preflight" aria-labelledby="preflight-title">
-          <div className="fp-wrap">
-            <div className="fp-preflight-head">
-              <span className="fp-kicker fp-kicker-light">צ׳ק־ליסט טרום המראה</span>
-              <h2 id="preflight-title">ארבע בדיקות. אפס הפתעות בקופה.</h2>
-            </div>
-            <ol className="fp-preflight-list">
-              {checks.map(([t, d], i) => (
-                <li key={t}>
-                  <span dir="ltr">0{i + 1}</span>
-                  <strong>{t}</strong>
-                  <p>{d}</p>
-                </li>
-              ))}
-            </ol>
+          <p className="fp-brand-hero-disclosure"><ShieldCheck size={16} aria-hidden="true"/> זיהוי המותג מבוסס על נתוני הספק, ואינו אישור למקוריות המוצר או לרשמיות החנות.</p>
+        </div>
+        <div className="fp-brand-hero-board">
+          <span className="fp-brand-board-top"><Tags size={18} /> מותגים שעברו הצלבת מידע</span>
+          <div className="fp-brand-hero-big">{available.length.toLocaleString("he-IL")}<small>מותגים עם מוצרים כרגע</small></div>
+          <div className="fp-brand-hero-pills">
+            {available.slice(0,8).map(b => <Link href={"/brands/"+b.slug} key={b.slug} dir="ltr">{b.name}</Link>)}
           </div>
-        </section>
-
-        <section className="fp-section fp-wrap">
-          <div className="fp-section-head">
-            <div>
-              <span className="fp-kicker">מאיפה ממריאים?</span>
-              <h2>בחרו שער.</h2>
-            </div>
-            <Link className="fp-link" href="/categories">
-              לכל הקטגוריות <ArrowUpLeft size={17} />
-            </Link>
-          </div>
-          <CategoryLinks />
-        </section>
-
-        <LiveCatalog snapshot={{ ...snapshot, report: undefined, items: snapshot.items.slice(0, 8) }} total={snapshot.items.length} usdRate={usdRate} compact />
-
-        <section className="fp-wrap fp-section">
-          <div className="fp-guide-pass">
-            <div className="fp-guide-main">
-              <span className="fp-kicker">מדריך הקנייה</span>
-              <h2>
-                הדיל הטוב מתחיל
-                <br />
-                בבדיקה קטנה.
-              </h2>
-              <p>
-                חמש שאלות שכדאי לשאול לפני שמשלמים. קצר, ברור, בלי מבצעים
-                מזויפים.
-              </p>
-              <Link className="fp-btn" href="/guides">
-                למדריך הקנייה <ArrowLeft size={18} />
-              </Link>
-            </div>
-            <div className="fp-guide-stub" aria-hidden="true">
-              <span>נוסע/ת</span>
-              <strong>קונים חכם</strong>
-              <span>יעד</span>
-              <strong>החלטה טובה</strong>
-              <span>מושב</span>
-              <strong dir="ltr">01A</strong>
-            </div>
-          </div>
-        </section>
-      </main>
-    </PublicShell>
-  );
+          <div className="fp-brand-board-bottom">{snapshot.warming ? "הקטלוג מתרענן כרגע" : snapshot.items.length.toLocaleString("he-IL")+" מוצרים מזוהים"} · ללא הבטחה לחנות רשמית</div>
+        </div>
+      </div>
+    </section>
+    <section className="fp-wrap fp-brand-discovery" aria-labelledby="brand-discovery-title">
+      <div className="fp-section-head"><div><span className="fp-kicker">המבחר שלנו</span><h2 id="brand-discovery-title">בוחרים מותג, לא הימור.</h2><p>המותגים שמוצגים כאן כוללים כרגע מוצרים בקטלוג שעברו סינון.</p></div><Link href="/brands" className="fp-link">לכל המותגים <ArrowUpLeft size={17}/></Link></div>
+      {available.length ? <div className="fp-brand-grid">{available.slice(0,12).map(b=><Link className="fp-brand-card" href={"/brands/"+b.slug} key={b.slug}><span className="fp-brand-card-label">מותג מזוהה</span><strong dir="ltr">{b.name}</strong><span>{brandCounts.get(b.slug)} מוצרים</span><span className="fp-brand-card-arrow">לצפייה <ArrowUpLeft size={16}/></span></Link>)}</div>
+      : <div className="fp-empty"><h3>הקטלוג הממותג נמצא בבדיקה</h3><p>כאן יופיעו מותגים עם מוצרים שעברו הצלבת נתוני ספק. מוצרים לא מאומתים לא יפורסמו.</p></div>}
+    </section>
+    <section className="fp-brand-benefits"><div className="fp-wrap fp-brand-benefit-grid">
+      <div><BadgeCheck size={24}/><strong>מותגים שמכירים</strong><p>רשימה מוגדרת מראש, לא מוצרים אקראיים.</p></div>
+      <div><Calculator size={24}/><strong>מחשבון עלות לישראל</strong><p>משלוח, מע״מ ועלויות מוכרות לפני תשלום.</p></div>
+      <div><ShieldCheck size={24}/><strong>בדיקה לפני קנייה</strong><p>מקוריות, מוכר, מפרט ומשלוח דורשים אימות.</p></div>
+    </div></section>
+    <section className="fp-wrap fp-section" id="products">
+      <div className="fp-section-head"><div><span className="fp-kicker">מהקטלוג הממותג</span><h2>מוצרים נבחרים של מותגים מוכרים.</h2><p>לפי המכירות המדווחות של הספק, לא לפי הבטחת מקוריות או דירוג איכות.</p></div><Link href="/deals" className="fp-link">לכל המוצרים <ArrowUpLeft size={17}/></Link></div>
+      {featured.length ? <div className="fp-grid">{featured.map(p=><ProductCard key={p.id} item={p} usdRate={usdRate}/>)}</div> : <div className="fp-empty"><Search size={35}/><h3>ממתינים למוצרי מותג שעברו בדיקה</h3><p>אנחנו לא מפרסמים מוצרים גנריים במקום פריטים שחסר להם אימות.</p></div>}
+    </section>
+    <section className="fp-wrap fp-brand-last"><div><span className="fp-kicker">קנייה חכמה</span><h2>מחיר נמוך אינו כל הסיפור.</h2><p>כל דף מוצר כולל מחשבון עלות רכישה והערות על מה שעדיין צריך לבדוק אצל המוכר. קישורי שותפים עשויים להניב עמלה.</p><Link className="fp-btn" href="/deals">בדיקת מוצרים <ArrowUpLeft size={16}/></Link></div><div className="fp-brand-last-numbers"><strong>{categories.length}</strong><span>תחומים נבחרים</span><strong>{BRANDS.length}</strong><span>מותגים ברשימת המחקר</span></div></section>
+  </main></PublicShell>;
 }
