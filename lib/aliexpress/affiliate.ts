@@ -30,7 +30,7 @@ export type AliProduct = {
   titleLanguage: "he" | "source";
   images: string[];
   shopName: string | null;
-  supplierBrand?: string | null;
+  supplierBrand: string | null;
   positiveFeedbackPercent: number | null;
   quality: QualityEvidence;
 };
