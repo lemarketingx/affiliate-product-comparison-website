@@ -109,7 +109,7 @@ export default async function Product({
               <StoreLine item={p} />
               <div className="og-price-row">
                 <div>
-                  <small>מחיר ספק באליאקספרס</small>
+                  <small>מחיר מדווח מ־AliExpress, לא מחיר סופי בקופה</small>
                   <strong dir="auto">{formatMoney(p.price, p.currency)}</strong>
                   {off && (
                     <span className="og-was">
@@ -139,7 +139,7 @@ export default async function Product({
                   </p>
                 </div>
               ) : null}
-              <p className="og-fine">המחיר הסופי, המסים והמשלוח נבדקים ב־AliExpress.</p>
+              <p className="og-fine">המחיר מבוסס על נתוני שותפים מ־AliExpress. מחיר הווריאציה שתבחרו, מבצעים אישיים, מסים ומשלוח עשויים לשנות את הסכום לתשלום. בדקו את המחיר בעמוד המוצר ובקופה לפני רכישה.</p>
               {cta ?? <div className="og-notice">לא התקבל קישור מקור תקין.</div>}
               <p className="og-fine">
                 {p.affiliateUrl
@@ -194,7 +194,7 @@ export default async function Product({
         {cta && (
           <div className="og-buybar">
             <div>
-              <small dir="ltr">{p.category}</small>
+              <small>{p.category} · מחיר מדווח, לא סופי</small>
               <strong dir="auto">{formatMoney(p.price, p.currency)}</strong>
             </div>
             {cta}
