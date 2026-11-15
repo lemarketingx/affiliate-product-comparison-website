@@ -16,6 +16,7 @@ import {
 import { categories } from "../lib/dealpilot/categories";
 import { BrandMark, gateCode } from "./flight-bits";
 import FlightClock from "./flight-clock";
+import { visibleTypes } from "../lib/preflight";
 
 export function Brand({ light = false }: { light?: boolean }) {
   return (
@@ -33,6 +34,7 @@ export function Brand({ light = false }: { light?: boolean }) {
 }
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
+  const autopilot = visibleTypes().length > 0;
   return (
     <div className="fp">
       <a className="fp-skip" href="#main">
@@ -70,6 +72,8 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
             </button>
           </form>
           <nav className="fp-nav" aria-label="ניווט ראשי">
+            {autopilot && <Link href="/autopilot">טייס אוטומטי</Link>}
+            {autopilot && <Link href="/missions">יעדים</Link>}
             <Link href="/deals">גלו מוצרים</Link>
             <Link href="/categories">קטגוריות</Link>
             <Link href="/guides">מדריכים</Link>
@@ -79,6 +83,8 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
               <Menu />
             </summary>
             <nav aria-label="ניווט נייד">
+              {autopilot && <Link href="/autopilot">טייס אוטומטי</Link>}
+              {autopilot && <Link href="/missions">יעדים</Link>}
               <Link href="/deals">גלו מוצרים</Link>
               <Link href="/categories">כל הקטגוריות</Link>
               <Link href="/guides">מדריכים</Link>

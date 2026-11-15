@@ -8,6 +8,45 @@ import { PublicShell, CategoryLinks } from "./public-shell";
 import LiveCatalog from "./live-catalog";
 import FlightClock from "./flight-clock";
 import { flightCode, gateCode } from "./flight-bits";
+import { visibleTypes } from "../lib/preflight";
+
+function AutopilotPanel() {
+  const types = visibleTypes();
+  if (!types.length) return null;
+  const featured = ["security-recorder", "wireless-camera", "charger", "smart-home", "dashcam", "clothing"]
+    .map((id) => types.find((t) => t.id === id))
+    .filter((t): t is (typeof types)[number] => !!t);
+  return (
+    <section className="fp-ap-home" aria-labelledby="ap-home-title">
+      <div className="fp-wrap fp-ap-home-grid">
+        <div>
+          <span className="fp-kicker fp-kicker-light">טייס אוטומטי לקנייה</span>
+          <h2 id="ap-home-title">יודעים מה הבעיה, לא יודעים מה לחפש?</h2>
+          <p>
+            ספרו לנו מה אתם צריכים, ונחזיר תוכנית קנייה: מה לקנות, מה לרוב לא בקופסה (כמו הדיסק שלא מגיע עם המקליט), איך מחפשים את זה
+            באנגלית, אם זה מתאים לישראל, וכמה זה עולה באמת.
+          </p>
+        </div>
+        <div className="fp-ap fp-ap-mini">
+          <div className="fp-ap-bar" aria-hidden="true"><span>AUTOPILOT</span><span>TLV→???</span><span>מוכן</span></div>
+          <form action="/autopilot" className="fp-ap-ask" role="search">
+            <label className="fp-sr" htmlFor="home-ap-q">מה אתם צריכים?</label>
+            <input id="home-ap-q" name="q" maxLength={120} placeholder="למשל: מצלמה לחצר בלי חשמל" autoComplete="off" />
+            <button className="fp-btn" type="submit">המראה <ArrowLeft size={18} aria-hidden="true" /></button>
+          </form>
+          <div className="fp-ap-groups">
+            <fieldset>
+              <legend>יעדים נפוצים</legend>
+              {featured.map((t) => (
+                <Link key={t.id} className="fp-ap-chip" href={"/autopilot?t=" + t.id}>{t.name}</Link>
+              ))}
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const checks = [
   ["גרסה מדויקת", "צבע, גודל, כמות ואביזרים: בוחרים את מה שצריך."],
@@ -134,6 +173,8 @@ export default function DealPilotHome({
             <DepartureBoard snapshot={snapshot} />
           </div>
         </section>
+
+        <AutopilotPanel />
 
         <section className="fp-preflight" aria-labelledby="preflight-title">
           <div className="fp-wrap">

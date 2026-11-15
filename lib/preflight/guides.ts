@@ -1,0 +1,152 @@
+import type { Claim } from "./types.ts";
+import { SOURCES } from "./sources.ts";
+import { IMPORT_TAX } from "./import-tax.ts";
+
+export type Guide = {
+  slug: string;
+  code: string;
+  title: string;
+  summary: string;
+  updatedAt: string;
+  sections: { heading: string; claims: Claim[] }[];
+};
+
+const press = IMPORT_TAX.secondaryReports[0];
+
+export const GUIDES: Guide[] = [
+  {
+    slug: "plugs-power",
+    code: "GDE-01",
+    title: "תקע, מתח וחשמל: מה עובד בשקע הישראלי",
+    summary: "איזה תקע לבחור, מה המשמעות של 100–240V, ומתי צריך מתאם ומתי שנאי.",
+    updatedAt: "2026-11-15",
+    sections: [
+      {
+        heading: "מה יש בקיר",
+        claims: [
+          { text: "בישראל מתח הרשת הוא 230V בתדר 50Hz, והשקעים הם מסוג H, ובחלק מהמקומות גם C.", source: SOURCES.plugs },
+          { text: "שקעים ישראליים חדשים מקבלים בדרך כלל גם תקע אירופי עגול עם שני פינים (Type C). שקעים ישנים לא תמיד.", source: SOURCES.plugs },
+        ],
+      },
+      {
+        heading: "מה לבחור בעמוד המוצר",
+        claims: [
+          { text: "אם יש גרסת IL, בחרו בה. אחרת EU, וקנו מתאם תקני אם צריך.", general: true },
+          { text: "\"Input: 100–240V\" על מטען או ספק כוח אומר שהוא עובד בישראל עם מתאם תקע פשוט, בלי שנאי.", general: true },
+          { text: "מכשיר שכתוב עליו רק 110V או 120V לא מתאים לחיבור ישיר. אל תחברו אותו בלי שנאי מתאים.", general: true },
+        ],
+      },
+      {
+        heading: "מתאמים בטוחים",
+        claims: [
+          { text: "מתאם זול שמתחמם או מתנדנד בשקע הוא סכנה. למכשירים עוצמתיים (מעל כ־1000W) עדיף להחליף את התקע אצל חשמלאי.", general: true },
+          { text: "ייתכן שחלים תקנים ישראליים על מתאמים ועל מוצרי חשמל. בדקו לפני קנייה.", needsVerification: true },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "cellular-sim",
+    code: "GDE-02",
+    title: "תדרים, סים ו־4G: לפני שמזמינים מכשיר סלולרי",
+    summary: "איך בודקים אם טלפון, מצלמת 4G, ראוטר סלולרי או שעון עם סים יעבדו אצל הספק שלכם.",
+    updatedAt: "2026-11-15",
+    sections: [
+      {
+        heading: "למה זה חשוב",
+        claims: [
+          { text: "כל מכשיר סלולרי תומך ברשימת תדרים (Bands) משלו. אם הרשימה לא כוללת את התדרים של הספק שלכם, תהיה קליטה חלקית או שלא תהיה בכלל.", general: true },
+          { text: "בישראל פועלות רשתות 4G ו־5G, ורשתות 2G ו־3G נמצאות בתהליך כיבוי. בדקו מה המצב העדכני מול הספק שלכם.", needsVerification: true },
+        ],
+      },
+      {
+        heading: "איך בודקים",
+        claims: [
+          { text: "בעמוד המוצר בחרו את הגרסה (Global / EU / CN) והעתיקו את רשימת ה־LTE Bands.", general: true },
+          { text: "השוו לרשימת התדרים שהספק הסלולרי שלכם מפרסם, או שאלו את שירות הלקוחות שלו.", general: true },
+          { text: "מכשירים סלולריים ואלחוטיים כפופים להסדרה של משרד התקשורת. כללי היבוא האישי משתנים מעת לעת.", needsVerification: true },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "shipping-customs",
+    code: "GDE-03",
+    title: "משלוח, מע\"מ ומכס: כמה זה עולה באמת",
+    summary: "איך מחשבים מחיר סופי, ולמה אנחנו לא מציגים מספרים שלא אימתנו.",
+    updatedAt: IMPORT_TAX.checkedAt,
+    sections: [
+      {
+        heading: "המחיר האמיתי",
+        claims: [
+          { text: "מחיר המוצר + משלוח + אביזרים שלא בקופסה + מס יבוא, אם חל. זו העלות שצריך להשוות לישראל.", general: true },
+          { text: "מוכרים רבים מציעים כמה שיטות משלוח במחירים ובזמנים שונים. המחיר הסופי מופיע בעמוד התשלום.", general: true },
+        ],
+      },
+      {
+        heading: "מע\"מ ותקרת פטור",
+        claims: [
+          IMPORT_TAX.verified && IMPORT_TAX.officialSource
+            ? { text: `תקרת הפטור ממע"מ: ${IMPORT_TAX.vatExemptionUsd}$.`, source: { ...IMPORT_TAX.officialSource, checkedAt: IMPORT_TAX.checkedAt } }
+            : { text: press.text, needsVerification: true, source: { url: press.url, title: press.title, checkedAt: press.checkedAt } },
+          { text: "התקרה ושיעורי המס השתנו כמה פעמים ב־2026. לפני הזמנה גדולה בדקו את העדכני באתר רשות המסים.", needsVerification: true },
+          { text: "פיצול הזמנה גדולה לכמה חבילות כדי להתחמק ממס עלול להיחשב עבירה. אל תעשו את זה.", needsVerification: true },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "warranty-returns",
+    code: "GDE-04",
+    title: "אחריות והחזרות: מה קורה כשמשהו לא בסדר",
+    summary: "מה בודקים לפני תשלום, ואיך פותחים מחלוקת אם המוצר לא הגיע או לא תואם.",
+    updatedAt: "2026-11-15",
+    sections: [
+      {
+        heading: "לפני התשלום",
+        claims: [
+          { text: "קראו את מדיניות ההחזרה של המוכר ואת תנאי ההגנה על הקונה באליאקספרס. החזרה לחו\"ל יכולה לעלות כסף.", general: true },
+          { text: "צלמו מסך של עמוד המוצר והגרסה שבחרתם. אם תפתחו מחלוקת, זו ההוכחה שלכם למה שהובטח.", general: true },
+        ],
+      },
+      {
+        heading: "כשהחבילה מגיעה",
+        claims: [
+          { text: "צלמו את הפתיחה של החבילה. כך קל להוכיח שחסר פריט, למשל דיסק שהוצג בתמונה.", general: true },
+          { text: "אחריות היצרן במוצר מחו\"ל ניתנת בדרך כלל דרך המוכר ולא בישראל. חשבו על זה במוצרים יקרים.", general: true },
+          { text: "החובות של עסק ישראלי כלפי הקונה, כמו אחריות וביטול עסקה, לא חלות בהכרח על מוכר מחו\"ל.", needsVerification: true },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "dont-order",
+    code: "GDE-05",
+    title: "טיסות שעדיף לבטל: מה לא כדאי להזמין מחו\"ל",
+    summary: "לא כל דבר זול יותר שווה את הסיכון. רשימה כנה.",
+    updatedAt: "2026-11-15",
+    sections: [
+      {
+        heading: "מוצרי בטיחות",
+        claims: [
+          { text: "קסדות, כיסאות בטיחות לרכב וציוד מגן: אי אפשר לאמת תקן מתמונה. קנו בישראל, בחנות שמציגה תקן.", general: true },
+          { text: "חלק ממוצרי הבטיחות חייבים בתקן ישראלי. בדקו את הדרישה העדכנית.", needsVerification: true },
+        ],
+      },
+      {
+        heading: "חשמל עוצמתי וסוללות",
+        claims: [
+          { text: "מטענים ממוכרים לא מוכרים במחיר נמוך מאוד, מפזרי חום ומכשירים חזקים שעובדים ליד מים: הסיכון לא נראה בתמונה. עדיף מותג מוכר.", general: true },
+          { text: "סוללות ליתיום גדולות (קורקינט, אופניים חשמליים): יש מגבלות משלוח, ותקלה עלולה להיות מסוכנת. קנו ממקור שאחראי לסוללה.", needsVerification: true },
+        ],
+      },
+      {
+        heading: "כשהפער קטן",
+        claims: [
+          { text: "מוצר גדול וכבד: המשלוח ומס היבוא מצמצמים את הפער, וההחזרה כמעט לא אפשרית.", general: true },
+          { text: "מוצר שכמעט לא זול יותר: אחריות מקומית, החלפה מהירה וזמן הגעה של כמה ימים שווים משהו. השוו עלות כוללת, לא מחיר מדבקה.", general: true },
+        ],
+      },
+    ],
+  },
+];
