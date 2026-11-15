@@ -270,7 +270,7 @@ async function build(): Promise<BannerSnapshot> {
   };
 }
 
-const cached = unstable_cache(build, ["dealpilot-banners-v2", NS], { revalidate: 3600 });
+const cached = unstable_cache(build, ["dealpilot-banners-v3-tracking-recheck", NS], { revalidate: 3600 });
 export async function getBannerSnapshot(): Promise<BannerSnapshot> {
   return cached();
 }
