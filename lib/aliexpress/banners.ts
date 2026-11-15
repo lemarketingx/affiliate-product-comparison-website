@@ -178,7 +178,7 @@ async function build(): Promise<BannerSnapshot> {
         const candidatePromos = campaigns.filter((p) => p.timing === "active")
           .sort((a, b) => {
             const priority = (p: CampaignRecord) =>
-              (/11\\.11|singles.?day|black friday|cyber monday|choice day|anniversary|summer sale/i.test(p.name) ? 2 : 0) +
+              (/11\.11|singles.?day|black friday|cyber monday|choice day|anniversary|summer sale/i.test(p.name) ? 2 : 0) +
               (p.startsAt || p.endsAt ? 1 : 0);
             return priority(b) - priority(a);
           }).slice(0, MAX_PROMOS);
@@ -311,8 +311,9 @@ function categoryFallbacks(): Banner[] {
  * active right now. Expired campaigns disappear; if none remain, regular
  * category banners take their place (internal links, no affiliate claim).
  */
-export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise<{ banners: Banner[]; attributionConfirmed: boolean }> {
+export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise<{ banners: Banner[]; campaigns: CampaignRecord[]; attributionConfirmed: boolean }> {
   let live: Banner[] = [];
+  let campaigns: CampaignRecord[] = [];
   try {
     // Never hold the homepage for a cold banner build; finish it after the response.
     const pending = getBannerSnapshot();
@@ -321,13 +322,14 @@ export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise
       try {
         after(() => pending.then(() => undefined, () => undefined));
       } catch {}
-      return { banners: categoryFallbacks(), attributionConfirmed: ATTRIBUTION.confirmed };
+      return { banners: categoryFallbacks(), campaigns: [], attributionConfirmed: ATTRIBUTION.confirmed };
     }
+    campaigns = snap.campaigns;
     live = snap.banners.filter((b) => b.status === "published" && b.link && timing(b.startsAt, b.endsAt, now) === "active");
   } catch {
     live = [];
   }
-  return { banners: live.length ? live.slice(0, 6) : categoryFallbacks(), attributionConfirmed: ATTRIBUTION.confirmed };
+  return { banners: live.length ? live.slice(0, 6) : categoryFallbacks(), campaigns, attributionConfirmed: ATTRIBUTION.confirmed };
 }
 
 export async function findPublishedBanner(id: string, now = Date.now()): Promise<Banner | null> {
