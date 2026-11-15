@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const b = brandBySlug(slug);
   if (!b) return { title: "מותג | DealPilot" };
   return {
-    title: `${b.he} (${b.name}) מהחנות הרשמית ב־AliExpress | DealPilot`,
-    description: `מוצרי ${b.name} מהחנות הרשמית באליאקספרס, במחירים בשקלים: ${b.knownFor}`,
+    title: `${b.he} (${b.name}) מחנות ששמה תואם למותג ב־AliExpress | DealPilot`,
+    description: `מוצרי ${b.name} מחנות ששמה תואם למותג באליאקספרס, במחירים בשקלים: ${b.knownFor}`,
     alternates: { canonical: "/brands/" + slug },
   };
 }
@@ -46,7 +46,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
                   b.name
                 )}
               </h1>
-              <p className="og-brand-he">{b.he} · מהחנות הרשמית ב־AliExpress</p>
+              <p className="og-brand-he">{b.he} · מחנות ששמה תואם למותג ב־AliExpress</p>
               <p className="og-brand-known">{b.knownFor}</p>
               <ul className="og-shelves">
                 {shelves
@@ -70,7 +70,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
             <aside className="og-brand-card">
               <strong>
                 {b.storeVerified ? <BadgeCheck size={17} /> : <Store size={17} />}{" "}
-                {b.storeVerified ? "חנות רשמית מאומתת" : "חנות רשמית לפי שם החנות"}
+                {b.storeVerified ? "חנות שנבדקה ידנית" : "חנות רשמית לפי שם החנות"}
               </strong>
               <p>
                 {b.storeVerified
