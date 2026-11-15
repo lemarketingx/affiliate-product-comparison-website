@@ -5,7 +5,7 @@ import "./welcoming.css";
 import "./storefront.css";
 
 export const metadata: Metadata = {
-  title: "DealPilot | המותגים שאתם מכירים, מהחנות הרשמית",
+  title: "DealPilot | המותגים שאתם מכירים, מחנות ששמה תואם למותג",
   description:
     "שיאומי, אנקר, יוגרין, דרימי ועוד: מוצרים מהחנויות הרשמיות של המותגים ב־AliExpress, במחירים בשקלים ועם גילוי שותפים ברור.",
   metadataBase: new URL(
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         : "http://localhost:3100"),
   ),
   openGraph: {
-    title: "DealPilot | המותגים שאתם מכירים, מהחנות הרשמית",
+    title: "DealPilot | המותגים שאתם מכירים, מחנות ששמה תואם למותג",
     description: "מוצרים מקוריים מהחנויות הרשמיות של המותגים ב־AliExpress, במחירים בשקלים.",
     locale: "he_IL",
     type: "website",
