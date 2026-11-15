@@ -96,7 +96,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
             <div className="og-footer-brand">
               <Wordmark />
               <p>
-                המותגים שאתם מכירים, מהחנויות הרשמיות שלהם ב־AliExpress. אתר גילוי
+                המותגים שאתם מכירים, ממוכרים שנמצאו ב־AliExpress. מקוריות ורשמיות דורשות אימות. אתר גילוי
                 עצמאי בעברית.
               </p>
             </div>
