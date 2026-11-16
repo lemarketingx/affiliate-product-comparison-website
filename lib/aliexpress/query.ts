@@ -29,7 +29,7 @@ export type PageMeta = {
   totalRecordCount: number | null;
 };
 // Kept structural so this module does not depend on the server-only normalizer.
-export type ProductPage<P = import("./affiliate").AliProduct> = { products: P[]; meta: PageMeta };
+export type ProductPage<P = import("./normalize.ts").AliProduct> = { products: P[]; meta: PageMeta };
 
 /** Validates and normalises query input. Throws AffiliateError(400) on bad input. */
 export function validateProductQuery(q: ProductQuery): { keywords: string; pageNo: number; pageSize: number } {
