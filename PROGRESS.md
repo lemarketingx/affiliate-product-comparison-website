@@ -204,3 +204,17 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - a true two-session race against the real DB;
   - the crons themselves, which fire only on Production after a merge;
   - the effect of the missing `tracking_id` on detail answers. Affiliate links come from the search's `promotion_link`, not from the detail call, so links should not be affected, but this is unverified.
+
+### Live result, run #8 (owner pressed "בדיקת מחירים עכשיו", 14:53 Israel time)
+- **PASS (live):** `ils_no_tracking` was accepted on the **first** call. This confirms that `tracking_id` was the rejected parameter.
+- Status `succeeded`: 2 calls (20 + 6 products), 26 updated, 0 failed, no ban, 4.8 s.
+  - Pacing worked: there was no `ApiCallLimit`.
+  - No search calls were made, because the jobs are now separate.
+- **Price accuracy, search vs product-ID check (same currency):** 26/26 identical. Average and maximum gap are 0.00%, the SKU is the same in all 26, and the field used is `target_sale_price`.
+  - So the feed data is consistent. Any remaining difference against the AliExpress page is checkout-side: app price, coupons, the variant the shopper picks, or shipping. It is not stale data.
+- Published products now:
+  - 31 in ILS: 26 by product-ID check, 5 confirmed;
+  - 15 in USD, from run #6 (`country_only`).
+
+  All 46 are fresh (under 48 h).
+- The 15 USD products were not due (minimum 20 h between checks). Their `price_check_at` was reset (a scheduling field only; prices unchanged), so the next price check re-queries them with `ils_no_tracking`. A shekel answer then replaces the USD price.

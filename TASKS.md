@@ -18,7 +18,8 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Fix price refresh 402 INVALID_PARAMETER (profile fallback, provider message, currency-safe recording) | done (code + real-DB migration); live re-run blocked (owner trigger) |
 | Price refresh live: 402 solved (`country_only`), 20 products checked | done (run #6) |
 | Pace provider calls, ride out 1 s bans, separate import/price jobs, one job at a time | done (code + real-DB migrations; live re-run pending) |
-| Next price run: confirm `ils_no_tracking` is accepted → USD prices back to ILS | todo (owner presses "בדיקת מחירים עכשיו") |
+| Next price run: confirm `ils_no_tracking` is accepted | done (run #8: first call, 26/26 identical to search) |
+| Return the 15 USD-priced products to ILS | queued (due now; next price check) |
 | Why does productdetail.get reject our tracking_id? (search accepts links fine) | todo (check AliExpress portal tracking id) |
 | Product page: show price age + price history chart from `dp_price_history` | todo |
 | Verified conversions/commissions import (orders API, needs permission) | blocked (API permission, see docs/ALIEXPRESS-ORDERS.md) |
