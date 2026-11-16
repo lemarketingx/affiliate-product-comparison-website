@@ -26,6 +26,11 @@ globalThis.fetch = async function (input, init) {
     const id = url.split("TEST_BANNER_")[1].replace(/\D/g, "");
     return new Response(null, { status: 302, headers: { location: `https://www.aliexpress.com/item/${id}.html?aff_fixture=1` } });
   }
+  // Catalog promotion links (TEST FIXTURE): redirect to the same product with affiliate params.
+  if (catalogSet && url.startsWith("https://s.click.aliexpress.com/e/TEST_CATALOG_")) {
+    const id = url.split("TEST_CATALOG_")[1].replace(/\D/g, "");
+    return new Response(null, { status: 302, headers: { location: `https://he.aliexpress.com/item/${id}.html?aff_fcid=fixture&aff_platform=api&sk=_fx` } });
+  }
   if (catalogSet && url.startsWith("https://www.aliexpress.com/item/")) return new Response("<html>fixture item</html>", { status: 200 });
   if (url !== "https://api-sg.aliexpress.com/sync")
     return originalFetch(input, init);

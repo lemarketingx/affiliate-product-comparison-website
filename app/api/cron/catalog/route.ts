@@ -22,16 +22,17 @@ export async function GET(request: Request) {
   if (!authorized(request)) return json({ code: "UNAUTHORIZED" }, 401);
   if (!storeConfigured()) return json({ code: "STORE_NOT_CONFIGURED" }, 503);
   if (!configured()) return json({ code: "ALIEXPRESS_NOT_CONFIGURED" }, 503);
-  // ?job=discover | prices (separate Vercel crons); no parameter = both, in order.
+  // ?job=discover | prices | links (separate Vercel crons); no parameter = both, in order.
   const jobParam = new URL(request.url).searchParams.get("job");
   const job = jobParam === null ? "all" : jobParam;
   if (!isCatalogJob(job)) return json({ code: "UNKNOWN_JOB" }, 400);
   try {
-    const { discovery, prices } = await runCatalogJobs("cron", { deadlineMs: 50_000, job });
+    const { discovery, prices, links } = await runCatalogJobs("cron", { deadlineMs: 50_000, job });
     return json({
       job,
       discovery: discovery && { runId: discovery.runId, status: discovery.status, stats: discovery.stats, errorCodes: discovery.errorCodes },
       prices: prices && { runId: prices.runId, status: prices.status, stats: prices.stats, errorCodes: prices.errorCodes },
+      links: links && { runId: links.runId, status: links.status, stats: links.stats },
     });
   } catch (e) {
     const code = e instanceof Error && /^[A-Z0-9_]{3,60}$/.test(e.message) ? e.message : "JOB_FAILED";

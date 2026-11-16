@@ -70,6 +70,20 @@ test("price check and import run as separate jobs", async ({ request }) => {
   // real SQL; here every term is exhausted, so runs finish too fast to overlap reliably.
 });
 
+test("link check job follows affiliate links to the same product", async ({ request }) => {
+  const res = await request.get(BASE + "/api/cron/catalog?job=links", { headers: AUTH, timeout: 60000 });
+  expect(res.status()).toBe(200);
+  const body = await res.json();
+  expect(body.discovery).toBeNull();
+  expect(body.prices).toBeNull();
+  expect(body.links.stats.checked).toBe(8);
+  // The seeded stale product's link has no fixture redirect: unverifiable, not unpublished.
+  expect(body.links.stats.ok + body.links.stats.broken).toBe(8);
+  expect(body.links.stats.ok).toBeGreaterThanOrEqual(7);
+  expect(body.links.stats.withAffParams).toBe(body.links.stats.ok);
+  expect(body.links.stats.unpublished).toBe(0);
+});
+
 test("storefront reads the database and shows detail-checked prices with their age", async ({ page }) => {
   await page.goto(BASE + "/deals");
   // The seeded stale product sorts first (most sales); take the next real one.
@@ -107,7 +121,7 @@ test("admin dashboard shows totals, price gaps with explanations, runs and click
     // Search quotes are ILS-only and detail quotes USD: no same-currency comparison is possible, so none is invented.
     await expect(page.getByRole("cell", { name: "לא ניתן להשוואה (מטבע שונה)" }).first()).toBeVisible();
     await expect(page.getByText(/הווריאציה \(sku_id\) שונה/)).toHaveCount(0);
-    await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(6); // 2×(discover+prices) + prices + discover; the refused start creates no run
+    await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(7); // 2×(discover+prices) + prices + discover + links
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.screenshot({ path: `test-results/admin-catalog-populated-${width}.png`, fullPage: true });

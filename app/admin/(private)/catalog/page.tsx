@@ -1,6 +1,6 @@
 import { requireAdmin } from "../../../../lib/dealpilot/auth";
 import { configured } from "../../../../lib/aliexpress/affiliate";
-import { dashboard, storeConfigured, type Dashboard } from "../../../../lib/catalog-store/server";
+import { dashboard, linkSummary, storeConfigured, type Dashboard } from "../../../../lib/catalog-store/server";
 import { PIPELINE_POLICY } from "../../../../lib/catalog-store/pipeline";
 import { GAP_LABELS, compareObservations, priceDiagnostics, type GapCode } from "../../../../lib/catalog-store/price-view";
 import { REJECT_LABELS, type RejectReason } from "../../../../lib/aliexpress/catalog-build";
@@ -12,16 +12,24 @@ const d = (iso: string | null) =>
   iso ? new Intl.DateTimeFormat("he-IL", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Jerusalem" }).format(new Date(iso)) : "—";
 const RUN_STATUS: Record<string, string> = { running: "רץ", succeeded: "הצליח", partial: "חלקי", failed: "נכשל" };
 const reasonLabel = (r: string) =>
-  r === "detail_missing" ? "לא הוחזר בבדיקת מוצר 3 פעמים ברצף" : (REJECT_LABELS[r as RejectReason] ?? r);
+  r === "detail_missing"
+    ? "לא הוחזר בבדיקת מוצר 3 פעמים ברצף"
+    : r === "link_wrong_product"
+      ? "קישור השותפים הוביל למוצר אחר"
+      : r === "link_not_aliexpress"
+        ? "קישור השותפים יצא מ־AliExpress"
+        : (REJECT_LABELS[r as RejectReason] ?? r);
 
 export default async function CatalogPage() {
   await requireAdmin();
   const ready = storeConfigured();
   let data: Dashboard | null = null;
+  let links: Awaited<ReturnType<typeof linkSummary>> | null = null;
   let error: string | null = null;
   if (ready) {
     try {
       data = await dashboard();
+      links = await linkSummary().catch(() => null);
     } catch (e) {
       error = e instanceof Error ? e.message : "DB_ERROR";
     }
@@ -46,12 +54,13 @@ export default async function CatalogPage() {
         <ul>
           <li>מסד נתונים ייעודי (DEALPILOT_SUPABASE_URL + SERVICE_ROLE): {ready ? "מוגדר" : "לא מוגדר. האתר ממשיך להציג את הקטלוג החי מהמטמון"}</li>
           <li>AliExpress Affiliate API: {configured() ? "מוגדר" : "לא מוגדר"}</li>
-          <li>תזמון (Vercel Cron, Production בלבד, דורש CRON_SECRET): ייבוא מוצרים 02:17 UTC, בדיקת מחירים 03:47 UTC. הרצה אחת בכל פעם; קריאות ל־AliExpress מרווחות ‎1.1‎ שניות.</li>
+          <li>תזמון (Vercel Cron, Production בלבד, דורש CRON_SECRET): ייבוא מוצרים 02:17 UTC, בדיקת מחירים 03:47 UTC, בדיקת קישורים 04:23 UTC. הרצה אחת בכל פעם; קריאות ל־AliExpress מרווחות ‎1.1‎ שניות.</li>
           {error && <li>שגיאת מסד נתונים: <code dir="ltr">{error}</code></li>}
         </ul>
         <div className="dp-stat-list">
           <RunJobButton job="discover" disabled={!ready || !configured()} />
           <RunJobButton job="prices" disabled={!ready || !configured()} />
+          <RunJobButton job="links" disabled={!ready} />
         </div>
       </section>
 
@@ -72,6 +81,23 @@ export default async function CatalogPage() {
               <li>קליקים ל־AliExpress ב־30 יום: <strong>{data.clicks_30d.total}</strong> (קליקים בלבד; המרות ועמלות מאומתות טרם חוברו)</li>
             </ul>
           </section>
+
+          {links && (
+            <section className="dp-panel">
+              <h2>קישורי שותפים</h2>
+              <p className="dp-muted">
+                בכל יום נבדקים כמה קישורים: ההפניה עוקבת עד עמוד המוצר בלי לטעון אותו, ומוודאת שהיא נשארת ב־AliExpress, מגיעה לאותו מזהה מוצר
+                ושומרת פרמטרי שותפים. קישור למוצר אחר או מחוץ ל־AliExpress מוציא את המוצר מפרסום. בדיקה עשויה להיספר כקליק בפורטל השותפים.
+              </p>
+              <ul className="dp-stat-list">
+                <li>נבדקו: <strong>{links.checked}</strong> מתוך {links.published} מפורסמים</li>
+                <li>תקינים: <strong>{links.ok}</strong> · עם פרמטרי שותפים: <strong>{links.with_aff_params}</strong></li>
+                <li>לא אומתו (רשת או דף ביניים): <strong>{links.broken}</strong></li>
+                <li>הוצאו מפרסום בגלל קישור שגוי: <strong>{links.unpublished_by_link}</strong></li>
+                <li>בדיקה אחרונה: {d(links.last_checked_at)}</li>
+              </ul>
+            </section>
+          )}
 
           <section className="dp-panel">
             <h2>סיבות פסילה</h2>

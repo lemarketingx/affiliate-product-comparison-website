@@ -26,12 +26,13 @@ export async function POST(request: Request) {
       const job = body.job === undefined ? "all" : body.job;
       if (!isCatalogJob(job)) return fail("UNKNOWN_JOB", 400);
       if (!allowRequest("admin-catalog-run", 4)) return fail("RATE_LIMITED", 429);
-      const { discovery, prices } = await runCatalogJobs("manual", { deadlineMs: 50_000, job });
+      const { discovery, prices, links } = await runCatalogJobs("manual", { deadlineMs: 50_000, job });
       return Response.json(
         {
           job,
           discovery: discovery && { status: discovery.status, stats: discovery.stats },
           prices: prices && { status: prices.status, stats: prices.stats },
+          links: links && { status: links.status, stats: links.stats },
         },
         { headers },
       );

@@ -375,3 +375,60 @@ export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: 
     throw e;
   }
 }
+
+export type LinkStats = { checked: number; ok: number; broken: number; unpublished: number; withAffParams: number };
+
+/**
+ * Verifies a few stored promotion links per run (oldest check first): same
+ * product id reached, still on AliExpress, affiliate parameters present.
+ * `check` is injected (real redirects in production, fixtures in tests).
+ */
+export async function runLinkCheck(o: {
+  rpc: Rpc;
+  check: (link: string, productId: string) => Promise<import("../aliexpress/link-check.ts").LinkCheck>;
+  trigger: Trigger;
+  maxChecks: number;
+  minAgeDays?: number;
+  deadlineMs?: number;
+}): Promise<{ runId: number; status: string; stats: LinkStats; errorCodes: Record<string, number> }> {
+  const started = Date.now();
+  const { id: runId } = (await o.rpc("dp_start_run", { kind: "link_check", trigger: o.trigger })) as { id: number };
+  const stats: LinkStats = { checked: 0, ok: 0, broken: 0, unpublished: 0, withAffParams: 0 };
+  const errorCodes: Record<string, number> = {};
+  const events: Event[] = [];
+  try {
+    const due = (await o.rpc("dp_due_for_link_check", { limit: Math.max(0, o.maxChecks), min_age_days: o.minAgeDays ?? 7 })) as {
+      product_id: string; affiliate_url: string;
+    }[];
+    const results = [];
+    for (const d of due) {
+      if (o.deadlineMs !== undefined && Date.now() - started > o.deadlineMs) {
+        events.push({ level: "warn", code: "DEADLINE_REACHED", detail: `${due.length - results.length} links left` });
+        break;
+      }
+      const r = await o.check(d.affiliate_url, d.product_id);
+      results.push({ product_id: d.product_id, ...r });
+      if (r.status === "ok" && r.affParams.length) stats.withAffParams++;
+      if (r.status === "broken") events.push({ level: "warn", code: "LINK_UNVERIFIED", product_id: d.product_id, detail: r.detail ?? undefined });
+    }
+    const res = (await o.rpc("dp_record_link_checks", { run_id: runId, results })) as { ok: number; broken: number; unpublished: number };
+    stats.checked = results.length;
+    stats.ok = res.ok;
+    stats.broken = res.broken;
+    stats.unpublished = res.unpublished;
+    const status = stats.checked > 0 && stats.ok === 0 && stats.broken === stats.checked ? "failed" : stats.broken > 0 ? "partial" : "succeeded";
+    if (events.length) await o.rpc("dp_log_events", { run_id: runId, events });
+    await o.rpc("dp_finish_run", { id: runId, status, stats, error_codes: errorCodes });
+    return { runId, status, stats, errorCodes };
+  } catch (e) {
+    const code = errCode(e);
+    errorCodes[code] = (errorCodes[code] ?? 0) + 1;
+    try {
+      await o.rpc("dp_log_events", { run_id: runId, events: [...events, { level: "error", code: "RUN_CRASHED", detail: code }] });
+      await o.rpc("dp_finish_run", { id: runId, status: "failed", stats, error_codes: errorCodes });
+    } catch {
+      /* see runDiscovery */
+    }
+    throw e;
+  }
+}

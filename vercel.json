@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/catalog?job=prices",
       "schedule": "47 3 * * *"
+    },
+    {
+      "path": "/api/cron/catalog?job=links",
+      "schedule": "23 4 * * *"
     }
   ]
 }

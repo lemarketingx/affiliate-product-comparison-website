@@ -597,3 +597,76 @@ test("live scenario: only tracking_id is rejected -> ILS profile accepted, sheke
   const cur = (await db.query("select distinct currency, price_method from dp_products where status='published'")).rows;
   assert.deepEqual(cur, [{ currency: "ILS", price_method: "detail" }]);
 });
+
+// ---- 2026-11-16: affiliate link verification ----
+import { checkAffiliateLink, productIdFromUrl } from "../lib/aliexpress/link-check.ts";
+import { runLinkCheck } from "../lib/catalog-store/pipeline.ts";
+const ID = "1005010579452804";
+/** TEST FIXTURE redirect map: url -> response. */
+const hops = (map) => async (url) => map[url] ?? { status: 404, location: null };
+
+test("link check follows redirects to the same product without loading it", async () => {
+  const fetcher = hops({
+    "https://s.click.aliexpress.com/s/abc": { status: 302, location: "https://star.aliexpress.com/share/share.htm?redirectUrl=x&aff_fcid=1" },
+    "https://star.aliexpress.com/share/share.htm?redirectUrl=x&aff_fcid=1": { status: 302, location: `https://he.aliexpress.com/item/${ID}.html?aff_fcid=1&aff_platform=api&sk=_x&terminal_id=t` },
+  });
+  const r = await checkAffiliateLink("https://s.click.aliexpress.com/s/abc", ID, fetcher);
+  assert.equal(r.status, "ok");
+  assert.equal(r.finalProductId, ID);
+  assert.equal(r.hops, 2);
+  assert.deepEqual(r.affParams, ["aff_fcid", "aff_platform", "sk", "terminal_id"]);
+  // The product page itself was never requested.
+  const seen = [];
+  await checkAffiliateLink("https://s.click.aliexpress.com/s/abc", ID, async (u) => { seen.push(u); return fetcher(u); });
+  assert.ok(!seen.some((u) => u.includes("/item/")));
+});
+
+test("link check: wrong product, off-site and broken are told apart; body mismatches are never conclusive", async () => {
+  const other = await checkAffiliateLink("https://s.click.aliexpress.com/s/a", ID, hops({ "https://s.click.aliexpress.com/s/a": { status: 302, location: "https://he.aliexpress.com/item/1005000000001.html" } }));
+  assert.equal(other.status, "wrong_product");
+  const off = await checkAffiliateLink("https://s.click.aliexpress.com/s/a", ID, hops({ "https://s.click.aliexpress.com/s/a": { status: 302, location: "https://evil.example/item/1.html" } }));
+  assert.equal(off.status, "not_aliexpress");
+  assert.equal((await checkAffiliateLink("https://s.click.aliexpress.com/s/a", ID, hops({}))).status, "broken");
+  assert.equal((await checkAffiliateLink("https://s.click.aliexpress.com/s/a", ID, async () => { throw new Error("timeout"); })).status, "broken");
+  assert.equal((await checkAffiliateLink("http://s.click.aliexpress.com/s/a", ID, hops({}))).status, "not_aliexpress");
+  // 200 page with a script redirect to our product, plus a recommendation for another.
+  const page = `<a href="https://he.aliexpress.com/item/1005000000001.html">x</a><script>location.href="https://he.aliexpress.com/item/${ID}.html?aff_fcid=9"</script>`;
+  const viaPage = await checkAffiliateLink("https://s.click.aliexpress.com/s/p", ID, hops({ "https://s.click.aliexpress.com/s/p": { status: 200, location: null, body: page } }));
+  assert.equal(viaPage.status, "ok");
+  // A page that only mentions another product: inconclusive, not "wrong product".
+  const onlyOther = await checkAffiliateLink("https://s.click.aliexpress.com/s/p", ID, hops({ "https://s.click.aliexpress.com/s/p": { status: 200, location: null, body: '<a href="https://he.aliexpress.com/item/1005000000001.html">' } }));
+  assert.equal(onlyOther.status, "broken");
+  assert.match(onlyOther.detail, /not conclusive/);
+  assert.equal(productIdFromUrl(`https://he.aliexpress.com/item/${ID}.html?x=1`), ID);
+  assert.equal(productIdFromUrl(`https://star.aliexpress.com/share/share.htm?redirectUrl=${encodeURIComponent(`https://www.aliexpress.com/item/${ID}.html`)}`), ID);
+});
+
+test("link check job records results, unpublishes only definitive failures, and respects the run lock", async () => {
+  const { db, rpc } = await freshDb();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 5 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const ids = (await db.query("select product_id from dp_products where status='published' order by product_id")).rows.map((r) => r.product_id);
+  assert.ok(ids.length >= 4);
+  const verdict = { [ids[0]]: "wrong_product", [ids[1]]: "broken", [ids[2]]: "not_aliexpress" };
+  const check = async (link, id) => ({
+    status: verdict[id] ?? "ok", hops: 2, finalHost: "he.aliexpress.com", finalProductId: id,
+    affParams: verdict[id] ? [] : ["aff_fcid"], detail: verdict[id] ?? null,
+  });
+  const r = await runLinkCheck({ rpc, check, trigger: "test", maxChecks: 50 });
+  assert.equal(r.status, "partial");
+  assert.equal(r.stats.checked, ids.length);
+  assert.equal(r.stats.unpublished, 2);
+  assert.equal(r.stats.broken, 1);
+  const st = async (id) => (await db.query("select status, link_status, reject_reasons from dp_products where product_id=$1", [id])).rows[0];
+  assert.deepEqual(await st(ids[0]), { status: "unpublished", link_status: "wrong_product", reject_reasons: ["link_wrong_product"] });
+  assert.equal((await st(ids[1])).status, "published", "inconclusive never unpublishes");
+  assert.equal((await st(ids[2])).status, "unpublished");
+  const sum = await rpc("dp_link_summary", {});
+  assert.equal(sum.unpublished_by_link, 2);
+  assert.equal(sum.with_aff_params, ids.length - 3);
+  // Not due again for 7 days.
+  assert.equal((await runLinkCheck({ rpc, check, trigger: "test", maxChecks: 50 })).stats.checked, 0);
+  // Shares the one-job-at-a-time lock.
+  const { id } = await rpc("dp_start_run", { kind: "price_refresh", trigger: "test" });
+  await assert.rejects(runLinkCheck({ rpc, check, trigger: "test", maxChecks: 5 }), (e) => e.code === "DP409");
+  await rpc("dp_finish_run", { id, status: "succeeded", stats: {}, error_codes: {} });
+});

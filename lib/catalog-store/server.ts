@@ -5,7 +5,9 @@ import { unknownQuality } from "../aliexpress/quality";
 import { categories } from "../dealpilot/categories";
 import { queryAffiliateProductsPage, queryProductDetails } from "../aliexpress/affiliate";
 import { newProfileState, rejectedProfiles } from "../aliexpress/detail-profiles";
-import { runDiscovery, runPriceRefresh, type Rpc, type Trigger } from "./pipeline";
+import { runDiscovery, runLinkCheck, runPriceRefresh, type Rpc, type Trigger } from "./pipeline";
+import { checkAffiliateLink } from "../aliexpress/link-check";
+import { createPacer } from "../aliexpress/pacer";
 import { displayPrice, PRICE_MAX_AGE_HOURS } from "./price-view";
 import type { CatalogItem, CatalogSnapshot } from "../aliexpress/catalog";
 
@@ -113,8 +115,60 @@ export async function storedPriceHistory(productId: string) {
  * The scheduled job: discovery then price refresh, both bounded by provider
  * call budgets and a wall-clock deadline below the function's maxDuration.
  */
-export type CatalogJob = "discover" | "prices" | "all";
-export const isCatalogJob = (v: unknown): v is CatalogJob => v === "discover" || v === "prices" || v === "all";
+export type CatalogJob = "discover" | "prices" | "links" | "all";
+export const isCatalogJob = (v: unknown): v is CatalogJob => v === "discover" || v === "prices" || v === "links" || v === "all";
+
+// Link checks follow redirects only (never load the product page), spaced apart.
+const linkPace = createPacer(800);
+async function fetchHop(url: string): Promise<{ status: number; location: string | null; body: string | null }> {
+  const res = await linkPace(() =>
+    fetch(url, {
+      method: "GET",
+      redirect: "manual",
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+      headers: { "User-Agent": "Mozilla/5.0 (DealPilot link check)", "Accept-Language": "he-IL,he;q=0.9" },
+    }),
+  );
+  let body: string | null = null;
+  if (res.status === 200 && res.body) {
+    // Only the first 64 KB: enough for a meta-refresh or script redirect.
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    while (size < 65536) {
+      const { done, value } = await reader.read();
+      if (done || !value) break;
+      chunks.push(value);
+      size += value.length;
+    }
+    await reader.cancel().catch(() => undefined);
+    body = new TextDecoder().decode(Buffer.concat(chunks.map((c) => Buffer.from(c))));
+  } else {
+    await res.body?.cancel().catch(() => undefined);
+  }
+  return { status: res.status, location: res.headers.get("location"), body };
+}
+
+/** Link verification job (separate from imports and price checks). */
+export async function runLinkJob(trigger: Trigger, deadlineMs = 50_000) {
+  const result = await runLinkCheck({
+    rpc,
+    trigger,
+    maxChecks: intEnv("DEALPILOT_LINK_CHECKS", 8, 0, 50),
+    deadlineMs,
+    check: (link, id) => checkAffiliateLink(link, id, fetchHop),
+  });
+  revalidateTag(STORE_TAG, { expire: 0 });
+  return result;
+}
+
+export async function linkSummary() {
+  return rpc("dp_link_summary", {}) as Promise<{
+    published: number; checked: number; ok: number; broken: number; with_aff_params: number;
+    unpublished_by_link: number; last_checked_at: string | null;
+  }>;
+}
 
 /**
  * Scheduled jobs. Discovery (search calls) and price refresh (product-ID
@@ -124,6 +178,7 @@ export const isCatalogJob = (v: unknown): v is CatalogJob => v === "discover" ||
  */
 export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: number; job?: CatalogJob } = {}) {
   const job = options.job ?? "all";
+  if (job === "links") return { job, discovery: null, prices: null, links: await runLinkJob(trigger, options.deadlineMs) };
   const deadline = options.deadlineMs ?? 50_000;
   const started = Date.now();
   const discoverCalls = intEnv("DEALPILOT_IMPORT_MAX_CALLS", 40, 0, 400);
@@ -167,7 +222,7 @@ export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: n
       }).catch(() => undefined);
   }
   revalidateTag(STORE_TAG, { expire: 0 });
-  return { job, discovery, prices };
+  return { job, discovery, prices, links: null };
 }
 
 export async function setUnpublished(productId: string, unpublished: boolean) {
