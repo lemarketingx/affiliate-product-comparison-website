@@ -279,3 +279,19 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 ### Gate 3: CI and Production
 - CI (`verify`: typecheck, unit, build) runs on every push to PR #20.
 - Production env vars (DB, `CRON_SECRET`, AliExpress) cannot be read from here (Vercel 403). Without them, Production keeps the legacy live-cache catalog and the crons answer 503 `STORE_NOT_CONFIGURED`, so the merge is safe either way.
+
+## 2026-11-16 · Milestone 2 started: brand and one storefront
+- The branch was restarted from `main` (`bae2e6f`) after PR #20 merged.
+- **Baseline:**
+  - Screenshots of the incumbent (`docs/screenshots/design-lab/before-*`) show the home page navy/gold and the product page boarding-pass cream, two different languages.
+  - The header search button is an empty circle.
+  - Speed baseline recorded in `SPEC.md`.
+- **Name:** `docs/BRAND-NAMING.md`, with domains checked live (Vercel registry) and conflicts searched.
+  - DealPilot: all main domains are taken, and a same-category "DealPilot" coupon app exists (LoudCrowd).
+  - "שקוף": rejected, because Shakuf is an Israeli news nonprofit.
+  - **Recommended: תכל'ס (Tachles).** `tachles.shop`, `.deals` and `.io` are free. `.co.il` and the trademark register are NOT CHECKED.
+  - Nothing renamed on the site; awaiting owner approval.
+- **Symbol:** a tag with a "bottom line" bar and a check, not a cart. It replaces `public/favicon.svg` (name-neutral). Lockups for the proposed name, light and dark, are in `public/brand/`.
+- **Design lab:** `/admin/design-lab` renders three directions on the same slice with real catalog rows; no horizontal overflow at 390 and 1440. Scored in `docs/DESIGN-DIRECTIONS.md`: **A "השורה התחתונה" chosen (18/20).**
+- **Inputs:** PRs #3 and #16 were read as inputs, not merged. Both target an old base branch.
+- **Next:** token layer, then migrate in revenue order (product card → product page → home → listings → states), with e2e updated in the same commits.

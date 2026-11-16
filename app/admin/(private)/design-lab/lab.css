@@ -1,0 +1,72 @@
+/* Design lab only: three scoped directions. Removed before merge. */
+.lab { display: grid; gap: 40px; padding-bottom: 60px; }
+.lab > h1 { margin: 0; }
+.lab-note { color: #64748b; margin: -24px 0 0; }
+.lab section { border-radius: 18px; overflow: hidden; padding: 20px; display: grid; gap: 20px; }
+.lab h2, .lab h3 { margin: 0; }
+.lab-muted { color: #6b6f76; }
+.lab img, .lab [aria-hidden="true"].lab-a-img, .lab [aria-hidden="true"].lab-b-img, .lab [aria-hidden="true"].lab-c-img { background: #e6e6e1; }
+
+/* ---------- A: השורה התחתונה ---------- */
+.lab-a { --ink: #121417; --paper: #fafaf7; --line: #e3e3dc; --hl: #ffd43b; --ok: #0b7a4b; background: var(--paper); color: var(--ink); font-family: "IBM Plex Sans Hebrew", Arial, sans-serif; }
+.lab-a-head { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.lab-a-brand { display: inline-flex; gap: 10px; align-items: center; font-size: 22px; }
+.lab-a-search { display: flex; flex: 1 1 320px; max-width: 560px; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: #fff; }
+.lab-a-search input { flex: 1; border: 0; padding: 12px 14px; font: inherit; min-width: 0; }
+.lab-a-search button { border: 0; background: var(--ink); color: #fff; font: inherit; font-weight: 700; padding: 0 18px; }
+.lab-a-hero h2 { font-size: clamp(30px, 5vw, 56px); line-height: 1.05; letter-spacing: -0.02em; }
+.lab-a-hero mark { background: linear-gradient(transparent 62%, var(--hl) 62%); color: inherit; }
+.lab-a-hero p { max-width: 60ch; color: #3d4148; font-size: 17px; margin: 10px 0 0; }
+.lab-a-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.lab-a-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; }
+.lab-a-img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 10px; }
+.lab-a-brandtag { justify-self: start; font-size: 12px; font-weight: 700; border: 1px solid var(--ink); border-radius: 999px; padding: 2px 10px; }
+.lab-a-card h3 { font-size: 15px; font-weight: 500; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lab-a-line { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px dashed var(--line); padding-top: 8px; font-size: 13px; }
+.lab-a-line b { font: 700 22px/1 "IBM Plex Mono", monospace; }
+.lab-a-card small, .lab-a-receipt small { color: #5a5e66; font-size: 12px; }
+.lab-a-receipt { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 8px; max-width: 460px; }
+.lab-a-row { display: flex; justify-content: space-between; gap: 10px; font-size: 15px; }
+.lab-a-row b { font-family: "IBM Plex Mono", monospace; }
+.lab-a-total { border-top: 2px solid var(--ink); padding-top: 10px; font-weight: 700; }
+.lab-a-total b { background: var(--hl); padding: 0 6px; font-size: 20px; }
+.lab-a-cta { background: var(--ink); color: #fff; text-align: center; border-radius: 12px; padding: 14px; font-weight: 700; text-decoration: none; }
+
+/* ---------- B: שוק ---------- */
+.lab-b { background: #f6efe4; color: #2a211b; font-family: "IBM Plex Sans Hebrew", Arial, sans-serif; }
+.lab-b-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.lab-b-brand { display: inline-flex; gap: 10px; align-items: center; font-size: 20px; }
+.lab-b-search { flex: 1 1 260px; max-width: 420px; border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; background: #fff; }
+.lab-b-kicker { color: #c2410c; font-weight: 700; letter-spacing: .04em; }
+.lab-b-hero h2 { font-family: "Karantina", "IBM Plex Sans Hebrew", sans-serif; font-size: clamp(42px, 8vw, 92px); line-height: .95; }
+.lab-b-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.lab-b-card { background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 20px 40px -28px #2a211b66; }
+.lab-b-img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.lab-b-body { padding: 14px 16px 18px; display: grid; gap: 6px; }
+.lab-b-body h3 { font-size: 17px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lab-b-body b { color: #c2410c; font-size: 20px; }
+.lab-b-buy { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.lab-b-buy b { font-size: 26px; }
+.lab-b-buy a { background: #c2410c; color: #fff; border-radius: 999px; padding: 12px 22px; text-decoration: none; font-weight: 700; }
+.lab-b-buy small { color: #7a6a5d; }
+
+/* ---------- C: לוח מחוונים ---------- */
+.lab-c { background: #0e1525; color: #e5ecf6; font-family: "IBM Plex Sans Hebrew", Arial, sans-serif; }
+.lab-c-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.lab-c-brand { display: inline-flex; gap: 10px; align-items: center; font-size: 20px; }
+.lab-c-search { flex: 1 1 260px; max-width: 460px; background: #16203a; color: #e5ecf6; border: 1px solid #2a3a62; border-radius: 10px; padding: 11px 14px; font: inherit; }
+.lab-c-hero h2 { font-size: clamp(24px, 3.6vw, 38px); }
+.lab-c-kpis { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.lab-c-kpis span { background: #16203a; border: 1px solid #2a3a62; border-radius: 10px; padding: 8px 12px; color: #a9b8d4; }
+.lab-c-kpis b { color: #5eead4; font-family: "IBM Plex Mono", monospace; }
+.lab-c-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.lab-c-card { background: #121b30; border: 1px solid #22304f; border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+.lab-c-img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 8px; background: #1b2640 !important; }
+.lab-c-card h3 { font-size: 14px; font-weight: 500; color: #cbd6ea; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lab-c-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.lab-c-chips span { font-size: 11px; background: #1d2a48; border-radius: 6px; padding: 2px 8px; color: #a9b8d4; }
+.lab-c-card > b, .lab-c-buy b { color: #5eead4; font: 700 22px "IBM Plex Mono", monospace; }
+.lab-c-hist { color: #7d8db0; font-size: 11px; }
+.lab-c-buy { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.lab-c-buy a { background: #5eead4; color: #0e1525; border-radius: 10px; padding: 12px 18px; font-weight: 700; text-decoration: none; }
+.lab-c-buy small { color: #7d8db0; }

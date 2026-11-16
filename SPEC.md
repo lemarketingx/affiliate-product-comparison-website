@@ -1,34 +1,44 @@
-# SPEC — Milestone 1: persistent catalog, import pipeline and accurate prices
+# SPEC — Milestone 2: brand and one coherent storefront
 
-Scope: PRODUCT-VISION §28 (stabilise catalog engine, product import and prices). Branding, design, comparison, videos and SEO are later milestones (see TASKS.md).
+Milestone 1 (persistent catalog, prices, links) is complete and merged; its spec is archived in `docs/SPEC-M1-catalog.md`.
 
-## Problem found in the existing code (2026-11-16)
-1. **No persistence.** The catalog existed only in `unstable_cache` entries rebuilt from keyword searches every 6 h; a cold cache meant a page view triggered provider calls. Admin approvals lived in browser memory. Clicks were not stored (`tracking.ts` disabled).
-2. **No "new products" notion.** The fixed plan (24 terms × 3 pages, sorted by sales) returns the same products every rebuild; there is no first-seen date, so "50 new/day" could not be measured or achieved.
-3. **Price gap root causes (from code + the 2026-11-14 live probe field list):**
-   - The shown price is `target_sale_price` from a *keyword search* row, cached up to 6 h+ and displayed without its age.
-   - The provider returns several prices per row: `sale_price` (USD), `target_sale_price` (ILS), `app_sale_price` / `target_app_sale_price` (app-only price, often lower), `original_price` / `target_original_price`. The row also carries one `sku_id` — the price belongs to that variant, while the affiliate link opens the product page on whatever variant AliExpress selects.
-   - ILS amounts are AliExpress's own conversion; checkout may use another currency/rate.
-   - Personal coupons, new-user prices and shipping are never in the affiliate API.
-   - Nothing was stored, so the gap could not be measured.
+## Problem (observed 2026-11-16, screenshots in PROGRESS.md)
+- The public site mixes **three visual languages**:
+  - the home page is navy/gold "premium" (`dpb-*`, commit `df4400d`, labelled "approved");
+  - product, deals and category pages are the cream "boarding pass" pre-flight theme (`fp-*`, PR #3): "כרטיס עלייה למטוס", "שער", "DP-9149" codes;
+  - admin is `dp-*`.
+- PR #16 ("Originals", a certificate product page) was never merged. Both #3 and #16 target an old base branch.
+- Airport metaphors on product pages add noise and no buying information.
+- The header search submit is an empty dark circle (no visible icon).
+- The homepage h1 is screen-reader only.
 
-## Acceptance criteria and status
-Status legend: PASS (verified with evidence) · FAIL · BLOCKED (external dependency) · NOT TESTED.
+## Scope
+1. **Brand.** A name shortlist with evidence (meaning in Hebrew and English, conflicts, domain status checked or marked NOT CHECKED); a symbol, favicon, light/dark lockups and a social image; colour and type tokens.
+   - **No user-visible rename, domain or metadata change without owner approval.** The name stays centralised and swappable.
+2. **Three design directions**, plus the incumbent, rendered on the same slice: header and search, hero, product card, and the product page price/CTA block. Shown at 390 and 1440 px, scored on UX, originality, speed and conversion. One is chosen.
+3. **Implementation in revenue order:** product card → product page → home → deals/search/category → loading/error/404. Admin (`dp-*`) is untouched.
+4. **Honesty rules hold:** no invented discounts or ratings, honest empty states (price history is too young for charts, and there are no Israeli prices yet).
 
-| # | Requirement | Status | Evidence |
-|---|---|---|---|
-| 1 | Persistent DB schema: products unique by (source, product_id), price history, runs, events, cursors, clicks | PASS (pglite) | `supabase/migrations/20261116000000_dealpilot_catalog_store.sql`, `tests/catalog-store.test.mjs` |
-| 2 | RLS on; anon/authenticated cannot read tables or call functions | PASS (pglite) | test "anon and authenticated roles cannot…" |
-| 3 | Pipeline validates with the existing public rules; rejected rows store reasons | PASS (fixture) | test "discovery persists…" |
-| 4 | Re-running the import creates no duplicate products; already-published products are not counted as new | PASS (fixture) | same test, third run `inserted=0`, `publishedNew=0` |
-| 5 | Resumable per-term cursor → deeper pages on later runs → new unique products | PASS (fixture) | page 2 requested on run 2; exhausted terms restart after 7 days |
-| 6 | Failures logged, cursor kept, retried next run; quota stops the run; all-failed run = failed; crashed run closed | PASS (fixture) | tests "provider failures…", "a crashed run…" |
-| 7 | Every raw price field + chosen field + sku stored per observation (append-only history) | PASS (fixture) | normaliser + price refresh tests |
-| 8 | Product-ID price refresh (`productdetail.get`, batches ≤ 20, budgeted, scheduled; never per page view) | FAIL live (402 INVALID_PARAMETER, runs #2 and #4) → fix `67c1cb4`: parameter-profile fallback + provider message logging; PASS (fixture); live re-run BLOCKED (owner must trigger) | PROGRESS.md 2026-11-16 afternoon |
-| 8b | A USD detail quote never relabels or silently replaces an ILS price | PASS (unit + real DB, rolled-back transaction) | migration `20261116130000` |
-| 9 | Stale (> 48 h) or unknown price is withheld on the storefront | PASS (unit + e2e fixture) | `displayPrice` tests; `catalog-store-flow.spec.ts` |
-| 10 | Admin dashboard: totals, new today vs 50 target, rejected reasons, no-current-price count, price gaps with raw fields, runs, errors, clicks; run-now and unpublish actions | PASS (e2e fixture, 320/768/1440) · NOT TESTED with real data | `catalog-store-flow.spec.ts` |
-| 11 | Daily scheduled job, secret-protected, fails closed | PASS (e2e fixture) · configured, not running (needs production deploy + Production env) | `vercel.json`, `/api/cron/catalog` |
-| 12 | Clicks persisted without personal data, without delaying the redirect; clicks ≠ sales | PASS (e2e fixture) · NOT TESTED live | `dp_record_click`, `/go/[id]` |
-| 13 | Real API fetch, real price comparison vs AliExpress page | BLOCKED | needs Vercel env + DB (see PROGRESS.md "Owner actions") |
-| 14 | CI blocks merges on typecheck/test/build failure | Implemented; NOT TESTED (never triggered: no PR); "required" is an owner setting | `.github/workflows/ci.yml` |
+## Acceptance criteria
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | done: `docs/BRAND-NAMING.md`; recommend תכל'ס (Tachles); **awaiting owner approval** |
+| 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and lockups done (`public/brand/`); OG image and tokens next |
+| 3 | 3 directions + incumbent scored with screenshots; one chosen | done: `docs/DESIGN-DIRECTIONS.md`; **A chosen** |
+| 4 | Product card, product page, home, deals/search/category, loading/error/404 in one system | todo |
+| 5 | No horizontal scroll at 320/375/390/768/1024/1440/1920; prefers-reduced-motion respected; text contrast ≥ 4.5:1 | todo |
+| 6 | Mobile LCP and transfer not worse than the baseline below | todo |
+| 7 | e2e uses roles and labels; the 2 owner-decision tests rewritten, not deleted | todo |
+| 8 | typecheck, unit, build, e2e green locally; screenshots in PROGRESS.md | todo |
+
+## Speed baseline (before), measured 2026-11-16
+Local `next start` with the catalog fixture. Product images are blocked in this sandbox, so the numbers exclude them. Mobile runs on an emulated slow network.
+
+| Viewport | Page | LCP | CLS | Transfer |
+|---|---|---|---|---|
+| Mobile | Home | 788 ms | 0.029 | 294 KB |
+| Mobile | Deals | 724 ms | 0.026 | 330 KB |
+| Desktop | Home | 564 ms | 0.001 | 317 KB |
+| Desktop | Deals | 524 ms | 0.011 | 344 KB |
+
+Product-page numbers were measured after visiting /deals, with shared assets cached: about 30–41 KB and LCP under 250 ms.

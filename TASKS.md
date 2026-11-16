@@ -31,8 +31,18 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Rewrite populated-flow e2e for the brand-first catalog | todo |
 | Set Production env vars in Vercel (DB, CRON_SECRET, AliExpress keys) so crons run after merge | todo (owner) |
 
-## Phase 2 — brand and UX
-Naming research + logo set, 3 design directions → pick one, homepage/product/search redesign, visual QA 320–1920px. todo
+## Phase 2 — brand and UX (in progress)
+| Task | Status |
+|---|---|
+| Name shortlist with evidence | done; owner approval pending (תכל'ס recommended) |
+| Symbol, favicon, lockups | done |
+| 3 directions + incumbent scored | done: A chosen |
+| Token layer + product card + product page in A | next |
+| Home, deals/search/category, loading/error/404 in A | todo |
+| OG image | todo |
+| Rewrite 2 owner-decision e2e tests with roles and labels | todo |
+| Remove `/admin/design-lab` before merge | todo |
+| Apply approved name (metadata, wordmark, domain) | blocked: owner approval |
 
 ## Phase 3 — competitive edge
 Israel vs abroad comparison (needs permitted Israeli price sources), import-cost calculator with sourced, dated tax rules, deal detection from stored price history (needs ≥ 30 days of history). todo
