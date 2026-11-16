@@ -325,3 +325,6 @@ a.bl-more:hover { color: var(--bl-paper); }
 /* Legacy .fp-btn forces ink text with !important; on the ink button that was invisible. */
 .bl-catalog .fp-btn { color: #fff !important; border-color: var(--bl-ink); }
 .bl-catalog .fp-pager .is-off { color: var(--bl-muted); opacity: 1; }
+/* Catalog pages sit right under the sticky header: the legacy 88px section padding left an empty band. */
+.fp-section.bl-catalog { padding-block: 32px 64px; }
+@media (max-width: 899px) { .fp-section.bl-catalog { padding-block: 20px 48px; } }

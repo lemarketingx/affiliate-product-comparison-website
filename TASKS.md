@@ -34,14 +34,17 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 ## Phase 2 — brand and UX (in progress)
 | Task | Status |
 |---|---|
-| Name shortlist with evidence | done; owner approval pending (תכל'ס recommended) |
+| Name shortlist with evidence | round 2 done (`docs/BRAND-NAMING.md`): תכל'ס rejected by owner (tachlis.co.il); recommend **מחיר אמת**, backup סופית; Israeli trademarks NOT CHECKED, so the owner checks with ILPO and an attorney |
 | Symbol, favicon, lockups | done |
 | 3 directions + incumbent scored | done: A chosen |
 | Token layer + product card + product page in A | done |
-| Header/footer shell in A (remove airport copy, fix empty search button) | next |
-| Home, deals/search/category, loading/error/404 in A | todo |
+| Header/footer shell in A (remove airport copy, fix empty search button) | done |
+| Home, deals/search/category, loading/error/404 in A | done |
 | OG image | todo |
-| Rewrite 2 owner-decision e2e tests with roles and labels | todo |
+| Rewrite 2 owner-decision e2e tests with roles and labels | done: "not in the box" test replaced by owner decision; populated-flow rewritten with branded products |
+| Accessibility (axe WCAG 2.1 AA) and LCP | done: 0 violations on 8 pages × 2 widths; mobile home LCP 748 ms (baseline 788) |
+| Mobile catalog: first products sit below the fold (policy notice + tax note are long) | todo: shorten or collapse |
+| Legacy no-DB `/go` answers 503 for up to 15 s while a cold catalog builds | todo (production reads the DB, so not affected there) |
 | Remove `/admin/design-lab` before merge | todo |
 | Apply approved name (metadata, wordmark, domain) | blocked: owner approval |
 

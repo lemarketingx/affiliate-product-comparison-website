@@ -22,14 +22,14 @@ Milestone 1 (persistent catalog, prices, links) is complete and merged; its spec
 ## Acceptance criteria
 | # | Criterion | Status |
 |---|---|---|
-| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | done: `docs/BRAND-NAMING.md`; recommend תכל'ס (Tachles); **awaiting owner approval** |
-| 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and lockups done (`public/brand/`); OG image and tokens next |
+| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 2 done: `docs/BRAND-NAMING.md`; תכל'ס rejected by owner; recommend **מחיר אמת** (backup סופית); trademarks NOT CHECKED; **awaiting owner approval**. Name lives only in `lib/brand.ts` |
+| 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and tokens (`app/bottomline.css`) done; OG image todo (waits for the name) |
 | 3 | 3 directions + incumbent scored with screenshots; one chosen | done: `docs/DESIGN-DIRECTIONS.md`; **A chosen** |
-| 4 | Product card, product page, home, deals/search/category, loading/error/404 in one system | todo |
-| 5 | No horizontal scroll at 320/375/390/768/1024/1440/1920; prefers-reduced-motion respected; text contrast ≥ 4.5:1 | todo |
-| 6 | Mobile LCP and transfer not worse than the baseline below | todo |
-| 7 | e2e uses roles and labels; the 2 owner-decision tests rewritten, not deleted | todo |
-| 8 | typecheck, unit, build, e2e green locally; screenshots in PROGRESS.md | todo |
+| 4 | Product card, product page, home, deals/search/category, loading/error/404 in one system | done (screenshots `docs/screenshots/phase2/`) |
+| 5 | No horizontal scroll at 320/375/390/768/1024/1440/1920; prefers-reduced-motion respected; text contrast ≥ 4.5:1 | done: 8 pages × 7 widths clean; axe WCAG 2.1 AA 0 violations (16 checks) |
+| 6 | Mobile LCP and transfer not worse than the baseline below | done: see "after" table |
+| 7 | e2e uses roles and labels; the 2 owner-decision tests rewritten, not deleted | done (the "not in the box" assertion was removed by explicit owner decision and replaced with tax/disclosure/redirect checks) |
+| 8 | typecheck, unit, build, e2e green locally; screenshots in PROGRESS.md | done: unit 113/113, e2e 38/38 |
 
 ## Speed baseline (before), measured 2026-11-16
 Local `next start` with the catalog fixture. Product images are blocked in this sandbox, so the numbers exclude them. Mobile runs on an emulated slow network.
@@ -42,3 +42,13 @@ Local `next start` with the catalog fixture. Product images are blocked in this 
 | Desktop | Deals | 524 ms | 0.011 | 344 KB |
 
 Product-page numbers were measured after visiting /deals, with shared assets cached: about 30–41 KB and LCP under 250 ms.
+
+## Speed after (same method), measured 2026-11-16
+| Viewport | Page | LCP | Transfer |
+|---|---|---|---|
+| Mobile | Home | 748 ms (median of 5) | ~307 KB |
+| Mobile | Deals | 432 ms | ~327 KB |
+| Desktop | Home | 208 ms | ~310 KB |
+| Desktop | Deals | 480 ms | ~325 KB |
+
+The mobile home LCP element is the h1, so the bold Hebrew face is preloaded. Without the preload it was 1676 ms. Two of the five mobile home runs were about 1.6 s, which looks like emulation jitter. Recheck this on Vercel after the next preview deploy.

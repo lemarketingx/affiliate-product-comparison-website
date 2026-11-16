@@ -316,3 +316,36 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - The header and footer shell still use the old cream/airport language ("מגדל פיקוח", "שעון ישראל").
   - Home, listings, category/brand pages and the loading/error/404 states are not migrated.
   - The OG image is missing.
+
+## 2026-11-16 · Phase 2 continued: owner decisions, full storefront in direction A
+### Owner decisions applied
+1. **תכל'ס is not approved:** the active Israeli site "תאכלס" (tachlis.co.il) creates a confusion risk. Name research round 2 is in `docs/BRAND-NAMING.md`: five names scored, with a live domain check; Israeli trademarks are **NOT CHECKED** (the ILPO host is unreachable from here and gov.il returns 403). Recommendation: **מחיר אמת**, backup **סופית**. The live name stays DealPilot; it lives only in `lib/brand.ts`.
+2. **"מה כנראה לא בקופסה"** stays removed until verified product data exists. The browser test that asserted it was replaced; a comment in `tests/e2e/preflight.spec.ts` records the decision, and the test now asserts that the heading is absent.
+3. **populated-flow rewritten** for branded products: card, brand link, ₪ price only, header search, product receipt, CTA `rel=sponsored`, `/go` ignores `?url=`, brand page, and a 375 px buy bar.
+
+### Built
+- Shell: symbol, swappable wordmark, disclosure top line, search with a visible "חיפוש" button (it used to be an empty circle), nav and mobile menu, footer. All airport copy removed.
+- Home: h1 with the promise, real catalog facts (count of prices checked within 48 h, DB only), the official-campaign carousel restyled, brand logos, category banners, how-it-works, and best sellers.
+- Catalog, search, category and brand lists; category tiles; loading skeleton (respects reduced motion); error page; 404 with search.
+- `freshnessLabel()` in `price-view.ts` (unit-tested).
+
+### Tests (local, fixtures)
+- typecheck OK · unit **113/113** · build OK · e2e **38/38**.
+- QA: 8 pages × 7 widths (320–1920): no horizontal scroll, exactly one h1, no broken images, minimum price font 19 px.
+- axe-core 4.10.3 WCAG 2.1 A/AA: **0 violations** on 8 pages at 390 and 1440. Fixed along the way:
+  - invisible "סינון" button text (legacy `!important`)
+  - pager contrast
+  - five brand-logo colours below 4.5:1
+- Speed: see `SPEC.md` (no regression; mobile deals improved from 724 to 432 ms).
+- Screenshots: `docs/screenshots/phase2/`.
+
+### Findings
+- Test flake root cause: during streaming, Next keeps content in a hidden wrapper for about 30 ms, so role queries could see 0 links. Tests now wait for the first card to be visible.
+- The legacy no-DB `/go` path waits up to 15 s and answers 503 while a cold catalog builds. Production reads the database, so it is unaffected; this is logged in TASKS.
+- On mobile, the catalog's policy notice and tax note push the first products below the fold; logged in TASKS.
+
+### Not done / blocked
+- Production unchanged; nothing merged to `main`.
+- `/admin/design-lab` must be removed before any merge.
+- The OG image waits for the approved name.
+- Product images from the AliExpress CDN are blocked in this sandbox, so image rendering was tested with fixture images. Live images: NOT TESTED here.
