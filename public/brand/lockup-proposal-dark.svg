@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 96" role="img" aria-label="תכל'ס — הצעת שם">
-  <rect width="360" height="96" fill="#121417"/>
-  <g transform="translate(276 16)"><rect width="64" height="64" rx="15" fill="#FAFAF7"/><path d="M24 13h24a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H24L11 26z" fill="#121417"/><circle cx="22" cy="26" r="3.6" fill="#FAFAF7"/><path d="M29 26.5l4 4 8-9" fill="none" stroke="#FAFAF7" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="13" y="46" width="40" height="6.5" rx="3.25" fill="#FFD43B"/></g>
-  <text x="258" y="62" text-anchor="start" font-family="IBM Plex Sans Hebrew, Arial, sans-serif" font-weight="700" font-size="46" fill="#FAFAF7" direction="rtl">תכל'ס</text>
-  <rect x="140" y="72" width="118" height="7" rx="3.5" fill="#FFD43B"/>
-</svg>

@@ -3,6 +3,7 @@ import { requireAdmin } from "../../../../lib/dealpilot/auth";
 import { getCatalog, type CatalogItem } from "../../../../lib/aliexpress/catalog";
 import { formatMoney } from "../../../../lib/dealpilot/urls";
 import { identifyListedBrand } from "../../../../lib/dealpilot/brands";
+import { BRAND } from "../../../../lib/brand";
 
 // Admin-only comparison of three design directions on the SAME slice, with
 // real catalog rows. Temporary: remove before merging the chosen direction.
@@ -40,7 +41,7 @@ function DirectionA({ items }: { items: CatalogItem[] }) {
   return (
     <section className="lab-a" aria-label="כיוון A">
       <header className="lab-a-head">
-        <span className="lab-a-brand"><Symbol /> <b>תכל&apos;ס</b></span>
+        <span className="lab-a-brand"><Symbol /> <b>{BRAND.name}</b></span>
         <form className="lab-a-search" role="search"><input aria-label="חיפוש A" placeholder="מה מחפשים? למשל: אוזניות Soundcore עד 200 ₪" /><button type="button">חיפוש</button></form>
       </header>
       <div className="lab-a-hero">
@@ -78,7 +79,7 @@ function DirectionB({ items }: { items: CatalogItem[] }) {
   return (
     <section className="lab-b" aria-label="כיוון B">
       <header className="lab-b-head">
-        <span className="lab-b-brand"><Symbol /> <b>תכל&apos;ס</b></span>
+        <span className="lab-b-brand"><Symbol /> <b>{BRAND.name}</b></span>
         <input className="lab-b-search" aria-label="חיפוש B" placeholder="חיפוש מותג או מוצר" />
       </header>
       <div className="lab-b-hero">
@@ -113,7 +114,7 @@ function DirectionC({ items, total, fresh }: { items: CatalogItem[]; total: numb
   return (
     <section className="lab-c" aria-label="כיוון C">
       <header className="lab-c-head">
-        <span className="lab-c-brand"><Symbol dark /> <b>תכל&apos;ס</b></span>
+        <span className="lab-c-brand"><Symbol dark /> <b>{BRAND.name}</b></span>
         <input className="lab-c-search" aria-label="חיפוש C" placeholder="⌕ חיפוש · מותג · דגם" />
       </header>
       <div className="lab-c-hero">
@@ -145,7 +146,7 @@ export default async function DesignLab() {
   return (
     <div className="lab">
       <h1>מעבדת עיצוב: שלושה כיוונים על אותו קטע</h1>
-      <p className="lab-note">דף זמני, לבעלים בלבד. נתונים אמיתיים מהקטלוג. השם &quot;תכל&apos;ס&quot; הוא הצעה ממתינה לאישור.</p>
+      <p className="lab-note">דף זמני, לבעלים בלבד. נתונים אמיתיים מהקטלוג. שם המותג מגיע מ־lib/brand.ts וניתן להחלפה.</p>
       {items.length ? (
         <>
           <DirectionA items={items} />
