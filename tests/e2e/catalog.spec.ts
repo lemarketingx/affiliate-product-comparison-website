@@ -9,8 +9,14 @@ const images = (page: Page) =>
   page.route(/https:\/\/ae01\.alicdn\.com\/.*/, (route) => route.fulfill({ contentType: "image/svg+xml", body: svg }));
 const noHScroll = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
 
-test.beforeAll(async () => {
+test.beforeAll(async ({ browser }) => {
   await mkdir(SHOTS, { recursive: true });
+  // A cold catalog builds in the background by design ("הקטלוג מתעדכן ברקע"): wait until it is listed.
+  const page = await browser.newPage({ baseURL: "http://127.0.0.1:3104" });
+  await expect
+    .poll(async () => { await page.goto("/deals"); return page.locator(".dp-product").count(); }, { timeout: 60000, intervals: [1000, 2000, 3000] })
+    .toBe(24);
+  await page.close();
 });
 
 test("brand-only products: no generic products, 24 per page, filters, search and pagination", async ({ page }) => {
@@ -23,6 +29,8 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page.locator(".dp-product")).toHaveCount(24);
   await expect(status).toContainText("מוצגים 1–24");
   // No duplicates on a page; every card is a published fixture with an affiliate link.
+  // Streamed content is revealed a few ms after it arrives (Next loading boundary); role queries need it visible.
+  await expect(page.locator(".dp-product").first()).toBeVisible();
   const ids = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(new Set(ids).size).toBe(24);
   await expect(page.locator(".dp-product").first()).toContainText("כולל קישור שותפים");
@@ -56,6 +64,8 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page).toHaveURL(/page=2/);
   await expect(page.locator(".fp-status-line")).toContainText("מוצגים 25–48");
   await expect(pager.getByRole("link", { name: "עמוד 2", exact: true })).toHaveAttribute("aria-current", "page");
+  // Streamed content is revealed a few ms after it arrives (Next loading boundary); role queries need it visible.
+  await expect(page.locator(".dp-product").first()).toBeVisible();
   const page2 = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(page2.some((h) => ids.includes(h))).toBe(false);
   const lastPage = Math.ceil(total / 24);

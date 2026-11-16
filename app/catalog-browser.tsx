@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, PackageSearch, RadioTower, Search, ArrowUpLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, PackageSearch, ShieldCheck, Search, ArrowUpLeft } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
 import { categories } from "../lib/dealpilot/categories";
 import { CATALOG_POLICY } from "../lib/aliexpress/catalog-build";
@@ -41,7 +41,7 @@ export default function CatalogBrowser({
   const activeCat = lockedCategory ?? params.cat;
   const filtered = Boolean(params.q || activeCat || exemptOnly);
   return (
-    <section className="fp-section fp-wrap fp-catalog" id="products">
+    <section className="fp-section fp-wrap fp-catalog bl-catalog" id="products">
       <div className="fp-section-head">
         <div>
           <span className="fp-kicker">קטלוג מותגים מוכרים</span>
@@ -54,7 +54,7 @@ export default function CatalogBrowser({
         </div>
       </div>
       <div className="dp-selection-policy fp-notice">
-        <RadioTower size={18} aria-hidden="true" />
+        <ShieldCheck size={18} aria-hidden="true" />
         <div>
           <strong>רק מותגים מזוהים · מקוריות המוצר טרם אומתה</strong>
           <p>

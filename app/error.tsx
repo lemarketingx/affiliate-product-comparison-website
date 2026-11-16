@@ -1,16 +1,19 @@
 "use client";
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
-    <main className="dp-login">
-      <div className="dp-login-card">
+    <main className="bl-state" role="alert">
+      <div className="bl-state-card">
+        <span className="bl-state-mark" aria-hidden="true">!</span>
         <h1>לא הצלחנו לטעון את העמוד</h1>
-        <p>נסו שוב בעוד רגע.</p>
-        <button className="dp-btn" onClick={reset}>
-          ניסיון נוסף
-        </button>
-        <a className="dp-text-link" href="/">
-          חזרה לאתר
-        </a>
+        <p>זו תקלה זמנית אצלנו, לא אצלכם. לא הוצג מחיר שאינו מעודכן.</p>
+        <div className="bl-state-actions">
+          <button className="bl-cta" onClick={reset} type="button">
+            ניסיון נוסף
+          </button>
+          <a className="bl-cta is-ghost" href="/">
+            חזרה לדף הבית
+          </a>
+        </div>
       </div>
     </main>
   );
