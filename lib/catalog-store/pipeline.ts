@@ -5,7 +5,7 @@
 // between runs; every cursor, product and price lives in the database.
 import type { AliProduct } from "../aliexpress/normalize.ts";
 import type { ProductPage } from "../aliexpress/query.ts";
-import { publicRejections, type CategoryDef, type RejectReason } from "../aliexpress/catalog-build.ts";
+import { CATALOG_POLICY, publicRejections, type CategoryDef, type RejectReason } from "../aliexpress/catalog-build.ts";
 import { identifyListedBrand } from "../dealpilot/brands.ts";
 
 /** Calls one dp_* SQL function with a single jsonb argument. */
@@ -123,10 +123,14 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
       c.terms.map((term) => ({ key: termKey(c.slug, term), term, category_slug: c.slug, category_label: c.label })),
     );
     await o.rpc("dp_sync_terms", { terms });
-    const queue = (await o.rpc("dp_next_terms", {
-      limit: Math.max(0, o.maxCalls),
-      reset_after_days: PIPELINE_POLICY.resetAfterDays,
-    })) as TermRow[];
+    // Terms that failed in this run are not retried in the same run.
+    const failedKeys = new Set<string>();
+    const nextQueue = async () =>
+      ((await o.rpc("dp_next_terms", {
+        limit: Math.max(0, o.maxCalls - stats.calls),
+        reset_after_days: PIPELINE_POLICY.resetAfterDays,
+      })) as TermRow[]).filter((t) => !failedKeys.has(t.key));
+    let queue = await nextQueue();
     const sizes = [...PIPELINE_POLICY.pageSizes];
     let sizeIndex = 0;
     let accepted: number | null = null;
@@ -151,7 +155,13 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
     };
 
     let cursor = 0;
-    while (cursor < queue.length && !stats.quotaStopped && stats.calls < o.maxCalls) {
+    while (!stats.quotaStopped && stats.calls < o.maxCalls) {
+      // Keep going deeper (page 2, 3, ...) until the call budget or deadline is spent.
+      if (cursor >= queue.length) {
+        queue = await nextQueue();
+        cursor = 0;
+        if (!queue.length) break;
+      }
       if (o.deadlineMs !== undefined && Date.now() - started > o.deadlineMs) {
         events.push({ level: "warn", code: "DEADLINE_REACHED", detail: `${queue.length - cursor} terms left for the next run` });
         break;
@@ -169,11 +179,15 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
           errorCodes[r.code] = (errorCodes[r.code] ?? 0) + 1;
           events.push({ level: "error", code: r.code.slice(0, 80), term: t.term, detail: `page ${t.page}` });
           if (isQuota(r.code)) stats.quotaStopped = true;
+          failedKeys.add(t.key);
           continue; // cursor not advanced: the same page is retried next run
         }
         stats.pagesOk++;
         const { products, meta } = r.page;
-        const full = products.length >= r.size && products.length > 0;
+        // Results are sorted by reported sales: once a page has nothing above
+        // the sales threshold, deeper pages cannot qualify — the term is exhausted.
+        const minSales = o.minSales ?? CATALOG_POLICY.minimumReportedSalesExclusive;
+        const full = products.length >= r.size && products.some((p) => (p.orders ?? 0) > minSales);
         if (!full) stats.termsExhausted++;
         await o.rpc("dp_advance_term", { key: t.key, page: t.page, full, total: meta.totalRecordCount, max_page: PIPELINE_POLICY.maxPage });
         for (const p of products) {
@@ -222,7 +236,10 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
   }
 }
 
-export type PriceStats = { calls: number; checked: number; updated: number; missing: number; invalid: number; unpublished: number; failedBatches: number; quotaStopped: boolean };
+export type PriceStats = {
+  calls: number; checked: number; updated: number; missing: number; invalid: number; unpublished: number;
+  failedBatches: number; suspectBatches: number; quotaStopped: boolean;
+};
 
 export type PriceRefreshOptions = {
   rpc: Rpc;
@@ -239,7 +256,7 @@ export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: 
   const started = Date.now();
   const now = o.now ?? (() => new Date());
   const { id: runId } = (await o.rpc("dp_start_run", { kind: "price_refresh", trigger: o.trigger })) as { id: number };
-  const stats: PriceStats = { calls: 0, checked: 0, updated: 0, missing: 0, invalid: 0, unpublished: 0, failedBatches: 0, quotaStopped: false };
+  const stats: PriceStats = { calls: 0, checked: 0, updated: 0, missing: 0, invalid: 0, unpublished: 0, failedBatches: 0, suspectBatches: 0, quotaStopped: false };
   const errorCodes: Record<string, number> = {};
   const events: Event[] = [];
   try {
@@ -277,7 +294,15 @@ export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: 
           price_fields: p.priceFields,
         }));
       const returned = new Set(observations.map((x) => x.product_id));
-      const missing = ids.filter((id) => !returned.has(id));
+      let missing = ids.filter((id) => !returned.has(id));
+      // A batch where most ids are missing points at the call (batch limit,
+      // provider hiccup), not at the products: log it, do not count misses.
+      // An empty answer is equally ambiguous, whatever the batch size.
+      if (missing.length && (observations.length === 0 || (ids.length >= 4 && missing.length * 2 > ids.length))) {
+        events.push({ level: "warn", code: "DETAIL_BATCH_MOSTLY_MISSING", detail: `${missing.length}/${ids.length} ids not returned; misses not counted` });
+        stats.suspectBatches++;
+        missing = [];
+      }
       const res = (await o.rpc("dp_record_prices", { run_id: runId, observed_at: now().toISOString(), observations, missing })) as {
         updated: number; missing: number; invalid: number; unpublished: number;
       };

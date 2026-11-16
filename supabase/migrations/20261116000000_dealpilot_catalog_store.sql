@@ -333,11 +333,13 @@ create or replace function public.dp_catalog(p jsonb) returns jsonb
 language sql stable set search_path = public as $$
   select coalesce(jsonb_agg(to_jsonb(t) order by t.orders desc nulls last, t.product_id), '[]'::jsonb) from (
     select product_id, title, title_language, brand, supplier_brand, shop_name, category_slug, category_label,
-      image, images, product_url, affiliate_url, orders, positive_feedback, commission_rate,
+      -- At most 4 images per product keeps the cached list payload small.
+      image, jsonb_path_query_array(images, '$[0 to 3]') as images, product_url, affiliate_url, orders,
+      positive_feedback, commission_rate,
       price, currency, price_field, price_method, sku_id, price_observed_at, first_published_at, last_seen_at
     from dp_products where status = 'published'
     order by orders desc nulls last, product_id
-    limit coalesce((p->>'limit')::integer, 2000)) t
+    limit least(coalesce((p->>'limit')::integer, 1200), 2000)) t
 $$;
 
 create or replace function public.dp_price_history(p jsonb) returns jsonb

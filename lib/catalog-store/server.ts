@@ -80,7 +80,7 @@ export function rowToItem(r: Row, now = new Date()): CatalogItem {
 }
 
 const STORE_TAG = "dealpilot-store-catalog";
-const cachedRows = unstable_cache(async () => (await rpc("dp_catalog", { limit: 2000 })) as Row[], ["dp-store-catalog-v1"], {
+const cachedRows = unstable_cache(async () => (await rpc("dp_catalog", { limit: 1200 })) as Row[], ["dp-store-catalog-v1"], {
   revalidate: 300,
   tags: [STORE_TAG],
 });

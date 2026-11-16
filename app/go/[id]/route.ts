@@ -1,6 +1,6 @@
 import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { recordClick, safeSource } from "../../../lib/dealpilot/tracking";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -25,7 +25,9 @@ export async function GET(request:Request, context:{params:Promise<{id:string}>}
   }
   const source=safeSource(new URL(request.url).searchParams.get("source"));
   // Tracking failures must never turn into fictitious click data or change the destination.
-  await recordClick({id:product.id,title:product.title,category:product.category,affiliateUrl:product.affiliateUrl},source);
+  // The click is written after the response: the redirect never waits on the database.
+  const clicked={id:product.id,title:product.title,category:product.category,affiliateUrl:product.affiliateUrl};
+  try { after(()=>recordClick(clicked,source,"/go")); } catch { void recordClick(clicked,source,"/go"); }
   const response=NextResponse.redirect(url,307);
   response.headers.set("Cache-Control","no-store, max-age=0");
   response.headers.set("Referrer-Policy","no-referrer");

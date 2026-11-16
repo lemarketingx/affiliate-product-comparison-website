@@ -246,6 +246,43 @@ test("price refresh records detail quotes, keeps history and unpublishes product
   assert.equal(r4.stats.calls, 0);
 });
 
+test("discovery spends its budget going deeper and stops a term at the first page with no qualifying sales", async () => {
+  const { db, rpc } = await freshDb();
+  const provider = fakeProvider({ perTerm: 400 });
+  const r = await runDiscovery({ rpc, categories, fetchPage: provider.fetchPage, trigger: "test", maxCalls: 7, concurrency: 3 });
+  assert.equal(r.stats.calls, 7, "budget spent across pages 1, 2 and 3");
+  assert.deepEqual([...new Set(provider.calls.map((c) => c.pageNo))].sort(), [1, 2, 3]);
+  // A full page sorted by sales whose rows are all at/below the threshold ends the term.
+  const { rpc: rpc2, db: db2 } = await freshDb();
+  const weak = async (term, pageNo, size) => {
+    const page = await provider.fetchPage(term, pageNo, size);
+    if (pageNo === 2) page.products.forEach((p) => (p.orders = 4000));
+    return page;
+  };
+  await runDiscovery({ rpc: rpc2, categories, fetchPage: weak, trigger: "test", maxCalls: 6 });
+  const cursors = (await db2.query("select next_page, exhausted_at is not null as exhausted from dp_term_cursors")).rows;
+  assert.ok(cursors.every((c) => c.exhausted && c.next_page === 1));
+  void db;
+});
+
+test("a detail batch with most ids missing is logged and does not count misses", async () => {
+  const { db, rpc } = await freshDb();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 10 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const empty = async () => ({ products: [], missing: [] });
+  for (let i = 0; i < 3; i++) await runPriceRefresh({ rpc, fetchDetails: empty, trigger: "test", maxCalls: 5, minAgeHours: 0 });
+  assert.equal((await db.query("select count(*)::int n from dp_products where status='unpublished'")).rows[0].n, 0);
+  assert.equal((await db.query("select count(*)::int n from dp_products where price_missing_count > 0")).rows[0].n, 0);
+  assert.ok((await db.query("select count(*)::int n from dp_import_events where code='DETAIL_BATCH_MOSTLY_MISSING'")).rows[0].n >= 3);
+});
+
+test("the cached catalog list carries at most 4 images per product", async () => {
+  const { db, rpc } = await freshDb();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 10 }).fetchPage, trigger: "test", maxCalls: 3 });
+  await db.exec(`update dp_products set images = '["https://ae01.alicdn.com/1.jpg","https://ae01.alicdn.com/2.jpg","https://ae01.alicdn.com/3.jpg","https://ae01.alicdn.com/4.jpg","https://ae01.alicdn.com/5.jpg","https://ae01.alicdn.com/6.jpg"]'`);
+  const list = await rpc("dp_catalog", {});
+  assert.ok(list.length > 0 && list.every((p) => p.images.length === 4));
+});
+
 test("a manual unpublish survives later imports; republish restores it", async () => {
   const { db, rpc } = await freshDb();
   const prov = fakeProvider({ perTerm: 10 });
