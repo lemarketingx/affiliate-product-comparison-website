@@ -190,7 +190,10 @@ export async function queryProductDetails(
   const extra: Record<string, string> = {
     product_ids: clean.join(","),
     country: "IL",
-    target_currency: "ILS",
+    // The product-detail API's documented currency allowlist does not include ILS.
+    // Unlike product.query, detail.get can reject ILS with INVALID_PARAMETER (402).
+    // Keep the provider-returned USD price/currency paired; never relabel as ILS.
+    target_currency: "USD",
     target_language: "HE",
   };
   const tracking = process.env.ALIEXPRESS_TRACKING_ID?.trim();
