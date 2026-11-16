@@ -1,6 +1,12 @@
 # DealPilot
 
-Hebrew RTL AliExpress affiliate product discovery and a separate private administration workspace. Development branch: `feat/dealpilot-aliexpress-rebuild`. Do not merge or promote to production without owner approval.
+Hebrew RTL AliExpress affiliate product discovery and a separate private administration workspace. Do not merge or promote to production without owner approval.
+
+**Start here:** [PRODUCT-VISION.md](PRODUCT-VISION.md) (vision) · [CLAUDE.md](CLAUDE.md) (working rules, commands) · [SPEC.md](SPEC.md) (current milestone and acceptance status) · [TASKS.md](TASKS.md) (backlog) · [PROGRESS.md](PROGRESS.md) (decisions, test evidence, blockers, owner actions).
+
+## Persistent catalog (milestone 1)
+
+Products, price history, import runs and clicks live in a dedicated Supabase Postgres database (`supabase/migrations/`). A daily Vercel Cron (`/api/cron/catalog`) imports new products through resumable search cursors and re-checks prices by product ID. The storefront reads the database when `DEALPILOT_SUPABASE_URL` and `DEALPILOT_SUPABASE_SERVICE_ROLE_KEY` are set; without them it keeps the live cached build described below. Prices older than 48 h are not shown as current. Operations dashboard: `/admin/catalog`. The public rule set in `lib/aliexpress/catalog-build.ts` (`publicRejections`: known brand, >5,000 reported sales, ILS, Hebrew title, valid image/product/affiliate link) is the source of truth where older notes below differ.
 
 The storefront uses owner-authorized discovery mode: products with more than 500 reported purchases and complete Hebrew core data are visible with a pending-verification label. A verified badge still requires 4.7 stars, an Israeli review and verified Israel shipping with fresh official evidence. Missing evidence never becomes a verified badge. Review permissions and rating/delivery evidence remain unavailable. See [live quality checks and required access](docs/ALIEXPRESS-QUALITY.md).
 

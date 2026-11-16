@@ -17,6 +17,7 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Product page: show price age + price history chart from `dp_price_history` | todo |
 | Verified conversions/commissions import (orders API, needs permission) | blocked (API permission, see docs/ALIEXPRESS-ORDERS.md) |
 | Branch protection: require CI check on `main` | todo (owner setting) |
+| Repair 15 e2e tests left stale by PR #15 homepage redesign (fail identically on `main`) | todo (before phase 2 design work) |
 
 ## Phase 2 — brand and UX
 Naming research + logo set, 3 design directions → pick one, homepage/product/search redesign, visual QA 320–1920px. todo

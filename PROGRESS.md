@@ -56,7 +56,12 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - role isolation;
   - constraints and the stale-price policy.
 - Mutation check: breaking the "already published" logic in `dp_ingest` makes test 2 fail, so the test is not vacuous.
-- Full unit suite: 93/93 after increment 1. Results for later increments are in the section below.
+- Full unit suite: 93/93. `npm run typecheck` passes and `npm run build` passes.
+- Playwright (preinstalled Chromium): new `tests/e2e/catalog-store.spec.ts`, 3/3 PASS.
+  - The cron endpoint returns 401 with no `CRON_SECRET` and with a forged bearer.
+  - The admin API returns 401 for anonymous callers.
+  - `/admin/catalog` renders at 320, 375 and 1440 with no horizontal scroll and an honest "not configured" state.
+- **Pre-existing e2e failures.** The full e2e run on this branch gives 14 passed, 15 failed. The same command on untouched `main` @ 2ef9ffb gives 11 passed and the **same 15 failed**, so this work causes no regression. These tests went stale when PR #15's homepage redesign merged (banners, dealpilot, catalog report, populated flow, preflight, premium-home). They are queued in TASKS.md and were not modified here.
 
 ### Owner actions needed (minimum)
 1. **Database.** Approve a dedicated Supabase project for DealPilot. It would be the third project in the free org, which allows 2 active free projects. Alternatively, choose to delete or keep paused the inactive `kesher-mortgage-partners`; this needs your decision.
