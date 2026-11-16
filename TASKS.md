@@ -26,7 +26,10 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Product page: show price age + price history chart from `dp_price_history` | todo |
 | Verified conversions/commissions import (orders API, needs permission) | blocked (API permission, see docs/ALIEXPRESS-ORDERS.md) |
 | Branch protection: require CI check on `main` | todo (owner setting) |
-| Investigate and repair 15 e2e tests that fail identically on `main` (cause not yet investigated) | todo (before phase 2 design work) |
+| Investigate and repair 15 e2e tests that fail identically on `main` | done: 13 fixed (1 real defect: homepage h1); 2 await owner decision |
+| Decide: restore 'not in the box' block on product page, or delete its e2e test | todo (owner) |
+| Rewrite populated-flow e2e for the brand-first catalog | todo |
+| Set Production env vars in Vercel (DB, CRON_SECRET, AliExpress keys) so crons run after merge | todo (owner) |
 
 ## Phase 2 — brand and UX
 Naming research + logo set, 3 design directions → pick one, homepage/product/search redesign, visual QA 320–1920px. todo

@@ -246,3 +246,36 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - All 8 carried the affiliate parameters `aff_fcid`, `aff_fsk`, `aff_platform`, `aff_trace_key`, `sk`, `terminal_id`, `afSmartRedirect` and `pdp_npi`.
 - **Not provable from the links:** that the tracking id inside them is the owner's own. The parameter values are opaque. That needs the AliExpress portal's click report.
 - **Simple owner check:** today's clicks in the portal should include these 8 link checks plus the `/go` click recorded earlier.
+
+## 2026-11-16 · Pre-merge gates (owner chose "finish gates, then merge")
+### Gate 1: security review of the SQL service-role functions (PASS, real DB)
+- **Functions:** all 19 `dp_*` functions run as SECURITY INVOKER with a fixed `search_path=public`. anon and authenticated have no EXECUTE; service_role has.
+- **Tables:** all 6 `dp_*` tables have RLS on and no anon or authenticated privileges.
+- **Supabase advisors:** only INFO `rls_enabled_no_policy`, which is intended.
+- **Code:**
+  - No secret is referenced with `NEXT_PUBLIC_`.
+  - The service key and secrets are read only in server-only modules, and no client component imports them.
+  - No DB or provider error text reaches responses; only short codes do.
+  - `rpc()` accepts only `dp_[a-z_]+` names.
+  - The link checker fetches only `https` AliExpress hosts, checked before every hop, and reads at most 64 KB of a 200 body.
+  - Cron uses a timing-safe Bearer check and fails closed.
+  - Admin APIs require an admin session, same-origin and a rate limit.
+
+### Gate 2: e2e triage (35 → 36 of 38 pass)
+- **Before:** the 15 failures were identical on `main`. Cause: the brand-first redesign (`fdcf574`, `a425f8f`, `86f72ca`, `63f0b22`) changed the markup, copy and features without updating the e2e tests.
+- **Real defect fixed:** the homepage had **no `<h1>`**. A visually hidden h1 was added, so the design is unchanged.
+- **Stale tests updated, with the same strictness:**
+  - hero class, navigation, category and search labels;
+  - product copy, still checked as "not verified";
+  - the buy CTA now goes through `/go`;
+  - a strict-mode bug in premium-home (every card is now checked);
+  - a wait for the cold catalog build (async by design);
+  - the autopilot test starts at `/autopilot`.
+- **Still failing, owner decision (not skipped or disabled):**
+  - `preflight.spec:123`, "מה כנראה לא בקופסה": the feature was removed from the product page in `86f72ca`. Restore it, or approve deleting the test.
+  - `populated-flow.spec`: the fixture and assertions predate the brand-first catalog (an unbranded product, an "אופנה ואביזרים" category). Needs a rewrite.
+- **Result:** unit 112/112, e2e 36/38, typecheck and build pass.
+
+### Gate 3: CI and Production
+- CI (`verify`: typecheck, unit, build) runs on every push to PR #20.
+- Production env vars (DB, `CRON_SECRET`, AliExpress) cannot be read from here (Vercel 403). Without them, Production keeps the legacy live-cache catalog and the crons answer 503 `STORE_NOT_CONFIGURED`, so the merge is safe either way.
