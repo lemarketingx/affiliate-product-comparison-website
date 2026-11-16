@@ -73,6 +73,8 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   slides.push({key:"smart-home",eyebrow:"חיים חכמים יותר",title:"מחדשים את הבית, חכם.",subtitle:"מוצרי בית חכם ומותגי ניקיון מוכרים, עם בדיקת עלות לפני הקנייה.",notice:"המחיר, המשלוח והזמינות הסופיים מוצגים בקופה.",label:"למותגים לבית",href:"/categories/home",external:false,tone:"emerald",images:imagesFor(["dreame","roborock","reolink","yeelight"])});
 
   return <PublicShell><main id="main" className="dpb-main">
+    {/* One page-level heading for screen readers and search engines; the visual hero is the carousel. */}
+    <h1 className="sr-only">DealPilot: מותגים מוכרים מ־AliExpress, במחירים מעודכנים בשקלים</h1>
     <div className="fp-wrap dpb-hero-shell"><CampaignCarousel slides={slides}/></div>
     <section className="fp-wrap dpb-brands" aria-labelledby="dpb-brands-title">
       <div className="dpb-section-head"><div><span className="dpb-eyebrow">THE BRANDS YOU KNOW</span><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="dpb-all-link">כל המותגים <ArrowUpLeft size={16}/></Link></div>

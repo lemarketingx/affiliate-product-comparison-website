@@ -116,10 +116,12 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
   const href = await page.locator(".dp-product .fp-pass-go").first().getAttribute("href");
   const id = href!.split("/").pop()!;
   await page.goto("/products/" + id);
-  await expect(page.locator(".dp-selection-policy")).toContainText("טרם נבדק לפי תנאי הסינון שלך");
+  // Copy since 86f72ca; quality must still be shown as NOT verified.
+  await expect(page.locator(".dp-selection-policy")).toContainText("איכות ומקוריות לא אומתו");
+  await expect(page.locator(".dp-selection-policy")).not.toContainText("בדיקות האיכות עברו");
   await expect(page.locator("body")).not.toContainText("מאומת לפי תנאי הסינון");
-  // Buyer CTA must not depend on a second serverless catalog lookup.
-  await expect(page.getByRole("link", { name: /לבדיקת המוצר ב־AliExpress/ })).toHaveAttribute("href", `https://s.click.aliexpress.com/e/TEST_CATALOG_${id}`);
+  // Since 63f0b22 the buyer CTA goes through the tracked /go redirect, which resolves the affiliate link.
+  await expect(page.getByRole("link", { name: /לבדיקת המוצר ב־AliExpress/ })).toHaveAttribute("href", `/go/${id}?source=catalog`);
   const go = await request.get(`/go/${id}?source=catalog`, { maxRedirects: 0 });
   expect(go.status()).toBe(307);
   expect(go.headers().location).toBe(`https://s.click.aliexpress.com/e/TEST_CATALOG_${id}`);

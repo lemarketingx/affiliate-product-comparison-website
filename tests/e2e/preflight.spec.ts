@@ -17,11 +17,9 @@ test.beforeAll(async () => {
 });
 
 test("autopilot: free-text need → questions with keyboard → shareable personal plan", async ({ page }) => {
-  await page.goto("/");
-  const home = page.getByRole("textbox", { name: "מה אתם צריכים?" });
-  await home.fill("מצלמה סולרית לחצר בלי חשמל");
-  await home.press("Enter");
-  await expect(page).toHaveURL(/\/autopilot\?q=/);
+  // The homepage free-text entry was removed in the brand-first redesign (fdcf574);
+  // the autopilot flow itself is unchanged and starts from its own page.
+  await page.goto("/autopilot?q=" + encodeURIComponent("מצלמה סולרית לחצר בלי חשמל"));
   await expect(page.getByRole("textbox", { name: "תיאור הצורך" })).toHaveValue("מצלמה סולרית לחצר בלי חשמל");
   await page.getByRole("button", { name: "מצאו לי יעד" }).click();
   await page.getByRole("button", { name: /מצלמה אלחוטית לחצר/ }).first().click();
