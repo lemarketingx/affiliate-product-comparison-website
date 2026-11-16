@@ -15,10 +15,12 @@ import {
   ChevronDown,
   Menu,
   Megaphone,
+  Database,
 } from "lucide-react";
 
 const navigation = [
   ["dashboard", "סקירה כללית", LayoutDashboard],
+  ["catalog", "קטלוג, ייבוא ומחירים", Database],
   ["products", "בדיקת מוצרים", PackageSearch],
   ["discovery", "Product Scout", Radar],
   ["content", "סטודיו תוכן", FileText],

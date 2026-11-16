@@ -2,5 +2,6 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
-  "outputDirectory": null
+  "outputDirectory": null,
+  "crons": [{ "path": "/api/cron/catalog", "schedule": "17 2 * * *" }]
 }

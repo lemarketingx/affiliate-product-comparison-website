@@ -68,6 +68,18 @@ export default async function Product({
         timeZone: "Asia/Jerusalem",
       }).format(new Date(snapshot.fetchedAt))
     : "לא זמין";
+  const fmt = (iso: string) =>
+    new Intl.DateTimeFormat("he-IL", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jerusalem" }).format(new Date(iso));
+  // Database-backed items carry the observation time of the shown price; a
+  // stale price is already withheld (price null) and is said so plainly.
+  const priceLabel =
+    p.priceStatus === "current" && p.priceObservedAt
+      ? `מחיר מ־AliExpress (${p.priceMethod === "detail" ? "בדיקה לפי מזהה מוצר" : "תוצאת חיפוש"}) · נבדק ${fmt(p.priceObservedAt)}`
+      : p.priceStatus === "stale"
+        ? `המחיר האחרון נבדק ${p.priceObservedAt ? fmt(p.priceObservedAt) : "מזמן"} ולכן אינו מוצג כעדכני`
+        : p.priceStatus === "unknown"
+          ? "לא התקבל מחיר תקין מ־AliExpress"
+          : "מחיר ספק בשקלים";
   return (
     <PublicShell>
       <main id="main" className="fp-wrap fp-product-page">
@@ -122,8 +134,8 @@ export default async function Product({
               <div className="fp-perf fp-perf-wide" aria-hidden="true" />
               <div className="fp-ticket-price">
                 <div>
-                  <small>מחיר ספק בשקלים</small>
-                  <strong dir="auto">{formatMoney(p.price, p.currency)}</strong>
+                  <small>{priceLabel}</small>
+                  <strong dir="auto">{p.price ? formatMoney(p.price, p.currency) : "אין מחיר עדכני"}</strong>
                 </div>
                 <Barcode seed={p.id} />
               </div>
@@ -194,7 +206,9 @@ export default async function Product({
                 <li>בדקו מדיניות החזרות, אחריות ועמלות שחרור של חברת השילוח לפני התשלום.</li>
               </ul>
               <p className="fp-fine">
-                עדכון נתוני ספק: {updated}. הקטלוג מתרענן עד כל שש שעות.
+                {snapshot.source === "store"
+                  ? `נתוני המוצר נשמרים במאגר ומתעדכנים בייבוא היומי. המחיר שייך לווריאציה שהספק דיווח עליה${p.priceFields?.skuId ? ` (SKU ${p.priceFields.skuId})` : ""}; מחיר הווריאציה שתבחרו, מחיר באפליקציה, קופונים ומשלוח עשויים לשנות את הסכום.`
+                  : `עדכון נתוני ספק: ${updated}. הקטלוג מתרענן עד כל שש שעות.`}
               </p>
             </div>
           </div>
