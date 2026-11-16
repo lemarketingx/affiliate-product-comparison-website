@@ -3,6 +3,7 @@
 // No "server-only" import so the import pipeline and unit tests can use it.
 import { unknownQuality, type QualityEvidence } from "./quality.ts";
 import { AffiliateError, parsePageMeta, type ProductPage } from "./query.ts";
+import { safeProviderMessage } from "./promo-parse.ts";
 
 /**
  * Every price field the provider returned for this row, verbatim. Kept so the
@@ -119,9 +120,11 @@ export function normalizeProductResponse(payload: unknown, rootKey: string = PRO
   const error = record(root.error_response);
   if (error) {
     const code = text(error.code) ?? "UNKNOWN";
-    // Do not forward provider error text (which may contain request details).
+    // Provider text never reaches visitors; a sanitised copy is kept for admin logs.
     throw new AffiliateError(
       "PROVIDER_ERROR_" + code.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32),
+      502,
+      safeProviderMessage([text(error.msg), text(error.sub_code), text(error.sub_msg)].filter(Boolean).join(" · ")),
     );
   }
   const response = record(root[rootKey]);
@@ -142,6 +145,8 @@ export function normalizeProductResponse(payload: unknown, rootKey: string = PRO
       "PROVIDER_RESULT_" +
         (providerCode ?? "UNKNOWN").replace(/[^a-zA-Z0-9_-]/g, "") +
         hint,
+      502,
+      safeProviderMessage(text(dto.resp_msg)),
     );
   }
   const result = record(dto.result);

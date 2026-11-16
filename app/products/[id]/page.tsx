@@ -74,7 +74,7 @@ export default async function Product({
   // stale price is already withheld (price null) and is said so plainly.
   const priceLabel =
     p.priceStatus === "current" && p.priceObservedAt
-      ? `מחיר מ־AliExpress (${p.priceMethod === "detail" ? "בדיקה לפי מזהה מוצר" : "תוצאת חיפוש"}) · נבדק ${fmt(p.priceObservedAt)}`
+      ? `מחיר מ־AliExpress (${p.priceMethod === "detail" ? "בדיקה לפי מזהה מוצר" : p.priceMethod === "confirmed" ? "מחיר בשקלים מחיפוש; המחיר בדולר אומת ללא שינוי בבדיקת מוצר" : "תוצאת חיפוש"}) · נבדק ${fmt(p.priceObservedAt)}`
       : p.priceStatus === "stale"
         ? `המחיר האחרון נבדק ${p.priceObservedAt ? fmt(p.priceObservedAt) : "מזמן"} ולכן אינו מוצג כעדכני`
         : p.priceStatus === "unknown"

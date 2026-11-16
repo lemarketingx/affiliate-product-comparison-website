@@ -19,7 +19,7 @@ export type CatalogItem = AliProduct & {
   /** Set for database-backed items: a stale/unknown price is withheld (price null). */
   priceStatus?: "current" | "stale" | "unknown";
   priceObservedAt?: string | null;
-  priceMethod?: "search" | "detail" | null;
+  priceMethod?: "search" | "detail" | "confirmed" | null;
 };
 export type CatalogSnapshot = {
   items: CatalogItem[];

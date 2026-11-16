@@ -65,9 +65,10 @@ test("storefront reads the database and shows detail-checked prices with their a
   refreshedId = href.split("/").pop()!.split("?")[0];
   await page.goto(BASE + href);
   await expect(page.getByText(/בדיקה לפי מזהה מוצר.*נבדק/)).toBeVisible();
-  // Detail fixture price = search price × 1.04 (TEST FIXTURE).
+  // Detail fixture answers in USD (search ILS / 3.7 × 1.04, TEST FIXTURE). The search rows
+  // carry no USD price to confirm against, so the fresh USD quote is shown as USD — never relabelled ILS.
   const search = 9.9 + (Number(refreshedId.slice(-3)) % 200) * 4;
-  const expected = new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(Number((search * 1.04).toFixed(2)));
+  const expected = new Intl.NumberFormat("he-IL", { style: "currency", currency: "USD" }).format(Number(((search / 3.7) * 1.04).toFixed(2)));
   await expect(page.locator(".fp-ticket-price strong")).toHaveText(expected);
   await expect(page.getByText(/SKU 99/)).toBeVisible();
 });
@@ -88,9 +89,9 @@ test("admin dashboard shows totals, price gaps with explanations, runs and click
     await expect(page.getByText(/מפורסמים ללא מחיר עדכני: 1/)).toBeVisible();
     await expect(page.getByText(/קליקים ל־AliExpress ב־30 יום: 1/)).toBeVisible();
     await expect(page.getByRole("heading", { name: "פערי מחיר: חיפוש מול בדיקת מוצר" })).toBeVisible();
-    await expect(page.getByText(/מחיר האפליקציה שונה ממחיר האתר/).first()).toBeVisible();
-    // Detail fixture = search × 1.04: the measured gap is shown (search rows carry no sku_id, so no SKU claim).
-    await expect(page.getByRole("cell", { name: /^4(\.0)?%$/ }).first()).toBeVisible();
+    await expect(page.getByText(/המטבע שונה בין החיפוש לבדיקת המוצר/).first()).toBeVisible();
+    // Search quotes are ILS-only and detail quotes USD: no same-currency comparison is possible, so none is invented.
+    await expect(page.getByRole("cell", { name: "לא ניתן להשוואה (מטבע שונה)" }).first()).toBeVisible();
     await expect(page.getByText(/הווריאציה \(sku_id\) שונה/)).toHaveCount(0);
     await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(4); // 2 discover + 2 price runs
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

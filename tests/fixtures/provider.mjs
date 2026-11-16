@@ -57,23 +57,27 @@ globalThis.fetch = async function (input, init) {
         product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://he.aliexpress.com/item/${id}.html?gatewayAdapt=glo2isr&aff_fixture=1`,
       }] } });
     }
-    // Product-ID price check (TEST FIXTURE): +4% vs the search quote, another SKU,
-    // and id 1005000000777 is never returned (stale-price scenario).
+    // Product-ID price check (TEST FIXTURE). Mirrors the live behaviour seen on
+    // 2026-11-16: target_currency=ILS is answered with 402 INVALID_PARAMETER.
+    // USD answers carry the price +4% vs the search quote, another SKU, and
+    // id 1005000000777 is never returned (stale-price scenario).
     if (method === "aliexpress.affiliate.productdetail.get") {
-      if (params.get("country") !== "IL" || params.get("target_currency") !== "ILS") throw new Error("Detail profile missing");
+      if (params.get("country") !== "IL") throw new Error("Detail profile missing");
+      if (params.get("target_currency") === "ILS")
+        return Response.json({ aliexpress_affiliate_productdetail_get_response: { resp_result: { resp_code: 402, resp_msg: "The input parameter target_currency is invalid (TEST FIXTURE)" } } });
       const ids = (params.get("product_ids") ?? "").split(",").filter((id) => /^\d+$/.test(id) && id !== "1005000000777");
       if (ids.length > 20) throw new Error("Detail batch above 20");
       return Response.json({ aliexpress_affiliate_productdetail_get_response: { resp_result: { resp_code: 200, resp_msg: "ok", result: { products: { product: ids.map((id) => {
-        const search = 9.9 + (Number(id.slice(-3)) % 200) * 4;
+        const searchIls = 9.9 + (Number(id.slice(-3)) % 200) * 4;
+        const usd = ((searchIls / 3.7) * 1.04).toFixed(2);
         return {
           product_id: id,
           product_title: "TEST FIXTURE — detail " + id,
           product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-${id}.jpg`,
           product_detail_url: `https://www.aliexpress.com/item/${id}.html`,
           sku_id: "99" + id.slice(-6),
-          target_sale_price: (search * 1.04).toFixed(2), target_sale_price_currency: "ILS",
-          target_app_sale_price: (search * 0.95).toFixed(2), target_app_sale_price_currency: "ILS",
-          sale_price: (search / 3.7).toFixed(2), sale_price_currency: "USD",
+          sale_price: usd, sale_price_currency: "USD",
+          target_sale_price: usd, target_sale_price_currency: "USD",
         };
       }) } } } } });
     }

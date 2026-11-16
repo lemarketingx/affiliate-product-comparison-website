@@ -338,3 +338,128 @@ test("price diagnostics explain likely checkout gaps from returned fields only",
   assert.deepEqual(priceDiagnostics({}), []);
   assert.deepEqual(compareObservations({ sku_id: "1", currency: "ILS" }, { sku_id: "2", currency: "USD" }), ["sku_changed", "currency_changed"]);
 });
+
+// ---- 2026-11-16: productdetail.get 402 INVALID_PARAMETER handling ----
+import { DETAIL_PROFILES, detailParams, fetchDetailsAdaptive, newProfileState } from "../lib/aliexpress/detail-profiles.ts";
+const CURRENCY_MIGRATION = new URL("../supabase/migrations/20261116130000_detail_price_currency.sql", import.meta.url);
+async function dbWithCurrencyFix() {
+  const env = await freshDb();
+  await env.db.exec(await readFile(CURRENCY_MIGRATION, "utf8"));
+  return env;
+}
+const invalid402 = () => Object.assign(new AffiliateError("PROVIDER_RESULT_402_INVALID_PARAMETER", 502, "Invalid parameter target_language"), {});
+
+test("provider 402 keeps a sanitised message for the admin log", () => {
+  const payload = { aliexpress_affiliate_productdetail_get_response: { resp_result: { resp_code: 402, resp_msg: "The input parameter target_currency is invalid https://x.aliexpress.com/secret?a=b" } } };
+  try {
+    normalizeProductResponse(payload, PRODUCT_DETAIL_ROOT);
+    assert.fail("should throw");
+  } catch (e) {
+    assert.equal(e.code, "PROVIDER_RESULT_402_INVALID_PARAMETER");
+    assert.match(e.detail, /target_currency is invalid/);
+    assert.doesNotMatch(e.detail, /aliexpress\.com|secret/);
+  }
+});
+
+test("detail profiles step down one parameter at a time to the live-probed request", async () => {
+  assert.deepEqual(detailParams(DETAIL_PROFILES[0], ["1", "2"], "trk"), { product_ids: "1,2", country: "IL", target_currency: "USD", target_language: "HE", tracking_id: "trk" });
+  assert.deepEqual(detailParams(DETAIL_PROFILES.at(-1), ["1"], "trk"), { product_ids: "1", country: "IL" }, "last profile = 2026-11-14 probe shape");
+  const ids = ["1005100000001", "1005100000002", "1005100000003"];
+  const seen = [];
+  const state = newProfileState();
+  // Fake provider that rejects target_language (TEST FIXTURE).
+  const call = async (params, chunk, profile) => {
+    const p = params(profile, chunk);
+    seen.push(Object.keys(p).sort().join(","));
+    if (p.target_language) throw invalid402();
+    return { products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, chunk.map((id) => row(id, "Baseus"))), PRODUCT_DETAIL_ROOT) };
+  };
+  const r = await fetchDetailsAdaptive(ids, state, call, 5, "trk");
+  assert.equal(r.profile, "no_language");
+  assert.equal(r.calls, 2);
+  assert.equal(r.products.length, 3);
+  assert.deepEqual(state.attempts.map((a) => [a.profile, a.code]), [["full", "PROVIDER_RESULT_402_INVALID_PARAMETER"], ["no_language", null]]);
+  // The learned profile is reused: no second failing call.
+  const r2 = await fetchDetailsAdaptive(ids, state, call, 5, "trk");
+  assert.equal(r2.calls, 1);
+  // Only single-id requests accepted: one id fetched, the rest deferred (not missing).
+  const s2 = newProfileState();
+  const single = async (params, chunk, profile) => {
+    if (chunk.length > 1 || params(profile, chunk).target_currency || params(profile, chunk).tracking_id) throw invalid402();
+    return { products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, chunk.map((id) => row(id, "Baseus"))), PRODUCT_DETAIL_ROOT) };
+  };
+  const r3 = await fetchDetailsAdaptive(ids, s2, single, 10, "trk");
+  assert.equal(r3.profile, "probe_single");
+  assert.deepEqual(r3.deferred, ids.slice(1));
+  assert.deepEqual(r3.missing, []);
+  // Non-parameter errors are not "fixed" by dropping parameters.
+  await assert.rejects(fetchDetailsAdaptive(ids, newProfileState(), async () => { throw new AffiliateError("PROVIDER_ERROR_ApiCallLimit"); }, 5, null), /ApiCallLimit/);
+  // Budget: never more calls than allowed.
+  const s4 = newProfileState();
+  await assert.rejects(fetchDetailsAdaptive(ids, s4, async () => { throw invalid402(); }, 2, null), /INVALID_PARAMETER/);
+  assert.equal(s4.attempts.length, 2);
+});
+
+test("price refresh logs provider message and profile, and drains deferred ids within budget", async () => {
+  const { db, rpc } = await dbWithCurrencyFix();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 4 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const published = (await db.query("select count(*)::int n from dp_products where status='published'")).rows[0].n;
+  assert.ok(published >= 3);
+  const state = newProfileState();
+  let calls = 0;
+  const fetchDetails = (ids, left) => fetchDetailsAdaptive(ids, state, async (params, chunk, profile) => {
+    calls++;
+    if (chunk.length > 1) throw invalid402();
+    void params(profile, chunk);
+    return { products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, chunk.map((id) => row(id, "Baseus", { price: "45.90" }))), PRODUCT_DETAIL_ROOT) };
+  }, left, null);
+  const r = await runPriceRefresh({ rpc, fetchDetails, trigger: "test", maxCalls: 40, minAgeHours: 0 });
+  assert.equal(r.stats.profile, "probe_single");
+  assert.equal(r.stats.checked, published);
+  assert.equal(r.stats.calls, calls);
+  assert.ok(r.stats.calls <= 40);
+  assert.equal(r.stats.failedBatches, 0);
+  const ev = (await db.query("select code, detail from dp_import_events where code='DETAIL_PROFILE_ACCEPTED'")).rows;
+  assert.deepEqual(ev, [{ code: "DETAIL_PROFILE_ACCEPTED", detail: "probe_single" }]);
+  // A batch that fails outright logs the sanitised provider message.
+  const { db: db2, rpc: rpc2 } = await dbWithCurrencyFix();
+  await runDiscovery({ rpc: rpc2, categories, fetchPage: fakeProvider({ perTerm: 4 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const failing = (ids, left) => fetchDetailsAdaptive(ids, newProfileState(), async () => { throw invalid402(); }, left, null);
+  const rf = await runPriceRefresh({ rpc: rpc2, fetchDetails: failing, trigger: "test", maxCalls: 5, minAgeHours: 0 });
+  assert.equal(rf.status, "failed");
+  assert.equal(rf.stats.calls, 5, "every fallback attempt counts against the budget");
+  const msg = (await db2.query("select detail from dp_import_events where level='error'")).rows[0].detail;
+  assert.match(msg, /provider: Invalid parameter target_language/);
+});
+
+test("a USD detail quote confirms an unchanged ILS price, replaces a changed one, and never relabels currency", async () => {
+  const { db, rpc } = await dbWithCurrencyFix();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 3 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const ids = (await db.query("select product_id from dp_products where status='published' order by product_id limit 3")).rows.map((r) => r.product_id);
+  // Detail answers in USD only (no target_* fields): sale_price 12.40 = unchanged, 13.10 = changed.
+  const usdRow = (id, usd) => { const r = row(id, "Baseus"); for (const k of Object.keys(r)) if (k.startsWith("target_") || k.startsWith("app_")) delete r[k]; r.sale_price = usd; return r; };
+  const answer = { [ids[0]]: "12.40", [ids[1]]: "13.10", [ids[2]]: "12.40" };
+  await db.query("update dp_price_snapshots set sku_id = '999' where product_id = $1", [ids[2]]); // different SKU than detail
+  const fetchDetails = async (asked) => ({
+    products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, asked.filter((id) => answer[id]).map((id) => usdRow(id, answer[id]))), PRODUCT_DETAIL_ROOT),
+    missing: [],
+  });
+  const before = (await db.query("select price_observed_at from dp_products where product_id=$1", [ids[0]])).rows[0].price_observed_at;
+  const r = await runPriceRefresh({ rpc, fetchDetails, trigger: "test", maxCalls: 1, minAgeHours: 0 });
+  assert.equal(r.stats.confirmed, 1);
+  assert.equal(r.stats.updated, 2);
+  const get = async (id) => (await db.query("select price::text, currency, price_method, price_observed_at from dp_products where product_id=$1", [id])).rows[0];
+  const a = await get(ids[0]);
+  assert.deepEqual([a.price, a.currency, a.price_method], ["45.90", "ILS", "confirmed"], "ILS quote kept and confirmed");
+  assert.ok(a.price_observed_at > before);
+  const b = await get(ids[1]);
+  assert.deepEqual([b.price, b.currency, b.price_method], ["13.10", "USD", "detail"], "changed price shown in its own currency");
+  const c = await get(ids[2]);
+  assert.deepEqual([c.price, c.currency], ["12.40", "USD"], "SKU mismatch is not a confirmation");
+  // History keeps every detail quote; the gap view compares like with like (USD vs USD).
+  const dash = await rpc("dp_dashboard", {});
+  assert.equal(dash.totals.published_detail_checked >= 3, true);
+  const gap = dash.price_gaps.find((g) => g.product_id === ids[1]);
+  assert.equal(Number(gap.gap_pct), 5.6);
+  assert.ok(!dash.price_gaps.some((g) => g.product_id === ids[0]), "unchanged price is not a gap");
+});

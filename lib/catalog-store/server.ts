@@ -4,6 +4,7 @@ import { revalidateTag, unstable_cache } from "next/cache";
 import { unknownQuality } from "../aliexpress/quality";
 import { categories } from "../dealpilot/categories";
 import { queryAffiliateProductsPage, queryProductDetails } from "../aliexpress/affiliate";
+import { newProfileState } from "../aliexpress/detail-profiles";
 import { runDiscovery, runPriceRefresh, type Rpc, type Trigger } from "./pipeline";
 import { displayPrice, PRICE_MAX_AGE_HOURS } from "./price-view";
 import type { CatalogItem, CatalogSnapshot } from "../aliexpress/catalog";
@@ -45,7 +46,7 @@ type Row = {
   supplier_brand: string | null; shop_name: string | null; category_slug: string; category_label: string;
   image: string; images: string[]; product_url: string; affiliate_url: string; orders: number | null;
   positive_feedback: number | null; commission_rate: string | null; price: number | null; currency: string | null;
-  price_field: CatalogItem["priceField"]; price_method: "search" | "detail" | null; sku_id: string | null;
+  price_field: CatalogItem["priceField"]; price_method: "search" | "detail" | "confirmed" | null; sku_id: string | null;
   price_observed_at: string | null; first_published_at: string | null; last_seen_at: string;
 };
 
@@ -122,12 +123,14 @@ export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: n
     deadlineMs: Math.floor(deadline * 0.6),
     fetchPage: (term, pageNo, pageSize) => queryAffiliateProductsPage({ keywords: term, pageNo, pageSize, guard }),
   });
+  const profileState = newProfileState();
   const prices = await runPriceRefresh({
     rpc,
     trigger,
     maxCalls: priceCalls,
     deadlineMs: Math.max(0, deadline - (Date.now() - started)),
-    fetchDetails: (ids) => queryProductDetails(ids, guard),
+    // One profile state per run: a profile the provider accepted is reused.
+    fetchDetails: (ids, callsLeft) => queryProductDetails(ids, guard, profileState, callsLeft),
   });
   revalidateTag(STORE_TAG, { expire: 0 });
   return { discovery, prices };
@@ -167,7 +170,7 @@ export type Dashboard = {
   price_gaps: {
     product_id: string; title: string; search_price: number; search_currency: string; search_sku: string | null;
     search_at: string; detail_price: number; detail_currency: string; detail_sku: string | null; detail_at: string;
-    price_field: string | null; gap_pct: number; search_fields: Record<string, string | null>; detail_fields: Record<string, string | null>;
+    price_field: string | null; gap_pct: number | null; search_fields: Record<string, string | null>; detail_fields: Record<string, string | null>;
   }[];
   clicks_30d: { total: number; by_source: Record<string, number>; top_products: { product_id: string; clicks: number }[] };
 };

@@ -7,6 +7,8 @@ import {
   type ProductPage,
   type ProductQuery,
 } from "./query";
+import { DETAIL_PROFILES, fetchDetailsAdaptive, newProfileState, type ProfileState } from "./detail-profiles";
+import { safeProviderMessage } from "./promo-parse";
 import { normalizeProductResponse as normalizeRows, parseProductPage, PRODUCT_DETAIL_ROOT as DETAIL_ROOT, type AliProduct } from "./normalize";
 const normalizeDetail = (json: unknown) => normalizeRows(json, DETAIL_ROOT);
 export { normalizeProductResponse, parseProductPage, PRODUCT_DETAIL_ROOT } from "./normalize";
@@ -177,29 +179,35 @@ export const DETAIL_BATCH_LIMIT = 20;
 
 /**
  * Product-ID-specific price check via aliexpress.affiliate.productdetail.get.
- * `country=IL` is the parameter that succeeded in the 2026-11-14 live probe
- * (docs/ALIEXPRESS-QUALITY.md). Only the job runner calls this, under a budget;
- * page views never do. Ids missing from the answer are returned as `missing`.
+ * Only the scheduled job calls this, under a budget; page views never do.
+ * Parameters follow `DETAIL_PROFILES` (detail-profiles.ts): on
+ * INVALID_PARAMETER the next, smaller profile is tried and remembered in
+ * `state` for the rest of the run. USD prices stay labelled USD.
  */
 export async function queryProductDetails(
   ids: string[],
   guard: { key: string; limit: number; periodMs: number },
-): Promise<{ products: AliProduct[]; missing: string[] }> {
+  state: ProfileState = newProfileState(),
+  maxCalls: number = DETAIL_PROFILES.length,
+) {
   const clean = [...new Set(ids.filter((id) => /^\d{4,24}$/.test(id)))].slice(0, DETAIL_BATCH_LIMIT);
-  if (!clean.length) return { products: [], missing: [] };
-  const extra: Record<string, string> = {
-    product_ids: clean.join(","),
-    country: "IL",
-    // The product-detail API's documented currency allowlist does not include ILS.
-    // Unlike product.query, detail.get can reject ILS with INVALID_PARAMETER (402).
-    // Keep the provider-returned USD price/currency paired; never relabel as ILS.
-    target_currency: "USD",
-    target_language: "HE",
-  };
-  const tracking = process.env.ALIEXPRESS_TRACKING_ID?.trim();
-  if (tracking) extra.tracking_id = tracking;
-  const json = await callAffiliateMethod("aliexpress.affiliate.productdetail.get", extra, guard);
-  const products = normalizeDetail(json);
-  const got = new Set(products.map((p) => p.id));
-  return { products, missing: clean.filter((id) => !got.has(id)) };
+  if (!clean.length) return { products: [], missing: [], deferred: [], calls: 0, profile: DETAIL_PROFILES[state.index].name };
+  const tracking = process.env.ALIEXPRESS_TRACKING_ID?.trim() || null;
+  const secrets = [process.env.ALIEXPRESS_APP_KEY, process.env.ALIEXPRESS_APP_SECRET, tracking];
+  return fetchDetailsAdaptive(
+    clean,
+    state,
+    async (params, chunk, profile) => {
+      try {
+        const json = await callAffiliateMethod("aliexpress.affiliate.productdetail.get", params(profile, chunk), guard);
+        return { products: normalizeDetail(json) };
+      } catch (e) {
+        // Re-redact with the real secrets before the message reaches any log.
+        if (e instanceof AffiliateError && e.detail) e.detail = safeProviderMessage(e.detail, secrets);
+        throw e;
+      }
+    },
+    maxCalls,
+    tracking,
+  );
 }

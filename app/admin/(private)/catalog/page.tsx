@@ -125,7 +125,7 @@ export default async function CatalogPage() {
                           <td dir="ltr">
                             {g.detail_price} {g.detail_currency} · sku {g.detail_sku ?? "?"} · {g.price_field} · {d(g.detail_at)}
                           </td>
-                          <td>{g.gap_pct}%</td>
+                          <td>{g.gap_pct === null ? "לא ניתן להשוואה (מטבע שונה)" : g.gap_pct + "%"}</td>
                           <td>{codes.length ? codes.map((c) => GAP_LABELS[c]).join(" · ") : "לא זוהה הסבר בשדות שהוחזרו"}</td>
                           <td>
                             <PublishToggle productId={g.product_id} unpublish />

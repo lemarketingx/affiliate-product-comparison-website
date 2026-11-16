@@ -3,7 +3,7 @@
 // in-process pglite database loaded with the REAL migration, so the server code
 // (supabase-js client, { p } argument contract, jobs, reads) runs unmodified.
 // Never imported by application code. TEST FIXTURE data only.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 
 const HOST = "https://fixture-only.supabase.co";
@@ -17,7 +17,9 @@ if (
 
 const db = new PGlite();
 await db.exec("create role anon; create role authenticated; create role service_role;");
-await db.exec(readFileSync(new URL("../../supabase/migrations/20261116000000_dealpilot_catalog_store.sql", import.meta.url), "utf8"));
+// Every migration, in order — exactly what the real project receives.
+const dir = new URL("../../supabase/migrations/", import.meta.url);
+for (const f of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) await db.exec(readFileSync(new URL(f, dir), "utf8"));
 // One published product whose last price is 5 days old: it must never be shown as current.
 await db.exec(`insert into dp_products (product_id, title, title_language, brand, shop_name, category_slug, category_label,
   image, images, product_url, affiliate_url, orders, status, first_seen_at, first_published_at, last_seen_at,

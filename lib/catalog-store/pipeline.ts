@@ -237,13 +237,26 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
 }
 
 export type PriceStats = {
-  calls: number; checked: number; updated: number; missing: number; invalid: number; unpublished: number;
+  calls: number; checked: number; updated: number; confirmed: number; missing: number; invalid: number; unpublished: number;
   failedBatches: number; suspectBatches: number; quotaStopped: boolean;
+  /** Detail parameter profile the provider accepted in this run. */
+  profile: string | null;
+};
+
+export type DetailAnswer = {
+  products: AliProduct[];
+  missing: string[];
+  /** Ids not requested in this call (smaller profile batch); due again, not missing. */
+  deferred?: string[];
+  /** Provider calls actually made (profile fallbacks included); default 1. */
+  calls?: number;
+  /** Parameter profile the provider accepted. */
+  profile?: string;
 };
 
 export type PriceRefreshOptions = {
   rpc: Rpc;
-  fetchDetails: (ids: string[]) => Promise<{ products: AliProduct[]; missing: string[] }>;
+  fetchDetails: (ids: string[], callsLeft: number) => Promise<DetailAnswer>;
   trigger: Trigger;
   maxCalls: number;
   deadlineMs?: number;
@@ -251,38 +264,60 @@ export type PriceRefreshOptions = {
   now?: () => Date;
 };
 
+const errDetail = (e: unknown) =>
+  typeof e === "object" && e && "detail" in e && typeof (e as { detail: unknown }).detail === "string"
+    ? ((e as { detail: string }).detail as string).slice(0, 300)
+    : null;
+const errCalls = (e: unknown) =>
+  typeof e === "object" && e && "calls" in e && Number.isSafeInteger((e as { calls: unknown }).calls) ? (e as { calls: number }).calls : 1;
+
 /** Re-checks published products by product ID (oldest check first). */
 export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: number; status: string; stats: PriceStats; errorCodes: Record<string, number> }> {
   const started = Date.now();
   const now = o.now ?? (() => new Date());
   const { id: runId } = (await o.rpc("dp_start_run", { kind: "price_refresh", trigger: o.trigger })) as { id: number };
-  const stats: PriceStats = { calls: 0, checked: 0, updated: 0, missing: 0, invalid: 0, unpublished: 0, failedBatches: 0, suspectBatches: 0, quotaStopped: false };
+  const stats: PriceStats = {
+    calls: 0, checked: 0, updated: 0, confirmed: 0, missing: 0, invalid: 0, unpublished: 0,
+    failedBatches: 0, suspectBatches: 0, quotaStopped: false, profile: null,
+  };
   const errorCodes: Record<string, number> = {};
   const events: Event[] = [];
   try {
-    const due = (await o.rpc("dp_due_for_price", {
+    const queue = (await o.rpc("dp_due_for_price", {
       limit: Math.max(0, o.maxCalls) * PIPELINE_POLICY.detailBatch,
       min_age_hours: o.minAgeHours ?? PIPELINE_POLICY.priceMinAgeHours,
     })) as string[];
-    for (let i = 0; i < due.length && stats.calls < o.maxCalls && !stats.quotaStopped; i += PIPELINE_POLICY.detailBatch) {
+    let batches = 0;
+    while (queue.length && stats.calls < o.maxCalls && !stats.quotaStopped) {
       if (o.deadlineMs !== undefined && Date.now() - started > o.deadlineMs) {
-        events.push({ level: "warn", code: "DEADLINE_REACHED", detail: `${due.length - i} products left` });
+        events.push({ level: "warn", code: "DEADLINE_REACHED", detail: `${queue.length} products left` });
         break;
       }
-      const ids = due.slice(i, i + PIPELINE_POLICY.detailBatch);
-      stats.calls++;
-      let answer: { products: AliProduct[]; missing: string[] };
+      const ids = queue.splice(0, PIPELINE_POLICY.detailBatch);
+      batches++;
+      let answer: DetailAnswer;
       try {
-        answer = await o.fetchDetails(ids);
+        answer = await o.fetchDetails(ids, o.maxCalls - stats.calls);
       } catch (e) {
         const code = errCode(e);
+        stats.calls += errCalls(e);
         stats.failedBatches++;
         errorCodes[code] = (errorCodes[code] ?? 0) + 1;
-        events.push({ level: "error", code: code.slice(0, 80), detail: `detail batch of ${ids.length}` });
+        const msg = errDetail(e);
+        events.push({ level: "error", code: code.slice(0, 80), detail: `detail batch of ${ids.length}${msg ? " · provider: " + msg : ""}` });
         if (isQuota(code)) stats.quotaStopped = true;
         continue;
       }
-      const wanted = new Set(ids);
+      stats.calls += answer.calls ?? 1;
+      if (answer.profile && answer.profile !== stats.profile) {
+        stats.profile = answer.profile;
+        events.push({ level: "info", code: "DETAIL_PROFILE_ACCEPTED", detail: answer.profile });
+      }
+      // Ids the accepted profile could not include in this call go back to the queue front.
+      const deferred = answer.deferred ?? [];
+      if (deferred.length) queue.unshift(...deferred);
+      const asked = ids.filter((id) => !deferred.includes(id));
+      const wanted = new Set(asked);
       const observations = answer.products
         .filter((p) => wanted.has(p.id))
         .map((p) => ({
@@ -294,25 +329,26 @@ export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: 
           price_fields: p.priceFields,
         }));
       const returned = new Set(observations.map((x) => x.product_id));
-      let missing = ids.filter((id) => !returned.has(id));
+      let missing = asked.filter((id) => !returned.has(id));
       // A batch where most ids are missing points at the call (batch limit,
       // provider hiccup), not at the products: log it, do not count misses.
       // An empty answer is equally ambiguous, whatever the batch size.
-      if (missing.length && (observations.length === 0 || (ids.length >= 4 && missing.length * 2 > ids.length))) {
-        events.push({ level: "warn", code: "DETAIL_BATCH_MOSTLY_MISSING", detail: `${missing.length}/${ids.length} ids not returned; misses not counted` });
+      if (missing.length && (observations.length === 0 || (asked.length >= 4 && missing.length * 2 > asked.length))) {
+        events.push({ level: "warn", code: "DETAIL_BATCH_MOSTLY_MISSING", detail: `${missing.length}/${asked.length} ids not returned; misses not counted` });
         stats.suspectBatches++;
         missing = [];
       }
       const res = (await o.rpc("dp_record_prices", { run_id: runId, observed_at: now().toISOString(), observations, missing })) as {
-        updated: number; missing: number; invalid: number; unpublished: number;
+        updated: number; confirmed?: number; missing: number; invalid: number; unpublished: number;
       };
-      stats.checked += ids.length;
+      stats.checked += asked.length;
       stats.updated += res.updated;
+      stats.confirmed += res.confirmed ?? 0;
       stats.missing += res.missing;
       stats.invalid += res.invalid;
       stats.unpublished += res.unpublished;
     }
-    const status = stats.calls > 0 && stats.failedBatches === stats.calls ? "failed" : stats.failedBatches > 0 ? "partial" : "succeeded";
+    const status = batches > 0 && stats.failedBatches === batches ? "failed" : stats.failedBatches > 0 ? "partial" : "succeeded";
     if (events.length) await o.rpc("dp_log_events", { run_id: runId, events });
     await o.rpc("dp_finish_run", { id: runId, status, stats, error_codes: errorCodes });
     return { runId, status, stats, errorCodes };

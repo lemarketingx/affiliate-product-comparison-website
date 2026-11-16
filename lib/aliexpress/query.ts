@@ -2,10 +2,13 @@
 export class AffiliateError extends Error {
   code: string;
   status: number;
-  constructor(code: string, status: number = 502) {
+  /** Sanitised provider message (admin logs only; never shown to visitors). */
+  detail: string | null;
+  constructor(code: string, status: number = 502, detail: string | null = null) {
     super(code);
     this.code = code;
     this.status = status;
+    this.detail = detail;
   }
 }
 
