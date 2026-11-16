@@ -238,3 +238,11 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - build OK.
   - Real DB after the migration: `dp_link_summary` = 46 published, 0 checked; 8 due.
 - **BLOCKED: the first live link check.** It needs the owner's button, "בדיקת קישורי שותפים עכשיו". Note that following a promotion link may count as a click in the AliExpress portal; only 8 links per run are checked.
+
+### Live result, run #10 (owner, 15:08, link check)
+- **PASS (live):** 8/8 links OK, status `succeeded`, 6.7 s, no errors, 0 unpublished.
+  - Each link reached its product in **1 redirect** (`s.click.aliexpress.com` → `www.aliexpress.com/item/<id>.html`).
+  - The product id **matched in all 8**.
+  - All 8 carried the affiliate parameters `aff_fcid`, `aff_fsk`, `aff_platform`, `aff_trace_key`, `sk`, `terminal_id`, `afSmartRedirect` and `pdp_npi`.
+- **Not provable from the links:** that the tracking id inside them is the owner's own. The parameter values are opaque. That needs the AliExpress portal's click report.
+- **Simple owner check:** today's clicks in the portal should include these 8 link checks plus the `/go` click recorded earlier.

@@ -20,7 +20,8 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Pace provider calls, ride out 1 s bans, separate import/price jobs, one job at a time | done (code + real-DB migrations; live re-run pending) |
 | Next price run: confirm `ils_no_tracking` is accepted | done (run #8: first call, 26/26 identical to search) |
 | Return the 15 USD-priced products to ILS | done (run #9: all 46 in ILS) |
-| Affiliate link verification job (same product, stays on AliExpress, affiliate params) | done (code + real-DB migration); first live run pending owner button |
+| Affiliate link verification job (same product, stays on AliExpress, affiliate params) | done (live run #10: 8/8 OK, same product, aff params present) |
+| Confirm attribution in AliExpress portal (today's clicks appear under our tracking id) | todo (owner, portal) |
 | Why does productdetail.get reject our tracking_id? (search accepts links fine) | todo (check AliExpress portal tracking id) |
 | Product page: show price age + price history chart from `dp_price_history` | todo |
 | Verified conversions/commissions import (orders API, needs permission) | blocked (API permission, see docs/ALIEXPRESS-ORDERS.md) |
