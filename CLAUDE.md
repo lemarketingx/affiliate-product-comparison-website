@@ -9,7 +9,8 @@ Vision: `PRODUCT-VISION.md` · current task: `SPEC.md` · backlog: `TASKS.md` ·
 - `lib/catalog-store/` — persistent catalog. `pipeline.ts` (pure: discover → validate → dedupe → ingest → price refresh), `price-view.ts` (pure price policy and diagnostics), `server.ts` (Supabase RPC adapter, jobs, cached reads).
 - `supabase/migrations/*.sql` — the only schema source. All writes go through `dp_*` SQL functions (one jsonb arg); service role only; RLS on.
 - `getCatalog()` in `lib/aliexpress/catalog.ts` reads the database when `DEALPILOT_SUPABASE_*` is set, otherwise the legacy live cached build.
-- Daily job: `GET /api/cron/catalog` (Bearer `CRON_SECRET`, fails closed). Admin: `/admin/catalog`, `POST /api/admin/catalog`.
+- Jobs: `GET /api/cron/catalog?job=discover|prices` (two daily crons, Bearer `CRON_SECRET`, fails closed). One job at a time (DB lock → 409). Admin: `/admin/catalog`, `POST /api/admin/catalog`.
+- AliExpress calls are paced ≥ 1.1 s (`lib/aliexpress/pacer.ts`); never add unpaced provider calls. productdetail.get parameters: `lib/aliexpress/detail-profiles.ts` (tracking_id is rejected there).
 - `proxy.ts` guards `/admin`, `/api/admin`, `/api/dealpilot` (GitHub OAuth allowlist). Do not put cron routes under those paths.
 
 ## Commands

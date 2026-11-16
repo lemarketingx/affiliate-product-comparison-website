@@ -156,3 +156,51 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 ### Still BLOCKED: live verification
 - No AliExpress credentials exist in this session, and the admin button needs GitHub OAuth. A live price refresh therefore cannot be triggered from here.
 - **Owner action:** on the PR #20 Preview open `/admin/catalog` and press "הפעלת ייבוא ובדיקת מחירים עכשיו" once. The events table will then show either `DETAIL_PROFILE_ACCEPTED · <profile>` or the provider's own 402 text. Claude can read the result from the database.
+
+## 2026-11-16 (evening) · Frequency limit, separate jobs, one job at a time
+
+### Real evidence (DB `dealpilot`, runs #5–#6, owner-triggered)
+- **Run #5 (discover):** 0 calls. Every term is exhausted until its 7-day reset, so no search calls were spent.
+- **Run #6 (price refresh), status `partial`:**
+  - 5 calls, 20 products checked: 15 updated, 5 confirmed.
+  - Profiles `full`, `no_language` and `no_currency` → 402; `country_only` was accepted.
+  - The next call got `PROVIDER_ERROR_ApiCallLimit` with the provider message "Api access frequency exceeds the limit. this ban will last 1 seconds". This is a per-second frequency limit, not the daily quota.
+- **Deduction:** `no_currency` (country + `tracking_id`) failed while `country_only` succeeded, so **`tracking_id` is the rejected parameter**. Every earlier ILS attempt also carried `tracking_id`, so ILS without it was never tried.
+- **Side effect:** `country_only` answers in USD. 15 of the 46 published products currently show USD prices; the currency is never relabelled.
+  - 9 of the 15 had no USD `salePrice` in their search snapshot, so no confirmation was possible.
+  - 6 had a USD price that changed (average 3.06%).
+  - All 5 confirmed products kept ILS, with a 0.12% average USD gap.
+
+### Built
+| Commit | What it does |
+|---|---|
+| `5c0202e` · goal 1 (rate) | `lib/aliexpress/pacer.ts`: all gateway calls in a process are spaced ≥ 1.1 s (`DEALPILOT_ALIEXPRESS_MIN_INTERVAL_MS`). A short ban (≤ 10 s, parsed from the provider's own message) is waited out once and counted in the budget. A long or unparseable ban stops the run (no guessing). Applied in discovery and in the detail profiles. |
+| `5c0202e` · goal 2 (separate jobs) | `/api/cron/catalog?job=discover\|prices`, two daily Vercel crons (02:17 and 03:47 UTC) and two admin buttons. A price check spends no search calls, and an import spends no price calls. |
+| `5c0202e` · goal 3 (one at a time) | Migration `20261116150000_run_lock.sql`: `dp_start_run` takes `pg_advisory_xact_lock` and refuses while another job runs (SQLSTATE DP409 → `RUN_IN_PROGRESS` → HTTP 409, with no provider call). A run stuck for more than 10 minutes is closed as abandoned. |
+| `69b86be` | New first profiles `ils_no_tracking` and `usd_no_tracking`. Rejected profiles are logged (`DETAIL_PROFILE_REJECTED`) and skipped for 30 days (migration `20261116160000`), so each costs at most one call. |
+
+### Tests
+- **Unit: 109/109.** New tests cover:
+  - ban parsing on the verbatim live message;
+  - pacer spacing and queueing;
+  - retry counted in the budget, and stopping when banned again;
+  - the run #6 replay: the price refresh continues past the ban and succeeds;
+  - discovery riding through a ban;
+  - the database lock, sequential (refusal, then release, then abandonment);
+  - profile memory;
+  - the live scenario where only `tracking_id` is rejected → the ILS profile is accepted on the first call and prices stay ILS.
+- **Static check only:** the lock-before-check statement order. pglite cannot run a true two-session race.
+- **e2e (fixture Supabase): 11/11**, including separate jobs (a prices job leaves `discovery = null` and vice versa), with real pacing at 200 ms in the test server.
+- **Real DB:**
+  - Migrations `run_lock` and `detail_profile_rejections` applied, both additive.
+  - Inside a rolled-back transaction: the remembered profile is `country_only`, a first start returns id 7, a second start is refused with `RUN_IN_PROGRESS / DP409`.
+  - After commit: `dp_last_detail_profile` = `{profile: country_only, rejected: []}`, and no run is left running.
+- Typecheck and build pass.
+
+### Not verified (BLOCKED / NOT TESTED)
+- **BLOCKED:** whether AliExpress accepts `ils_no_tracking` (unverified until the next real run). If it does, the 15 USD prices return to ILS at the next price check.
+- **BLOCKED:** a real price run with pacing; it needs the owner's button or a cron.
+- **NOT TESTED:**
+  - a true two-session race against the real DB;
+  - the crons themselves, which fire only on Production after a merge;
+  - the effect of the missing `tracking_id` on detail answers. Affiliate links come from the search's `promotion_link`, not from the detail call, so links should not be affected, but this is unverified.
