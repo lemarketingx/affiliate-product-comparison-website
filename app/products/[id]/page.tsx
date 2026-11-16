@@ -158,7 +158,7 @@ export default async function Product({
               {validAffiliateUrl(p.affiliateUrl, p.productUrl) ? (
                 <a
                   className="fp-btn fp-btn-block"
-                  href={p.affiliateUrl!}
+                  href={"/go/" + p.id + "?source=catalog"}
                   rel="sponsored noopener noreferrer"
                   target="_blank"
                 >
