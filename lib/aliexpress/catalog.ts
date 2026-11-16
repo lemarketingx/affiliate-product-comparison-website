@@ -101,14 +101,21 @@ const sleep = (ms: number) => new Promise<null>((r) => setTimeout(() => r(null),
  * after the response (next/server `after`).
  */
 export async function getCatalog(options: { waitMs?: number } = {}): Promise<CatalogSnapshot> {
-  // The persistent store is the source of truth once configured. If the
-  // database is unreachable or still empty we degrade to the live cached build.
+  // A configured persistent store is authoritative even when empty or unavailable.
+  // Never silently fall back to the older keyword-search cache: doing so would
+  // bypass the price freshness policy and could display stale prices as current.
   if (storeConfigured()) {
     try {
-      const stored = await getStoredSnapshot();
-      if (stored.items.length) return stored;
+      return await getStoredSnapshot();
     } catch {
-      /* fall through to the live build */
+      return {
+        items: [],
+        fetchedAt: null,
+        available: false,
+        partial: true,
+        qualityFiltered: false,
+        source: "store",
+      };
     }
   }
   return getLiveCatalog(options);
