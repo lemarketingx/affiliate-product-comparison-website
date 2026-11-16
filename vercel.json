@@ -2,5 +2,19 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
-  "outputDirectory": null
+  "outputDirectory": null,
+  "crons": [
+    {
+      "path": "/api/cron/catalog?job=discover",
+      "schedule": "17 2 * * *"
+    },
+    {
+      "path": "/api/cron/catalog?job=prices",
+      "schedule": "47 3 * * *"
+    },
+    {
+      "path": "/api/cron/catalog?job=links",
+      "schedule": "23 4 * * *"
+    }
+  ]
 }

@@ -1,7 +1,9 @@
 import "server-only";
-// Disabled deliberately: no click database and no visitor identifiers.
+import { recordStoredClick, storeConfigured } from "../catalog-store/server";
+// Click events go to the dedicated DealPilot database when it is configured.
+// No IP, cookie, user agent or fingerprint is stored. A click is not a sale.
 export function trackingConfigured() {
-  return false;
+  return storeConfigured();
 }
 export type ClickSource =
   | "catalog"
@@ -18,15 +20,16 @@ export function safeSource(value: string | null): ClickSource {
     : "other";
 }
 export async function recordClick(
-  _product: {
+  product: {
     id: string;
     title: string;
     category: string;
     affiliateUrl: string;
   },
-  _source: ClickSource,
+  source: ClickSource,
+  page: string | null = null,
 ) {
-  return false;
+  return recordStoredClick(product.id, source, page);
 }
 export async function clickSummary() {
   return { ready: false, total: null, bySource: [] };

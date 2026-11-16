@@ -15,7 +15,8 @@ test("premium brand home: carousel buttons switch slides; brands and curated car
   expect(after).not.toBe(before);
   await page.getByRole("button", { name: "עצירת החלפה אוטומטית" }).click();
   await expect(page.getByRole("button", { name: "הפעלת החלפה אוטומטית" })).toBeVisible();
-  await expect(page.locator(".dpb-product")).not.toContainText(/-[1-9]\d*%/);
+  // Every card, not one: no invented discount percentage anywhere.
+  for (const text of await page.locator(".dpb-product").allInnerTexts()) expect(text).not.toMatch(/-[1-9]\d*%/);
 });
 
 test("premium brand home: no horizontal overflow on mobile", async ({ page }) => {

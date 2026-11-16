@@ -11,10 +11,15 @@ import {
 import { categories } from "../dealpilot/categories";
 import { identifyListedBrand } from "../dealpilot/brands";
 import { buildCatalog, type CatalogReport, type CatalogProduct, type PlanItem } from "./catalog-build";
+import { getStoredSnapshot, storeConfigured } from "../catalog-store/server";
 
 export type CatalogItem = AliProduct & {
   category: string;
   categorySlug: string;
+  /** Set for database-backed items: a stale/unknown price is withheld (price null). */
+  priceStatus?: "current" | "stale" | "unknown";
+  priceObservedAt?: string | null;
+  priceMethod?: "search" | "detail" | "confirmed" | null;
 };
 export type CatalogSnapshot = {
   items: CatalogItem[];
@@ -25,6 +30,8 @@ export type CatalogSnapshot = {
   report?: CatalogReport;
   /** The catalog is being (re)built in the background; nothing is shown as missing. */
   warming?: boolean;
+  /** "store" = persistent database catalog; otherwise the live cached build. */
+  source?: "store" | "live";
 };
 
 const NS = process.env.DEALPILOT_CACHE_NAMESPACE ?? "default";
@@ -94,6 +101,27 @@ const sleep = (ms: number) => new Promise<null>((r) => setTimeout(() => r(null),
  * after the response (next/server `after`).
  */
 export async function getCatalog(options: { waitMs?: number } = {}): Promise<CatalogSnapshot> {
+  // A configured persistent store is authoritative even when empty or unavailable.
+  // Never silently fall back to the older keyword-search cache: doing so would
+  // bypass the price freshness policy and could display stale prices as current.
+  if (storeConfigured()) {
+    try {
+      return await getStoredSnapshot();
+    } catch {
+      return {
+        items: [],
+        fetchedAt: null,
+        available: false,
+        partial: true,
+        qualityFiltered: false,
+        source: "store",
+      };
+    }
+  }
+  return getLiveCatalog(options);
+}
+
+async function getLiveCatalog(options: { waitMs?: number }): Promise<CatalogSnapshot> {
   if (!configured()) return { items: [], fetchedAt: null, available: false, partial: false, qualityFiltered: false };
   const now = Date.now();
   if (memo && now - memo.at < MEMO_MS) return memo.snapshot;

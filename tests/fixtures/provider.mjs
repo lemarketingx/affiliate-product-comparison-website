@@ -1,7 +1,7 @@
 // Explicit Node preload for the isolated populated-flow test server only.
 // This module is never imported by application code and provides no HTTP bypass or route.
 if (
-  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104", "http://127.0.0.1:3199"].includes(process.env.NEXTAUTH_URL ?? "") ||
+  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104", "http://127.0.0.1:3105", "http://127.0.0.1:3199"].includes(process.env.NEXTAUTH_URL ?? "") ||
   process.env.ALIEXPRESS_APP_KEY !== "fixture-only-never-real" ||
   process.env.ALIEXPRESS_APP_SECRET !== "fixture-only-never-real"
 ) {
@@ -25,6 +25,11 @@ globalThis.fetch = async function (input, init) {
   if (catalogSet && url.startsWith("https://s.click.aliexpress.com/e/TEST_BANNER_")) {
     const id = url.split("TEST_BANNER_")[1].replace(/\D/g, "");
     return new Response(null, { status: 302, headers: { location: `https://www.aliexpress.com/item/${id}.html?aff_fixture=1` } });
+  }
+  // Catalog promotion links (TEST FIXTURE): redirect to the same product with affiliate params.
+  if (catalogSet && url.startsWith("https://s.click.aliexpress.com/e/TEST_CATALOG_")) {
+    const id = url.split("TEST_CATALOG_")[1].replace(/\D/g, "");
+    return new Response(null, { status: 302, headers: { location: `https://he.aliexpress.com/item/${id}.html?aff_fcid=fixture&aff_platform=api&sk=_fx` } });
   }
   if (catalogSet && url.startsWith("https://www.aliexpress.com/item/")) return new Response("<html>fixture item</html>", { status: 200 });
   if (url !== "https://api-sg.aliexpress.com/sync")
@@ -56,6 +61,31 @@ globalThis.fetch = async function (input, init) {
         // Realistic: a localised detail URL with tracking-style query parameters.
         product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://he.aliexpress.com/item/${id}.html?gatewayAdapt=glo2isr&aff_fixture=1`,
       }] } });
+    }
+    // Product-ID price check (TEST FIXTURE). Simulates a provider that rejects
+    // target_currency=ILS with 402, to exercise the profile fallback to USD.
+    // (Live run #6 points at tracking_id as the rejected parameter instead.)
+    // USD answers carry the price +4% vs the search quote, another SKU, and
+    // id 1005000000777 is never returned (stale-price scenario).
+    if (method === "aliexpress.affiliate.productdetail.get") {
+      if (params.get("country") !== "IL") throw new Error("Detail profile missing");
+      if (params.get("target_currency") === "ILS")
+        return Response.json({ aliexpress_affiliate_productdetail_get_response: { resp_result: { resp_code: 402, resp_msg: "The input parameter target_currency is invalid (TEST FIXTURE)" } } });
+      const ids = (params.get("product_ids") ?? "").split(",").filter((id) => /^\d+$/.test(id) && id !== "1005000000777");
+      if (ids.length > 20) throw new Error("Detail batch above 20");
+      return Response.json({ aliexpress_affiliate_productdetail_get_response: { resp_result: { resp_code: 200, resp_msg: "ok", result: { products: { product: ids.map((id) => {
+        const searchIls = 9.9 + (Number(id.slice(-3)) % 200) * 4;
+        const usd = ((searchIls / 3.7) * 1.04).toFixed(2);
+        return {
+          product_id: id,
+          product_title: "TEST FIXTURE — detail " + id,
+          product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-${id}.jpg`,
+          product_detail_url: `https://www.aliexpress.com/item/${id}.html`,
+          sku_id: "99" + id.slice(-6),
+          sale_price: usd, sale_price_currency: "USD",
+          target_sale_price: usd, target_sale_price_currency: "USD",
+        };
+      }) } } } } });
     }
     if (method === "aliexpress.affiliate.link.generate") {
       const sources = (params.get("source_values") ?? "").split(",").filter(Boolean);

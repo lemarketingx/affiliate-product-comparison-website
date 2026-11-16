@@ -4,21 +4,21 @@ test("public discovery navigation, filters and explicit unavailable catalog", as
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "מגלים מוצרים חכמים",
-  );
+  // Copy changed with the brand-first redesign (fdcf574); one h1 is still required.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("מותגים מוכרים");
   await expect(
     page.getByRole("link", { name: "מרכז שליטה", exact: true }),
   ).toHaveCount(0);
   await page
-    .getByRole("link", { name: "גלו מוצרים", exact: true })
+    .getByRole("link", { name: "מוצרי מותגים", exact: true }) // nav label since the brand-first redesign
     .last()
     .click();
   await expect(page).toHaveURL(/\/deals/);
-  await page.getByRole("link", { name: "רכב ואביזרים", exact: true }).click();
+  await page.getByRole("link", { name: "מותגים לרכב", exact: true }).click(); // category label since 88d4376
   await expect(page).toHaveURL(/\/deals\?cat=car/);
   await expect(
-    page.getByRole("link", { name: "רכב ואביזרים", exact: true }),
+    page.getByRole("link", { name: "מותגים לרכב", exact: true }),
   ).toHaveAttribute("aria-current", "page");
   await page.getByRole("link", { name: "הכול", exact: true }).click();
   await expect(page).toHaveURL(/\/deals$/);
@@ -30,13 +30,13 @@ test("public discovery navigation, filters and explicit unavailable catalog", as
     .fill("unmatched");
   await page.getByRole("button", { name: "סינון", exact: true }).click();
   await expect(page.getByText("קצת סבלנות, הגילוי בדרך.")).toBeVisible();
-  await page.getByRole("textbox", { name: "חיפוש מוצרים" }).fill("organizer");
+  await page.getByRole("textbox", { name: "חיפוש מותגים ומוצרים" }).fill("organizer");
   await page.getByRole("banner").getByRole("button", { name: "חיפוש", exact: true }).click();
   await expect(page).toHaveURL(/search\?q=organizer/);
   await expect(
     page.getByRole("textbox", { name: "סינון לפי שם מוצר" }),
   ).toHaveValue("organizer");
-  await page.getByRole("textbox", { name: "חיפוש מוצרים" }).fill("kitchen");
+  await page.getByRole("textbox", { name: "חיפוש מותגים ומוצרים" }).fill("kitchen");
   await page.getByRole("banner").getByRole("button", { name: "חיפוש", exact: true }).click();
   await expect(page).toHaveURL(/search\?q=kitchen/);
   await expect(page.getByRole("textbox", { name: "סינון לפי שם מוצר" })).toHaveValue("kitchen");
@@ -183,6 +183,8 @@ for (const width of [304, 320, 375, 412, 768, 1366, 1920]) {
         page.getByRole("navigation", { name: "ניווט נייד" }),
       ).toBeVisible();
     }
-    await expect(page.locator(".dp-hero h1")).toBeVisible();
+    // The hero is now the campaign carousel (a425f8f); the page keeps exactly one h1.
+    await expect(page.locator(".dpb-hero-shell")).toBeVisible();
+    await expect(page.locator("main h1")).toHaveCount(1);
   });
 }

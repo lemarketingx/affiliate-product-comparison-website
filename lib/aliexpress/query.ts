@@ -2,10 +2,13 @@
 export class AffiliateError extends Error {
   code: string;
   status: number;
-  constructor(code: string, status: number = 502) {
+  /** Sanitised provider message (admin logs only; never shown to visitors). */
+  detail: string | null;
+  constructor(code: string, status: number = 502, detail: string | null = null) {
     super(code);
     this.code = code;
     this.status = status;
+    this.detail = detail;
   }
 }
 
@@ -29,7 +32,7 @@ export type PageMeta = {
   totalRecordCount: number | null;
 };
 // Kept structural so this module does not depend on the server-only normalizer.
-export type ProductPage<P = import("./affiliate").AliProduct> = { products: P[]; meta: PageMeta };
+export type ProductPage<P = import("./normalize.ts").AliProduct> = { products: P[]; meta: PageMeta };
 
 /** Validates and normalises query input. Throws AffiliateError(400) on bad input. */
 export function validateProductQuery(q: ProductQuery): { keywords: string; pageNo: number; pageSize: number } {
