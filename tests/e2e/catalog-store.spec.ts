@@ -29,7 +29,8 @@ test("admin catalog page states that the store is not connected", async ({ page,
     await page.goto("/admin/catalog");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("קטלוג, ייבוא ומחירים");
     await expect(page.getByText(/מסד נתונים ייעודי .*לא מוגדר/)).toBeVisible();
-    await expect(page.getByRole("button", { name: "הפעלת ייבוא ובדיקת מחירים עכשיו" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "ייבוא מוצרים עכשיו" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "בדיקת מחירים עכשיו" })).toBeDisabled();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.screenshot({ path: `test-results/admin-catalog-${width}.png`, fullPage: true });

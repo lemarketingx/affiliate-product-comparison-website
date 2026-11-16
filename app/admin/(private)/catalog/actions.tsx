@@ -12,7 +12,10 @@ async function post(body: unknown) {
   return { ok: res.ok, data };
 }
 
-export function RunImportButton({ disabled }: { disabled: boolean }) {
+const JOB_LABEL = { discover: "ייבוא מוצרים עכשיו", prices: "בדיקת מחירים עכשיו" } as const;
+
+/** One button per job: an import never spends price-check calls, and vice versa. */
+export function RunJobButton({ disabled, job }: { disabled: boolean; job: "discover" | "prices" }) {
   const router = useRouter();
   const [state, setState] = useState("");
   return (
@@ -24,19 +27,19 @@ export function RunImportButton({ disabled }: { disabled: boolean }) {
         onClick={async () => {
           setState("…");
           try {
-            const { ok, data } = await post({ action: "run" });
-            setState(
-              ok
-                ? `ייבוא: ${data.discovery.status} · ${data.discovery.stats.publishedNew} מוצרים חדשים פורסמו · מחירים: ${data.prices.status}, ${data.prices.stats.updated} עודכנו`
-                : "ההרצה נכשלה: " + (data.code ?? "UNKNOWN"),
-            );
+            const { ok, data } = await post({ action: "run", job });
+            if (!ok) setState(data.code === "RUN_IN_PROGRESS" ? "הרצה אחרת עדיין פועלת. נסו שוב בעוד דקה." : "ההרצה נכשלה: " + (data.code ?? "UNKNOWN"));
+            else if (job === "discover")
+              setState(`ייבוא: ${data.discovery.status} · ${data.discovery.stats.calls} קריאות · ${data.discovery.stats.publishedNew} מוצרים חדשים פורסמו`);
+            else
+              setState(`מחירים: ${data.prices.status} · ${data.prices.stats.calls} קריאות · ${data.prices.stats.updated} עודכנו · ${data.prices.stats.confirmed ?? 0} אומתו`);
             router.refresh();
           } catch {
             setState("ההרצה נכשלה");
           }
         }}
       >
-        הפעלת ייבוא ובדיקת מחירים עכשיו
+        {JOB_LABEL[job]}
       </button>
       <p className="dp-muted" role="status">
         {state === "…" ? "מריץ (עד דקה)…" : state}

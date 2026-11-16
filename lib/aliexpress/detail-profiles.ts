@@ -7,6 +7,7 @@
 // INVALID_PARAMETER answer the job steps to the next profile (one parameter
 // removed at a time) and records which profile the provider accepted. Pure.
 import type { AliProduct } from "./normalize.ts";
+import { realSleep, withBanRetry } from "./pacer.ts";
 
 export type DetailProfile = {
   name: string;
@@ -40,7 +41,14 @@ export const isInvalidParameter = (e: unknown) => /INVALID_PARAMETER|isv\.invali
 
 export type DetailAttempt = { profile: string; ids: number; code: string | null; detail: string | null };
 export type ProfileState = { index: number; attempts: DetailAttempt[] };
-export const newProfileState = (): ProfileState => ({ index: 0, attempts: [] });
+/**
+ * Starts at the profile the provider last accepted (persisted from an earlier
+ * run), so known-rejected parameters do not cost calls every day. Unknown → richest.
+ */
+export const newProfileState = (startAt: string | null = null): ProfileState => ({
+  index: Math.max(0, DETAIL_PROFILES.findIndex((p) => p.name === startAt)),
+  attempts: [],
+});
 
 /**
  * Fetches details for `ids` with the current profile; on INVALID_PARAMETER
@@ -54,15 +62,25 @@ export async function fetchDetailsAdaptive(
   call: (params: (profile: DetailProfile, chunk: string[]) => Record<string, string>, chunk: string[], profile: DetailProfile) => Promise<{ products: AliProduct[] }>,
   maxCalls: number,
   trackingId: string | null,
+  sleep: (ms: number) => Promise<void> = realSleep,
 ): Promise<{ products: AliProduct[]; missing: string[]; deferred: string[]; calls: number; profile: string }> {
   let calls = 0;
   for (;;) {
     const profile = DETAIL_PROFILES[state.index];
     const chunk = ids.slice(0, profile.batch);
     const deferred = ids.slice(profile.batch);
-    calls++;
     try {
-      const { products } = await call((pr, c) => detailParams(pr, c, trackingId), chunk, profile);
+      // A short frequency ban is waited out once, if the budget allows the retry.
+      const { value, calls: made } = await withBanRetry(
+        () => call((pr, c) => detailParams(pr, c, trackingId), chunk, profile),
+        () => calls + 1 < maxCalls,
+        sleep,
+      ).catch((e) => {
+        calls += typeof e === "object" && e && "calls" in e ? Number((e as { calls: number }).calls) : 1;
+        throw e;
+      });
+      calls += made;
+      const { products } = value;
       state.attempts.push({ profile: profile.name, ids: chunk.length, code: null, detail: null });
       const got = new Set(products.map((p) => p.id));
       return { products: products.filter((p) => chunk.includes(p.id)), missing: chunk.filter((id) => !got.has(id)), deferred, calls, profile: profile.name };

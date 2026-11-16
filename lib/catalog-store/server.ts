@@ -31,7 +31,11 @@ export const rpc: Rpc = async (fn, args) => {
   if (!/^dp_[a-z_]+$/.test(fn)) throw new Error("INVALID_RPC");
   const { data, error } = await db().rpc(fn, { p: args });
   // Never forward database messages to callers; keep a short, safe code.
-  if (error) throw new Error("DB_" + String(error.code ?? "ERROR").replace(/[^A-Za-z0-9]/g, "").slice(0, 20));
+  if (error) {
+    // DP409 = another provider job is running (dp_start_run lock).
+    if (error.code === "DP409") throw new Error("RUN_IN_PROGRESS");
+    throw new Error("DB_" + String(error.code ?? "ERROR").replace(/[^A-Za-z0-9]/g, "").slice(0, 20));
+  }
   return data;
 };
 
@@ -109,31 +113,54 @@ export async function storedPriceHistory(productId: string) {
  * The scheduled job: discovery then price refresh, both bounded by provider
  * call budgets and a wall-clock deadline below the function's maxDuration.
  */
-export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: number } = {}) {
+export type CatalogJob = "discover" | "prices" | "all";
+export const isCatalogJob = (v: unknown): v is CatalogJob => v === "discover" || v === "prices" || v === "all";
+
+/**
+ * Scheduled jobs. Discovery (search calls) and price refresh (product-ID
+ * calls) run separately — each has its own cron and its own call budget — so
+ * a price check never spends calls on searching. "all" runs both in order.
+ * The database refuses to start a job while another is running (RUN_IN_PROGRESS).
+ */
+export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: number; job?: CatalogJob } = {}) {
+  const job = options.job ?? "all";
   const deadline = options.deadlineMs ?? 50_000;
   const started = Date.now();
   const discoverCalls = intEnv("DEALPILOT_IMPORT_MAX_CALLS", 40, 0, 400);
   const priceCalls = intEnv("DEALPILOT_PRICE_MAX_CALLS", 25, 0, 400);
+  // Per-process flood guard only; the database lock and the provider limits are authoritative.
   const guard = { key: "aliexpress-import-job", limit: discoverCalls + priceCalls + 10, periodMs: 3600_000 };
-  const discovery = await runDiscovery({
-    rpc,
-    categories,
-    trigger,
-    maxCalls: discoverCalls,
-    deadlineMs: Math.floor(deadline * 0.6),
-    fetchPage: (term, pageNo, pageSize) => queryAffiliateProductsPage({ keywords: term, pageNo, pageSize, guard }),
-  });
-  const profileState = newProfileState();
-  const prices = await runPriceRefresh({
-    rpc,
-    trigger,
-    maxCalls: priceCalls,
-    deadlineMs: Math.max(0, deadline - (Date.now() - started)),
-    // One profile state per run: a profile the provider accepted is reused.
-    fetchDetails: (ids, callsLeft) => queryProductDetails(ids, guard, profileState, callsLeft),
-  });
+  const discovery =
+    job === "prices"
+      ? null
+      : await runDiscovery({
+          rpc,
+          categories,
+          trigger,
+          maxCalls: discoverCalls,
+          deadlineMs: job === "all" ? Math.floor(deadline * 0.5) : deadline,
+          fetchPage: (term, pageNo, pageSize) => queryAffiliateProductsPage({ keywords: term, pageNo, pageSize, guard }),
+        });
+  let prices = null;
+  if (job !== "discover") {
+    // Start from the parameter profile AliExpress accepted last time.
+    let remembered: string | null = null;
+    try {
+      remembered = ((await rpc("dp_last_detail_profile", {})) as { profile: string | null }).profile;
+    } catch {
+      remembered = null;
+    }
+    const profileState = newProfileState(remembered);
+    prices = await runPriceRefresh({
+      rpc,
+      trigger,
+      maxCalls: priceCalls,
+      deadlineMs: Math.max(0, deadline - (Date.now() - started)),
+      fetchDetails: (ids, callsLeft) => queryProductDetails(ids, guard, profileState, callsLeft),
+    });
+  }
   revalidateTag(STORE_TAG, { expire: 0 });
-  return { discovery, prices };
+  return { job, discovery, prices };
 }
 
 export async function setUnpublished(productId: string, unpublished: boolean) {

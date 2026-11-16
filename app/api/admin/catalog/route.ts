@@ -2,7 +2,7 @@ import { adminSession } from "../../../../lib/dealpilot/auth";
 import { allowRequest } from "../../../../lib/dealpilot/rate-limit";
 import { sameRequestOrigin } from "../../../../lib/dealpilot/request-origin";
 import { configured } from "../../../../lib/aliexpress/affiliate";
-import { runCatalogJobs, setUnpublished, storeConfigured } from "../../../../lib/catalog-store/server";
+import { isCatalogJob, runCatalogJobs, setUnpublished, storeConfigured } from "../../../../lib/catalog-store/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   if (!(await adminSession())) return fail("UNAUTHORIZED", 401);
   if (!sameRequestOrigin(request)) return fail("INVALID_ORIGIN", 403);
   if (!storeConfigured()) return fail("STORE_NOT_CONFIGURED", 503);
-  let body: { action?: unknown; productId?: unknown };
+  let body: { action?: unknown; productId?: unknown; job?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -23,9 +23,18 @@ export async function POST(request: Request) {
   try {
     if (body.action === "run") {
       if (!configured()) return fail("ALIEXPRESS_NOT_CONFIGURED", 503);
+      const job = body.job === undefined ? "all" : body.job;
+      if (!isCatalogJob(job)) return fail("UNKNOWN_JOB", 400);
       if (!allowRequest("admin-catalog-run", 4)) return fail("RATE_LIMITED", 429);
-      const { discovery, prices } = await runCatalogJobs("manual", { deadlineMs: 50_000 });
-      return Response.json({ discovery: { status: discovery.status, stats: discovery.stats }, prices: { status: prices.status, stats: prices.stats } }, { headers });
+      const { discovery, prices } = await runCatalogJobs("manual", { deadlineMs: 50_000, job });
+      return Response.json(
+        {
+          job,
+          discovery: discovery && { status: discovery.status, stats: discovery.stats },
+          prices: prices && { status: prices.status, stats: prices.stats },
+        },
+        { headers },
+      );
     }
     if (body.action === "unpublish" || body.action === "republish") {
       const id = typeof body.productId === "string" ? body.productId : "";
@@ -35,6 +44,7 @@ export async function POST(request: Request) {
     }
     return fail("UNKNOWN_ACTION", 400);
   } catch (e) {
-    return fail(e instanceof Error && /^[A-Z0-9_]{3,60}$/.test(e.message) ? e.message : "ACTION_FAILED", 500);
+    const code = e instanceof Error && /^[A-Z0-9_]{3,60}$/.test(e.message) ? e.message : "ACTION_FAILED";
+    return fail(code, code === "RUN_IN_PROGRESS" ? 409 : 500);
   }
 }

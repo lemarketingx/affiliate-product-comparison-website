@@ -5,7 +5,7 @@ import { PIPELINE_POLICY } from "../../../../lib/catalog-store/pipeline";
 import { GAP_LABELS, compareObservations, priceDiagnostics, type GapCode } from "../../../../lib/catalog-store/price-view";
 import { REJECT_LABELS, type RejectReason } from "../../../../lib/aliexpress/catalog-build";
 import { getUsdRate } from "../../../../lib/dealpilot/fx";
-import { RunImportButton, PublishToggle } from "./actions";
+import { RunJobButton, PublishToggle } from "./actions";
 
 export const dynamic = "force-dynamic";
 const d = (iso: string | null) =>
@@ -46,10 +46,13 @@ export default async function CatalogPage() {
         <ul>
           <li>מסד נתונים ייעודי (DEALPILOT_SUPABASE_URL + SERVICE_ROLE): {ready ? "מוגדר" : "לא מוגדר. האתר ממשיך להציג את הקטלוג החי מהמטמון"}</li>
           <li>AliExpress Affiliate API: {configured() ? "מוגדר" : "לא מוגדר"}</li>
-          <li>תזמון: פעם ביום (Vercel Cron, 02:17 UTC) · דורש CRON_SECRET</li>
+          <li>תזמון (Vercel Cron, Production בלבד, דורש CRON_SECRET): ייבוא מוצרים 02:17 UTC, בדיקת מחירים 03:47 UTC. הרצה אחת בכל פעם; קריאות ל־AliExpress מרווחות ‎1.1‎ שניות.</li>
           {error && <li>שגיאת מסד נתונים: <code dir="ltr">{error}</code></li>}
         </ul>
-        <RunImportButton disabled={!ready || !configured()} />
+        <div className="dp-stat-list">
+          <RunJobButton job="discover" disabled={!ready || !configured()} />
+          <RunJobButton job="prices" disabled={!ready || !configured()} />
+        </div>
       </section>
 
       {t && data && (

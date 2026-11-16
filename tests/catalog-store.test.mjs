@@ -3,7 +3,7 @@
 // TEST FIXTURE data only — this proves the pipeline and SQL, not the live API.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { runDiscovery, runPriceRefresh, PIPELINE_POLICY } from "../lib/catalog-store/pipeline.ts";
 import { normalizeProductResponse, parseProductPage, PRODUCT_DETAIL_ROOT } from "../lib/aliexpress/normalize.ts";
@@ -15,7 +15,10 @@ const MIGRATION = new URL("../supabase/migrations/20261116000000_dealpilot_catal
 async function freshDb() {
   const db = new PGlite();
   await db.exec("create role anon; create role authenticated; create role service_role;");
-  await db.exec(await readFile(MIGRATION, "utf8"));
+  // Every migration, in order — the same state the real project has.
+  const dir = new URL("../supabase/migrations/", import.meta.url);
+  for (const f of (await readdir(dir)).filter((f) => f.endsWith(".sql")).sort()) await db.exec(await readFile(new URL(f, dir), "utf8"));
+  void MIGRATION;
   const rpc = async (fn, args) => {
     assert.match(fn, /^dp_[a-z_]+$/);
     const r = await db.query(`select public.${fn}($1::jsonb) as r`, [JSON.stringify(args ?? {})]);
@@ -343,9 +346,8 @@ test("price diagnostics explain likely checkout gaps from returned fields only",
 import { DETAIL_PROFILES, detailParams, fetchDetailsAdaptive, newProfileState } from "../lib/aliexpress/detail-profiles.ts";
 const CURRENCY_MIGRATION = new URL("../supabase/migrations/20261116130000_detail_price_currency.sql", import.meta.url);
 async function dbWithCurrencyFix() {
-  const env = await freshDb();
-  await env.db.exec(await readFile(CURRENCY_MIGRATION, "utf8"));
-  return env;
+  void CURRENCY_MIGRATION; // already applied by freshDb (all migrations in order)
+  return freshDb();
 }
 const invalid402 = () => Object.assign(new AffiliateError("PROVIDER_RESULT_402_INVALID_PARAMETER", 502, "Invalid parameter target_language"), {});
 
@@ -462,4 +464,111 @@ test("a USD detail quote confirms an unchanged ILS price, replaces a changed one
   const gap = dash.price_gaps.find((g) => g.product_id === ids[1]);
   assert.equal(Number(gap.gap_pct), 5.6);
   assert.ok(!dash.price_gaps.some((g) => g.product_id === ids[0]), "unchanged price is not a gap");
+});
+
+// ---- 2026-11-16: provider frequency limit, separate jobs, one job at a time ----
+import { banSeconds, createPacer, withBanRetry } from "../lib/aliexpress/pacer.ts";
+const LIVE_BAN = "Api access frequency exceeds the limit. this ban will last 1 seconds"; // verbatim, run #6
+const banErr = () => new AffiliateError("PROVIDER_ERROR_ApiCallLimit", 502, LIVE_BAN);
+
+test("ban parsing uses the provider's own words and ignores long or unrelated limits", () => {
+  assert.equal(banSeconds(banErr()), 1);
+  assert.equal(banSeconds(new AffiliateError("PROVIDER_ERROR_ApiCallLimit", 502, "this ban will last 3600 seconds")), null, "daily-quota style ban is not waited out");
+  assert.equal(banSeconds(new AffiliateError("PROVIDER_ERROR_ApiCallLimit")), null, "no message, no guess");
+  assert.equal(banSeconds(new AffiliateError("PROVIDER_RESULT_402_INVALID_PARAMETER", 502, "ban will last 1 seconds")), null);
+});
+
+test("pacer spaces calls in this process and never drops one", async () => {
+  let clock = 0;
+  const starts = [];
+  const sleep = async (ms) => { clock += ms; };
+  const pace = createPacer(1100, () => clock, sleep);
+  await Promise.all([1, 2, 3].map((i) => pace(async () => { starts.push(clock); return i; })));
+  assert.deepEqual(starts, [0, 1100, 2200]);
+  await assert.rejects(pace(async () => { throw new Error("X"); }), /X/);
+  assert.equal(await pace(async () => "after-error"), "after-error", "a failed call does not break the queue");
+});
+
+test("a 1-second ban is waited out once and counted as a second call", async () => {
+  const waits = [];
+  let n = 0;
+  const r = await withBanRetry(async () => { if (n++ === 0) throw banErr(); return "ok"; }, () => true, async (ms) => { waits.push(ms); });
+  assert.deepEqual([r.value, r.calls, waits], ["ok", 2, [1250]]);
+  // No budget left: no retry, error carries calls=1.
+  await assert.rejects(withBanRetry(async () => { throw banErr(); }, () => false, async () => {}), (e) => e.calls === 1);
+  // Banned again after waiting: stop, calls=2.
+  await assert.rejects(withBanRetry(async () => { throw banErr(); }, () => true, async () => {}), (e) => e.calls === 2);
+});
+
+test("price refresh rides through a frequency ban instead of stopping (run #6 scenario)", async () => {
+  const { rpc } = await freshDb();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 30 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const state = newProfileState("country_only");
+  let calls = 0;
+  const fetchDetails = (ids, left) => fetchDetailsAdaptive(ids, state, async (params, chunk, profile) => {
+    calls++;
+    if (calls === 2) throw banErr(); // second call, as live
+    void params(profile, chunk);
+    return { products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, chunk.map((id) => row(id, "Baseus"))), PRODUCT_DETAIL_ROOT) };
+  }, left, null, async () => {});
+  const r = await runPriceRefresh({ rpc, fetchDetails, trigger: "test", maxCalls: 10, minAgeHours: 0 });
+  assert.equal(r.status, "succeeded");
+  assert.equal(r.stats.quotaStopped, false);
+  assert.equal(r.stats.calls, calls, "the retry is counted");
+  assert.ok(r.stats.checked > 20, "the run continued past the ban");
+  // Remembered profile: no 402 attempts were spent.
+  assert.ok(state.attempts.every((a) => a.profile === "country_only"));
+});
+
+test("discovery rides through a frequency ban within budget", async () => {
+  const { rpc } = await freshDb();
+  const base = fakeProvider({ perTerm: 60 });
+  let n = 0;
+  const fetchPage = async (...a) => { if (n++ === 1) throw banErr(); return base.fetchPage(...a); };
+  const r = await runDiscovery({ rpc, categories, fetchPage, trigger: "test", maxCalls: 6, concurrency: 1, sleep: async () => {} });
+  assert.equal(r.status, "succeeded");
+  assert.equal(r.stats.calls, 6);
+  assert.equal(r.stats.pagesOk, 5, "6 calls = 5 pages + 1 banned attempt");
+});
+
+test("only one provider job runs at a time, even when two start together", async () => {
+  const { db, rpc } = await freshDb();
+  const first = await rpc("dp_start_run", { kind: "discover", trigger: "cron" });
+  await assert.rejects(rpc("dp_start_run", { kind: "price_refresh", trigger: "manual" }), (e) => e.code === "DP409" && /RUN_IN_PROGRESS/.test(e.message));
+  await rpc("dp_finish_run", { id: first.id, status: "succeeded", stats: {}, error_codes: {} });
+  const second = await rpc("dp_start_run", { kind: "price_refresh", trigger: "manual" });
+  assert.ok(second.id > first.id);
+  // A run stuck for more than 10 minutes is closed as abandoned and no longer blocks.
+  await db.query("update dp_import_runs set started_at = now() - interval '11 minutes' where id = $1", [second.id]);
+  const third = await rpc("dp_start_run", { kind: "discover", trigger: "cron" });
+  assert.ok(third.id);
+  assert.equal((await db.query("select status from dp_import_runs where id = $1", [second.id])).rows[0].status, "failed");
+  // The pipeline surfaces the refusal and makes no provider call.
+  let called = false;
+  await assert.rejects(
+    runDiscovery({ rpc, categories, fetchPage: async () => { called = true; }, trigger: "test", maxCalls: 3 }),
+    (e) => e.code === "DP409",
+  );
+  assert.equal(called, false);
+});
+
+test("dp_start_run takes the advisory lock before checking and inserting (static SQL check)", async () => {
+  // pglite has a single connection, so a true two-session race cannot run here.
+  // Atomicity comes from pg_advisory_xact_lock (held to transaction end, standard
+  // Postgres semantics); this test pins the statement order that relies on it.
+  const sql = await readFile(new URL("../supabase/migrations/20261116150000_run_lock.sql", import.meta.url), "utf8");
+  const fn = sql.slice(sql.indexOf("create or replace function public.dp_start_run"), sql.indexOf("create or replace function public.dp_last_detail_profile"));
+  assert.ok(fn.indexOf("pg_advisory_xact_lock") < fn.indexOf("select id into busy"), "lock is taken before the check");
+  assert.ok(fn.indexOf("select id into busy") < fn.indexOf("insert into dp_import_runs"), "check happens before the insert");
+});
+
+test("the accepted detail profile is remembered for the next run", async () => {
+  const { rpc } = await freshDb();
+  assert.deepEqual(await rpc("dp_last_detail_profile", {}), { profile: null });
+  const { id } = await rpc("dp_start_run", { kind: "price_refresh", trigger: "test" });
+  await rpc("dp_log_events", { run_id: id, events: [{ level: "info", code: "DETAIL_PROFILE_ACCEPTED", detail: "country_only" }] });
+  await rpc("dp_finish_run", { id, status: "succeeded", stats: {}, error_codes: {} });
+  assert.deepEqual(await rpc("dp_last_detail_profile", {}), { profile: "country_only" });
+  assert.equal(newProfileState("country_only").index, 3);
+  assert.equal(newProfileState("unknown-profile").index, 0);
 });

@@ -9,6 +9,15 @@ import {
 } from "./query";
 import { DETAIL_PROFILES, fetchDetailsAdaptive, newProfileState, type ProfileState } from "./detail-profiles";
 import { safeProviderMessage } from "./promo-parse";
+import { createPacer, MIN_INTERVAL_MS } from "./pacer";
+
+// One pacer per server process: provider calls are spaced to respect the
+// per-second frequency limit observed live (see pacer.ts).
+const minInterval = (() => {
+  const n = Number(process.env.DEALPILOT_ALIEXPRESS_MIN_INTERVAL_MS);
+  return Number.isSafeInteger(n) && n >= 0 && n <= 10_000 ? n : MIN_INTERVAL_MS;
+})();
+const pace = createPacer(minInterval);
 import { normalizeProductResponse as normalizeRows, parseProductPage, PRODUCT_DETAIL_ROOT as DETAIL_ROOT, type AliProduct } from "./normalize";
 const normalizeDetail = (json: unknown) => normalizeRows(json, DETAIL_ROOT);
 export { normalizeProductResponse, parseProductPage, PRODUCT_DETAIL_ROOT } from "./normalize";
@@ -98,7 +107,7 @@ export async function queryAffiliateProductsPage(query: ProductQuery): Promise<P
   params.sign = signAffiliateParams(params, secret);
   let resp: Response;
   try {
-    resp = await fetch(GATEWAY, {
+    resp = await pace(() => fetch(GATEWAY, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
@@ -106,7 +115,7 @@ export async function queryAffiliateProductsPage(query: ProductQuery): Promise<P
       body: new URLSearchParams(params),
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
-    });
+    }));
   } catch {
     throw new AffiliateError("PROVIDER_UNREACHABLE", 503);
   }
@@ -156,13 +165,13 @@ export async function callAffiliateMethod(
   params.sign = signAffiliateParams(params, secret);
   let resp: Response;
   try {
-    resp = await fetch(GATEWAY, {
+    resp = await pace(() => fetch(GATEWAY, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body: new URLSearchParams(params),
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
-    });
+    }));
   } catch {
     throw new AffiliateError("PROVIDER_UNREACHABLE", 503);
   }

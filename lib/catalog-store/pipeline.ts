@@ -7,6 +7,7 @@ import type { AliProduct } from "../aliexpress/normalize.ts";
 import type { ProductPage } from "../aliexpress/query.ts";
 import { CATALOG_POLICY, publicRejections, type CategoryDef, type RejectReason } from "../aliexpress/catalog-build.ts";
 import { identifyListedBrand } from "../dealpilot/brands.ts";
+import { withBanRetry } from "../aliexpress/pacer.ts";
 
 /** Calls one dp_* SQL function with a single jsonb argument. */
 export type Rpc = (fn: string, args: Record<string, unknown>) => Promise<unknown>;
@@ -30,6 +31,8 @@ const errCode = (e: unknown) =>
     : e instanceof Error && /^[A-Z0-9_]{3,60}$/.test(e.message)
       ? e.message
       : "UNKNOWN";
+const errCalls = (e: unknown) =>
+  typeof e === "object" && e && "calls" in e && Number.isSafeInteger((e as { calls: unknown }).calls) ? (e as { calls: number }).calls : 1;
 const isQuota = (code: string) => /ApiCallLimit|QUOTA|LIMIT|HTTP_429/i.test(code);
 const isBadParam = (code: string) => /INVALID_PARAMETER|isv\.invalid|PAGE_SIZE/i.test(code);
 
@@ -104,6 +107,8 @@ export type DiscoverOptions = {
   deadlineMs?: number;
   minSales?: number;
   now?: () => Date;
+  /** Injected for tests; real time otherwise. */
+  sleep?: (ms: number) => Promise<void>;
 };
 
 export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number; status: string; stats: DiscoverStats; errorCodes: Record<string, number> }> {
@@ -138,9 +143,17 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
     const one = async (t: TermRow) => {
       for (;;) {
         const size = accepted ?? sizes[sizeIndex];
-        stats.calls++;
         try {
-          const page = await o.fetchPage(t.term, t.page, size);
+          // A short provider frequency ban is waited out once, within budget.
+          const { value: page, calls } = await withBanRetry(
+            () => o.fetchPage(t.term, t.page, size),
+            () => stats.calls + 1 < o.maxCalls,
+            o.sleep,
+          ).catch((e) => {
+            stats.calls += errCalls(e);
+            throw e;
+          });
+          stats.calls += calls;
           accepted ??= size;
           return { ok: true as const, page, size };
         } catch (e) {
@@ -268,8 +281,6 @@ const errDetail = (e: unknown) =>
   typeof e === "object" && e && "detail" in e && typeof (e as { detail: unknown }).detail === "string"
     ? ((e as { detail: string }).detail as string).slice(0, 300)
     : null;
-const errCalls = (e: unknown) =>
-  typeof e === "object" && e && "calls" in e && Number.isSafeInteger((e as { calls: unknown }).calls) ? (e as { calls: number }).calls : 1;
 
 /** Re-checks published products by product ID (oldest check first). */
 export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: number; status: string; stats: PriceStats; errorCodes: Record<string, number> }> {

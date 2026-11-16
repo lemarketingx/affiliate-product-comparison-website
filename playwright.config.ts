@@ -114,6 +114,8 @@ export default defineConfig({
         CRON_SECRET: "fixture-cron-secret-0123456789abcdef",
         DEALPILOT_IMPORT_MAX_CALLS: "30",
         DEALPILOT_PRICE_MAX_CALLS: "10",
+        // Real pacing code, shorter interval so the suite stays fast while runs still overlap.
+        DEALPILOT_ALIEXPRESS_MIN_INTERVAL_MS: "200",
         DEALPILOT_CACHE_NAMESPACE: `qa-store-${Date.now()}`,
       },
     },

@@ -56,6 +56,20 @@ test("a second run goes deeper and never inserts a product twice", async ({ requ
   void firstInserted;
 });
 
+test("price check and import run as separate jobs", async ({ request }) => {
+  const prices = await request.get(BASE + "/api/cron/catalog?job=prices", { headers: AUTH, timeout: 60000 });
+  expect(prices.status()).toBe(200);
+  const pb = await prices.json();
+  expect(pb.discovery).toBeNull(); // a price check spends no search calls
+  expect(pb.prices.runId).toBeGreaterThan(0);
+  expect((await request.get(BASE + "/api/cron/catalog?job=nope", { headers: AUTH })).status()).toBe(400);
+  const disc = await request.get(BASE + "/api/cron/catalog?job=discover", { headers: AUTH, timeout: 60000 });
+  expect(disc.status()).toBe(200);
+  expect((await disc.json()).prices).toBeNull(); // an import spends no price-check calls
+  // Refusal of a concurrent start (409 RUN_IN_PROGRESS) is covered by unit tests on the
+  // real SQL; here every term is exhausted, so runs finish too fast to overlap reliably.
+});
+
 test("storefront reads the database and shows detail-checked prices with their age", async ({ page }) => {
   await page.goto(BASE + "/deals");
   // The seeded stale product sorts first (most sales); take the next real one.
@@ -93,7 +107,7 @@ test("admin dashboard shows totals, price gaps with explanations, runs and click
     // Search quotes are ILS-only and detail quotes USD: no same-currency comparison is possible, so none is invented.
     await expect(page.getByRole("cell", { name: "לא ניתן להשוואה (מטבע שונה)" }).first()).toBeVisible();
     await expect(page.getByText(/הווריאציה \(sku_id\) שונה/)).toHaveCount(0);
-    await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(4); // 2 discover + 2 price runs
+    await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(6); // 2×(discover+prices) + prices + discover; the refused start creates no run
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
     await page.screenshot({ path: `test-results/admin-catalog-populated-${width}.png`, fullPage: true });
