@@ -218,3 +218,23 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 
   All 46 are fresh (under 48 h).
 - The 15 USD products were not due (minimum 20 h between checks). Their `price_check_at` was reset (a scheduling field only; prices unchanged), so the next price check re-queries them with `ils_no_tracking`. A shekel answer then replaces the USD price.
+
+## 2026-11-16 (evening, 2) · Run #9 and affiliate link verification
+- **Run #9 (owner, 14:55, prices):** `ils_no_tracking`, 1 call, 15 updated, no errors. **All 46 published products are now priced in ILS** and fresh.
+- **Stored affiliate links:** all 46 are long-form `https://s.click.aliexpress.com/s/…` promotion links. The stored product URLs carry `pdp_npi` (original price, sale price, SKU) and `affd`.
+- This sandbox cannot reach AliExpress (proxy refuses `s.click.aliexpress.com` with 403), so the links cannot be verified from here. The check therefore runs server-side on Vercel, as a job.
+- **Built (`8d7bfbc`):**
+  - `lib/aliexpress/link-check.ts` follows the redirects of a promotion link without loading the product page. It records:
+    - whether every hop stays on AliExpress;
+    - whether the chain reaches the **same product id**;
+    - which affiliate parameter *names* survive (`aff_fcid`, `aff_platform`, `sk`, …; values are never stored).
+  - 200 pages that redirect by script or meta refresh are handled, preferring a link to the expected product. A mismatch seen only in a page body is inconclusive and never unpublishes.
+  - Job `links`: third daily cron (04:23 UTC) and an admin button, 8 links per run, oldest first, re-checked every 7 days. It shares the one-job lock.
+  - Migration `20261116170000_link_checks.sql`, **applied to the real DB**: link status columns and the `link_check` run kind. `wrong_product` and `not_aliexpress` unpublish automatically (logged); `broken` is only recorded.
+  - The admin panel "קישורי שותפים" shows checked, ok, with affiliate params, unverified, and unpublished-by-link.
+- **Tests:**
+  - unit 112/112 (classification, page redirects, inconclusive handling, DB recording and unpublishing, lock);
+  - e2e 12/12 (`job=links` through the real server with fixture redirects: 8 checked, ≥ 7 ok, with affiliate params);
+  - build OK.
+  - Real DB after the migration: `dp_link_summary` = 46 published, 0 checked; 8 due.
+- **BLOCKED: the first live link check.** It needs the owner's button, "בדיקת קישורי שותפים עכשיו". Note that following a promotion link may count as a click in the AliExpress portal; only 8 links per run are checked.
