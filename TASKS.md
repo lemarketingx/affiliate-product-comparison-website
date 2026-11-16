@@ -12,8 +12,9 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Admin catalog dashboard + run-now + unpublish | done (not browser-tested with real DB) |
 | Daily Vercel cron (`CRON_SECRET`) | done, blocked (owner must set env + deploy) |
 | Click persistence (no personal data) | done, blocked (DB env) |
-| Create dedicated Supabase project and apply migration | blocked (owner approval; see PROGRESS.md) |
-| Live verification: real import, no duplicates on rerun, price vs AliExpress page sample of 20 products | blocked (credentials/env) |
+| Create dedicated Supabase project and apply migrations | done (owner created `dealpilot`; both migrations applied) |
+| Live import (1,715 products, 46 published, rerun = 15 updates, 0 inserts duplicated) | done (owner run, read from DB) |
+| Price vs AliExpress page sample of 20 products | blocked (needs a successful live price refresh first) |
 | Fix price refresh 402 INVALID_PARAMETER (profile fallback, provider message, currency-safe recording) | done (code + real-DB migration); live re-run blocked (owner trigger) |
 | Read live result of the next price refresh; if `probe_single` is the accepted profile, request a higher detail quota or batch size from AliExpress | todo (after owner run) |
 | Product page: show price age + price history chart from `dp_price_history` | todo |
