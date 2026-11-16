@@ -37,7 +37,8 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Name shortlist with evidence | done; owner approval pending (תכל'ס recommended) |
 | Symbol, favicon, lockups | done |
 | 3 directions + incumbent scored | done: A chosen |
-| Token layer + product card + product page in A | next |
+| Token layer + product card + product page in A | done |
+| Header/footer shell in A (remove airport copy, fix empty search button) | next |
 | Home, deals/search/category, loading/error/404 in A | todo |
 | OG image | todo |
 | Rewrite 2 owner-decision e2e tests with roles and labels | todo |

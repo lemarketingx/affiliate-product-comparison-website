@@ -3,6 +3,7 @@ import "./globals.css";
 import "./dealpilot.css";
 import "./welcoming.css";
 import "./storefront.css";
+import "./bottomline.css";
 
 export const metadata: Metadata = {
   title: "DealPilot | מותגים מוכרים ב־AliExpress",

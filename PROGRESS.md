@@ -295,3 +295,24 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 - **Design lab:** `/admin/design-lab` renders three directions on the same slice with real catalog rows; no horizontal overflow at 390 and 1440. Scored in `docs/DESIGN-DIRECTIONS.md`: **A "השורה התחתונה" chosen (18/20).**
 - **Inputs:** PRs #3 and #16 were read as inputs, not merged. Both target an old base branch.
 - **Next:** token layer, then migrate in revenue order (product card → product page → home → listings → states), with e2e updated in the same commits.
+
+### Milestone 2, increment 1: product card and product page in direction A
+- **Built:**
+  - `app/bottomline.css`: the token layer (`--bl-*`), plus card and product-page styles.
+  - The card (`app/product-card.tsx`) loses the boarding-pass elements (flight code, barcode, perforation). It shows the brand, a 2-line title, reported sales, the price as a receipt line in tabular mono, "המחיר נבדק לפני N שעות" (`freshnessLabel`, unit-tested), the tax badge and an honest verification chip. The whole card is one link.
+  - Product page: one visible h1, and a receipt block covering the price with its source and check time, import tax, shipping ("מוצג בקופה") and "השורה התחתונה", which links to the existing true-cost calculator.
+  - The CTA goes through `/go`. A mobile sticky buy bar was added. The "חלופות מאותה קטגוריה" section replaces the airport copy.
+  - `lib/brand.ts` centralises the brand name. It is still DealPilot, pending approval.
+- **Bugs found and fixed during QA:**
+  - **The CTA text was invisible.** The legacy `.fp a { color: inherit }` beat `.bl-cta`; links now use `a.bl-cta` specificity.
+  - **Narrow cards clipped the title and price** at 390 px (two columns). Fixed with a `minmax(0, 1fr)` track and a container query that stacks the price.
+  - **A QA pitfall, recorded so it isn't repeated:** a stale `next-server` process kept serving HTML from an old build, which made the page look unstyled. Kill `next-server` too, not only `next start`.
+- **Checks:**
+  - No horizontal overflow and exactly one h1 at 320, 375, 390, 768, 1024, 1440 and 1920 on `/deals` and the product page.
+  - The CTA text computes to white.
+  - No card child sits outside its card at 320, 390 or 1440.
+  - Unit 113/113. e2e 36/38: the 2 owner-decision tests remain failing; selectors moved to roles and labels.
+- **Not done yet:**
+  - The header and footer shell still use the old cream/airport language ("מגדל פיקוח", "שעון ישראל").
+  - Home, listings, category/brand pages and the loading/error/404 states are not migrated.
+  - The OG image is missing.

@@ -670,3 +670,15 @@ test("link check job records results, unpublishes only definitive failures, and 
   await assert.rejects(runLinkCheck({ rpc, check, trigger: "test", maxChecks: 5 }), (e) => e.code === "DP409");
   await rpc("dp_finish_run", { id, status: "succeeded", stats: {}, error_codes: {} });
 });
+
+test("freshness label is honest and Hebrew", async () => {
+  const { freshnessLabel } = await import("../lib/catalog-store/price-view.ts");
+  const now = new Date("2026-11-16T12:00:00Z");
+  assert.equal(freshnessLabel(null, now), null);
+  assert.equal(freshnessLabel("garbage", now), null);
+  assert.equal(freshnessLabel("2026-11-16T11:40:00Z", now), "המחיר נבדק בשעה האחרונה");
+  assert.equal(freshnessLabel("2026-11-16T11:00:00Z", now), "המחיר נבדק לפני שעה");
+  assert.equal(freshnessLabel("2026-11-16T07:00:00Z", now), "המחיר נבדק לפני 5 שעות");
+  assert.equal(freshnessLabel("2026-11-15T10:00:00Z", now), "המחיר נבדק אתמול");
+  assert.equal(freshnessLabel("2026-11-13T12:00:00Z", now), "המחיר נבדק לפני 3 ימים");
+});

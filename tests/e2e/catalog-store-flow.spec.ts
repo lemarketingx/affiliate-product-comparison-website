@@ -25,7 +25,7 @@ test("a stored product with a 5-day-old price is listed without a price", async 
   await page.goto(BASE + "/products/1005000000777");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("מחיר לא עדכני");
   await expect(page.getByText(/ולכן אינו מוצג כעדכני/)).toBeVisible();
-  await expect(page.locator(".fp-ticket-price strong")).toHaveText("אין מחיר עדכני");
+  await expect(page.getByRole("region", { name: "מחיר וקנייה" }).locator("strong").first()).toHaveText("אין מחיר עדכני");
   await expect(page.getByText("77.70")).toHaveCount(0);
 });
 
@@ -97,7 +97,7 @@ test("storefront reads the database and shows detail-checked prices with their a
   // carry no USD price to confirm against, so the fresh USD quote is shown as USD — never relabelled ILS.
   const search = 9.9 + (Number(refreshedId.slice(-3)) % 200) * 4;
   const expected = new Intl.NumberFormat("he-IL", { style: "currency", currency: "USD" }).format(Number(((search / 3.7) * 1.04).toFixed(2)));
-  await expect(page.locator(".fp-ticket-price strong")).toHaveText(expected);
+  await expect(page.getByRole("region", { name: "מחיר וקנייה" }).locator("strong").first()).toHaveText(expected);
   await expect(page.getByText(/SKU 99/)).toBeVisible();
 });
 

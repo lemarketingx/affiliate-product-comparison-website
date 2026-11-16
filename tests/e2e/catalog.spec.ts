@@ -23,10 +23,10 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page.locator(".dp-product")).toHaveCount(24);
   await expect(status).toContainText("מוצגים 1–24");
   // No duplicates on a page; every card is a published fixture with an affiliate link.
-  const ids = await page.locator(".dp-product .fp-pass-go").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+  const ids = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(new Set(ids).size).toBe(24);
   await expect(page.locator(".dp-product").first()).toContainText("כולל קישור שותפים");
-  await expect(page.locator(".dp-product").first().locator(".fp-product-brand-tag")).toBeVisible();
+  await expect(page.locator(".dp-product").first().getByRole("link", { name: /^לכל מוצרי המותג / })).toBeVisible();
   await expect(page.locator(".fp-shortfall")).toHaveCount(0);
 
   // Every card states its personal-import tax outcome (fixture rate 3.2 ₪/$).
@@ -56,7 +56,7 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page).toHaveURL(/page=2/);
   await expect(page.locator(".fp-status-line")).toContainText("מוצגים 25–48");
   await expect(pager.getByRole("link", { name: "עמוד 2", exact: true })).toHaveAttribute("aria-current", "page");
-  const page2 = await page.locator(".dp-product .fp-pass-go").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+  const page2 = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(page2.some((h) => ids.includes(h))).toBe(false);
   const lastPage = Math.ceil(total / 24);
   await page.goto("/deals?page=" + lastPage);
@@ -80,7 +80,7 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   for (const title of await page.locator(".dp-product h3").allInnerTexts()) expect(title).toContain("70mai");
   await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");
   await expect(page).toHaveURL(/sort=orders/);
-  const orders = (await page.locator(".dp-product .fp-pass-orders").allInnerTexts()).map((t) => Number(t.replace(/[^\d]/g, "")));
+  const orders = (await page.locator(".dp-product").getByText(/מכירות מדווחות לפי הספק/).allInnerTexts()).map((t) => Number(t.replace(/[^\d]/g, "")));
   expect([...orders].sort((a, b) => b - a)).toEqual(orders);
   expect(orders.every((n) => n > 5000)).toBe(true);
 
@@ -113,7 +113,7 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
 
   // Product detail: affiliate redirect works and quality stays "not verified".
   await page.goto("/deals");
-  const href = await page.locator(".dp-product .fp-pass-go").first().getAttribute("href");
+  const href = await page.locator(".dp-product").first().getByRole("link", { name: /^פרטי / }).getAttribute("href");
   const id = href!.split("/").pop()!;
   await page.goto("/products/" + id);
   // Copy since 86f72ca; quality must still be shown as NOT verified.
