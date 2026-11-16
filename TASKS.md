@@ -14,6 +14,8 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Click persistence (no personal data) | done, blocked (DB env) |
 | Create dedicated Supabase project and apply migration | blocked (owner approval; see PROGRESS.md) |
 | Live verification: real import, no duplicates on rerun, price vs AliExpress page sample of 20 products | blocked (credentials/env) |
+| Fix price refresh 402 INVALID_PARAMETER (profile fallback, provider message, currency-safe recording) | done (code + real-DB migration); live re-run blocked (owner trigger) |
+| Read live result of the next price refresh; if `probe_single` is the accepted profile, request a higher detail quota or batch size from AliExpress | todo (after owner run) |
 | Product page: show price age + price history chart from `dp_price_history` | todo |
 | Verified conversions/commissions import (orders API, needs permission) | blocked (API permission, see docs/ALIEXPRESS-ORDERS.md) |
 | Branch protection: require CI check on `main` | todo (owner setting) |

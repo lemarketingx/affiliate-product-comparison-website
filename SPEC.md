@@ -24,7 +24,8 @@ Status legend: PASS (verified with evidence) · FAIL · BLOCKED (external depend
 | 5 | Resumable per-term cursor → deeper pages on later runs → new unique products | PASS (fixture) | page 2 requested on run 2; exhausted terms restart after 7 days |
 | 6 | Failures logged, cursor kept, retried next run; quota stops the run; all-failed run = failed; crashed run closed | PASS (fixture) | tests "provider failures…", "a crashed run…" |
 | 7 | Every raw price field + chosen field + sku stored per observation (append-only history) | PASS (fixture) | normaliser + price refresh tests |
-| 8 | Product-ID price refresh (`productdetail.get`, batches ≤ 20, budgeted, scheduled; never per page view) | PASS (fixture) / BLOCKED (live) | no AliExpress credentials in this environment |
+| 8 | Product-ID price refresh (`productdetail.get`, batches ≤ 20, budgeted, scheduled; never per page view) | FAIL live (402 INVALID_PARAMETER, runs #2 and #4) → fix `67c1cb4`: parameter-profile fallback + provider message logging; PASS (fixture); live re-run BLOCKED (owner must trigger) | PROGRESS.md 2026-11-16 afternoon |
+| 8b | A USD detail quote never relabels or silently replaces an ILS price | PASS (unit + real DB, rolled-back transaction) | migration `20261116130000` |
 | 9 | Stale (> 48 h) or unknown price is withheld on the storefront | PASS (unit + e2e fixture) | `displayPrice` tests; `catalog-store-flow.spec.ts` |
 | 10 | Admin dashboard: totals, new today vs 50 target, rejected reasons, no-current-price count, price gaps with raw fields, runs, errors, clicks; run-now and unpublish actions | PASS (e2e fixture, 320/768/1440) · NOT TESTED with real data | `catalog-store-flow.spec.ts` |
 | 11 | Daily scheduled job, secret-protected, fails closed | PASS (e2e fixture) · configured, not running (needs production deploy + Production env) | `vercel.json`, `/api/cron/catalog` |

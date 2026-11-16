@@ -101,3 +101,58 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - Conversion and commission import, which waits on orders-API permission.
 - The live site behaves exactly as before until the owner actions above are done, because without the database variables the code takes the old path.
 - Creating the Supabase project from this session was denied by the permission system and was not retried.
+
+## 2026-11-16 (afternoon) · Price refresh fails with `PROVIDER_RESULT_402_INVALID_PARAMETER`
+
+### State found (real DB `dealpilot`, `kjkkuhqebtyfohhvwnfs`)
+- Owner commits on the branch since the morning session:
+  - `63f0b22`: buy button goes through `/go`.
+  - `a3b226a`: a configured store is authoritative; no fallback to the old cache.
+  - `98bdf8f`: detail call uses `target_currency=USD` instead of ILS.
+- Runs:
+  - #1 discover: 32 calls, 46 published.
+  - #2 price refresh at 12:30 (Israel time): 3/3 calls failed with 402.
+  - #3 discover: 15 updated.
+  - #4 price refresh at 12:40: 3/3 calls failed with 402.
+- The USD deployment (`98bdf8f`) completed at 12:36, so run #4 most likely ran with USD and still failed. The currency was therefore probably not the only rejected parameter. This cannot be proven from here: the Vercel connector returns 403 for this project, so which deployment served run #4 is not visible.
+- The provider message was discarded, so the rejected parameter was unknown.
+- Products: 1,715 total, 46 published.
+  - All prices come from the search (ILS). No product has a detail-checked price.
+  - All 46 published search snapshots have a SKU, and 28 also keep the USD `salePrice`.
+
+### Diagnosis
+- The live probe on 2026-11-14 succeeded with `product_ids` (one id) and `country=IL` **only**.
+- The failing calls added `target_currency`, `target_language=HE` and `tracking_id`, plus 20 comma-separated ids.
+- Any of those could be the rejected parameter. AliExpress's 402 text names it, but the code threw the text away.
+
+### Fix (`67c1cb4`)
+1. `AffiliateError.detail` keeps the sanitised provider message (`safeProviderMessage`, with the app key, secret and tracking id redacted). It is written to `dp_import_events` only, never shown to visitors.
+2. `lib/aliexpress/detail-profiles.ts` defines five parameter profiles: `full` → `no_language` → `no_currency` → `country_only` → `probe_single`. The last one is exactly the request that succeeded on 14-Nov.
+   - On `INVALID_PARAMETER` the job steps down one profile.
+   - The accepted profile is reused for the rest of the run and logged as `DETAIL_PROFILE_ACCEPTED`.
+   - Every attempt counts against the call budget.
+   - Ids that a smaller batch cannot include go back to the queue; they are not counted as missing.
+3. Migration `20261116130000_detail_price_currency.sql` was **applied to the real DB**. It is additive: one constraint widened, two functions replaced.
+   - A USD detail quote never overwrites an ILS price as ILS.
+   - If the USD price is unchanged since the search quote (same SKU), the ILS quote is *confirmed* as current (`price_method='confirmed'`).
+   - If the USD price changed, the fresh USD price is shown, labelled USD.
+   - The gap view compares only in one currency.
+4. The product page and the admin table label confirmed and non-comparable prices.
+
+### Tests
+- Unit: 100/100, including 4 new tests. They cover:
+  - 402 → sanitised message;
+  - profile step-down, reuse, budget, and deferral of single-id batches;
+  - logging of the provider message and accepted profile;
+  - USD confirm / replace / SKU mismatch / never relabelling the currency.
+- Real DB, inside a transaction that was rolled back (verified: 0 detail snapshots afterwards), on a real published product:
+  - its own USD price → `confirmed`, still 102.90 ILS;
+  - USD +10% → 34.39 **USD**, method `detail`.
+- Supabase security advisors: only INFO `rls_enabled_no_policy`, which is intended (service role only).
+- e2e on the fixture Supabase: catalog-store flow 7/7 and catalog-store 3/3. The fixture now answers ILS with a 402, as seen live.
+- Typecheck and build pass.
+- Vercel Preview for `67c1cb4` reports "Deployment has completed" (GitHub status). CI `verify` was in progress when this was written.
+
+### Still BLOCKED: live verification
+- No AliExpress credentials exist in this session, and the admin button needs GitHub OAuth. A live price refresh therefore cannot be triggered from here.
+- **Owner action:** on the PR #20 Preview open `/admin/catalog` and press "הפעלת ייבוא ובדיקת מחירים עכשיו" once. The events table will then show either `DETAIL_PROFILE_ACCEPTED · <profile>` or the provider's own 402 text. Claude can read the result from the database.
