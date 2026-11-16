@@ -91,5 +91,31 @@ export default defineConfig({
         DEALPILOT_CACHE_NAMESPACE: `qa-catalog-${Date.now()}`,
       },
     },
+    {
+      // Persistent catalog store: fixture provider + fixture Supabase (pglite running the real migration).
+      command:
+        "node --import ./tests/fixtures/provider.mjs --import ./tests/fixtures/store.mjs node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3105",
+      url: "http://127.0.0.1:3105/api/health",
+      reuseExistingServer: false,
+      env: {
+        NEXTAUTH_SECRET: process.env.DEALPILOT_QA_SECRET,
+        NEXTAUTH_URL: "http://127.0.0.1:3105",
+        GITHUB_ID: "local-test-client",
+        GITHUB_SECRET: "local-test-secret",
+        DEALPILOT_ADMIN_GITHUB_IDS: "123",
+        ALIEXPRESS_APP_KEY: "fixture-only-never-real",
+        ALIEXPRESS_APP_SECRET: "fixture-only-never-real",
+        ALIEXPRESS_ORDER_REPORTS_ENABLED: "false",
+        ALIEXPRESS_TRACKING_ID: "dealpilot-qa",
+        DEALPILOT_FIXTURE_SET: "catalog",
+        DEALPILOT_FX_DISABLED: "true",
+        DEALPILOT_SUPABASE_URL: "https://fixture-only.supabase.co",
+        DEALPILOT_SUPABASE_SERVICE_ROLE_KEY: "fixture-only-never-real",
+        CRON_SECRET: "fixture-cron-secret-0123456789abcdef",
+        DEALPILOT_IMPORT_MAX_CALLS: "30",
+        DEALPILOT_PRICE_MAX_CALLS: "10",
+        DEALPILOT_CACHE_NAMESPACE: `qa-store-${Date.now()}`,
+      },
+    },
   ],
 });

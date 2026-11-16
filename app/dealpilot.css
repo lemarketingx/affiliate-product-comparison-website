@@ -1015,6 +1015,27 @@
   border-bottom: 1px solid #e2e8f0;
   vertical-align: top;
 }
+/* Wide operational tables scroll inside their panel, never the page. */
+.dp-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.dp-table-wrap .dp-table {
+  min-width: 720px;
+}
+.dp-table code {
+  white-space: normal;
+  word-break: break-word;
+}
+.dp-stat-list {
+  display: grid;
+  gap: 6px;
+}
+.dp-btn-small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
 .dp-workbench {
   display: grid;
   gap: 18px;

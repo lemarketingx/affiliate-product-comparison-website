@@ -61,7 +61,18 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
   - The cron endpoint returns 401 with no `CRON_SECRET` and with a forged bearer.
   - The admin API returns 401 for anonymous callers.
   - `/admin/catalog` renders at 320, 375 and 1440 with no horizontal scroll and an honest "not configured" state.
-- **Pre-existing e2e failures.** The full e2e run on this branch gives 14 passed, 15 failed. The same command on untouched `main` @ 2ef9ffb gives 11 passed and the **same 15 failed**, so this work causes no regression. These tests went stale when PR #15's homepage redesign merged (banners, dealpilot, catalog report, populated flow, preflight, premium-home). They are queued in TASKS.md and were not modified here.
+- New `tests/e2e/catalog-store-flow.spec.ts` (7/7 PASS) runs on an isolated server on port 3105. It uses the fixture AliExpress provider and a fixture Supabase endpoint (`tests/fixtures/store.mjs`), which is pglite running the **real migration**. That executes the unmodified `server.ts` RPC contract, the cron job, the database-backed storefront and the admin page. It verifies:
+  - a seeded product whose price is 5 days old is listed with **no** price;
+  - cron with a wrong secret returns 401;
+  - cron with the right secret imports: 30 calls, 1,355 inserted, 871 published, duplicates across terms collapsed, and 199 prices re-checked by product ID;
+  - a second run shows inserted + updated = unique, so nothing is inserted twice;
+  - the storefront reads from the database and shows the detail price with its source, time and SKU;
+  - `/go` returns a 307 immediately and the click is stored;
+  - the admin dashboard shows totals, the 4% search-vs-detail gaps with explanations, runs, warnings and 1 click, with no horizontal overflow at 320, 768 and 1440 (screenshots under `test-results/`, not committed);
+  - after an admin unpublish, `/go` returns 404.
+- Observed during that run: a second import inside the same hour stops early on the in-process provider-call guard (`PROVIDER_QUOTA_GUARD`, limit = budget + 10 per hour). The run is marked partial and the cause is logged. This is deliberate protection of the AliExpress quota. A manual "run now" shortly after the cron run will therefore do little, and the dashboard says why.
+- **Pre-existing e2e failures.** On this branch the full e2e run gives 21 passed and 15 failed. On untouched `main` @ 2ef9ffb, the same command gives 11 passed and the **identical set of 15 failures** (diffed), so this work causes no regression. Cause not investigated. They are queued in TASKS.md and were not modified.
+- Everything above is fixture evidence. It proves the code paths, not the live AliExpress or Supabase integration.
 
 ### Owner actions needed (minimum)
 1. **Database.** Approve a dedicated Supabase project for DealPilot. It would be the third project in the free org, which allows 2 active free projects. Alternatively, choose to delete or keep paused the inactive `kesher-mortgage-partners`; this needs your decision.
@@ -69,8 +80,11 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
    - `DEALPILOT_SUPABASE_URL` and `DEALPILOT_SUPABASE_SERVICE_ROLE_KEY` from the new project (Project Settings → API). Server-only; never `NEXT_PUBLIC_`.
    - `CRON_SECRET`: a random value of 32 or more characters.
    - Keep the existing `ALIEXPRESS_APP_KEY`, `ALIEXPRESS_APP_SECRET` and `ALIEXPRESS_TRACKING_ID`.
-3. Redeploy. Then open `/admin/catalog` and press "הפעלת ייבוא ובדיקת מחירים עכשיו". Vercel Cron runs only on production deployments, so on Preview use the button.
-4. Optional: in GitHub branch protection for `main`, mark the CI check as required.
+3. Apply `supabase/migrations/20261116000000_dealpilot_catalog_store.sql` to the new project. Paste it into the SQL editor, or tell Claude the project exists and it will apply the migration and run the Supabase security advisors.
+4. Redeploy. Then open `/admin/catalog` and press "הפעלת ייבוא ובדיקת מחירים עכשיו".
+   - Vercel Cron fires **only on the production deployment**. The daily job therefore will not run until this branch is merged to `main` and the variables are also set for **Production**.
+   - The older setup note put the AliExpress keys in Preview only. Until that changes, the cron is configured but not running.
+5. Optional: in GitHub branch protection for `main`, mark the CI check as required.
 
 ### Not done / blocked
 - **BLOCKED:**
@@ -81,6 +95,9 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 
   All of these wait on the env and database above.
 - **NOT TESTED:**
-  - `/admin/catalog` in a browser with real data;
-  - Playwright e2e of the new admin page;
-  - conversion and commission import, which waits on orders-API permission.
+  - The CI workflow has never run. It triggers on pull requests and on pushes to `main`, and no PR was opened.
+  - The Vercel deployment state of this branch: the Vercel connector returns 403 for this project.
+  - The admin page with real, non-fixture data.
+  - Conversion and commission import, which waits on orders-API permission.
+- The live site behaves exactly as before until the owner actions above are done, because without the database variables the code takes the old path.
+- Creating the Supabase project from this session was denied by the permission system and was not retried.

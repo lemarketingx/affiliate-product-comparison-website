@@ -129,13 +129,13 @@ export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: n
     deadlineMs: Math.max(0, deadline - (Date.now() - started)),
     fetchDetails: (ids) => queryProductDetails(ids, guard),
   });
-  revalidateTag(STORE_TAG, "max");
+  revalidateTag(STORE_TAG, { expire: 0 });
   return { discovery, prices };
 }
 
 export async function setUnpublished(productId: string, unpublished: boolean) {
   await rpc("dp_set_unpublished", { product_id: productId, unpublished });
-  revalidateTag(STORE_TAG, "max");
+  revalidateTag(STORE_TAG, { expire: 0 });
 }
 
 export async function recordStoredClick(productId: string, source: string, page: string | null) {

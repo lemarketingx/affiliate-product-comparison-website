@@ -1,7 +1,7 @@
 // Explicit Node preload for the isolated populated-flow test server only.
 // This module is never imported by application code and provides no HTTP bypass or route.
 if (
-  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104", "http://127.0.0.1:3199"].includes(process.env.NEXTAUTH_URL ?? "") ||
+  !["http://127.0.0.1:3102", "http://127.0.0.1:3103", "http://127.0.0.1:3104", "http://127.0.0.1:3105", "http://127.0.0.1:3199"].includes(process.env.NEXTAUTH_URL ?? "") ||
   process.env.ALIEXPRESS_APP_KEY !== "fixture-only-never-real" ||
   process.env.ALIEXPRESS_APP_SECRET !== "fixture-only-never-real"
 ) {
@@ -56,6 +56,26 @@ globalThis.fetch = async function (input, init) {
         // Realistic: a localised detail URL with tracking-style query parameters.
         product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://he.aliexpress.com/item/${id}.html?gatewayAdapt=glo2isr&aff_fixture=1`,
       }] } });
+    }
+    // Product-ID price check (TEST FIXTURE): +4% vs the search quote, another SKU,
+    // and id 1005000000777 is never returned (stale-price scenario).
+    if (method === "aliexpress.affiliate.productdetail.get") {
+      if (params.get("country") !== "IL" || params.get("target_currency") !== "ILS") throw new Error("Detail profile missing");
+      const ids = (params.get("product_ids") ?? "").split(",").filter((id) => /^\d+$/.test(id) && id !== "1005000000777");
+      if (ids.length > 20) throw new Error("Detail batch above 20");
+      return Response.json({ aliexpress_affiliate_productdetail_get_response: { resp_result: { resp_code: 200, resp_msg: "ok", result: { products: { product: ids.map((id) => {
+        const search = 9.9 + (Number(id.slice(-3)) % 200) * 4;
+        return {
+          product_id: id,
+          product_title: "TEST FIXTURE — detail " + id,
+          product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-${id}.jpg`,
+          product_detail_url: `https://www.aliexpress.com/item/${id}.html`,
+          sku_id: "99" + id.slice(-6),
+          target_sale_price: (search * 1.04).toFixed(2), target_sale_price_currency: "ILS",
+          target_app_sale_price: (search * 0.95).toFixed(2), target_app_sale_price_currency: "ILS",
+          sale_price: (search / 3.7).toFixed(2), sale_price_currency: "USD",
+        };
+      }) } } } } });
     }
     if (method === "aliexpress.affiliate.link.generate") {
       const sources = (params.get("source_values") ?? "").split(",").filter(Boolean);

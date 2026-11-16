@@ -25,9 +25,9 @@ Status legend: PASS (verified with evidence) · FAIL · BLOCKED (external depend
 | 6 | Failures logged, cursor kept, retried next run; quota stops the run; all-failed run = failed; crashed run closed | PASS (fixture) | tests "provider failures…", "a crashed run…" |
 | 7 | Every raw price field + chosen field + sku stored per observation (append-only history) | PASS (fixture) | normaliser + price refresh tests |
 | 8 | Product-ID price refresh (`productdetail.get`, batches ≤ 20, budgeted, scheduled; never per page view) | PASS (fixture) / BLOCKED (live) | no AliExpress credentials in this environment |
-| 9 | Stale (> 48 h) or unknown price is withheld on the storefront | PASS (unit) | `displayPrice` tests; `rowToItem` |
-| 10 | Admin dashboard: totals, new today vs 50 target, rejected reasons, no-current-price count, price gaps with raw fields, runs, errors, clicks; run-now and unpublish actions | Implemented; NOT TESTED in browser with a real DB | `/admin/catalog` |
-| 11 | Daily scheduled job, secret-protected, fails closed | Implemented; BLOCKED (deploy) | `vercel.json` cron, `/api/cron/catalog` |
-| 12 | Clicks persisted without personal data; clicks ≠ sales | Implemented; NOT TESTED live | `dp_record_click`, `/go/[id]` |
+| 9 | Stale (> 48 h) or unknown price is withheld on the storefront | PASS (unit + e2e fixture) | `displayPrice` tests; `catalog-store-flow.spec.ts` |
+| 10 | Admin dashboard: totals, new today vs 50 target, rejected reasons, no-current-price count, price gaps with raw fields, runs, errors, clicks; run-now and unpublish actions | PASS (e2e fixture, 320/768/1440) · NOT TESTED with real data | `catalog-store-flow.spec.ts` |
+| 11 | Daily scheduled job, secret-protected, fails closed | PASS (e2e fixture) · configured, not running (needs production deploy + Production env) | `vercel.json`, `/api/cron/catalog` |
+| 12 | Clicks persisted without personal data, without delaying the redirect; clicks ≠ sales | PASS (e2e fixture) · NOT TESTED live | `dp_record_click`, `/go/[id]` |
 | 13 | Real API fetch, real price comparison vs AliExpress page | BLOCKED | needs Vercel env + DB (see PROGRESS.md "Owner actions") |
-| 14 | CI blocks merges on typecheck/test/build failure | Implemented; enabling "required" is an owner setting | `.github/workflows/ci.yml` |
+| 14 | CI blocks merges on typecheck/test/build failure | Implemented; NOT TESTED (never triggered: no PR); "required" is an owner setting | `.github/workflows/ci.yml` |
