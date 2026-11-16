@@ -4,7 +4,7 @@ import { revalidateTag, unstable_cache } from "next/cache";
 import { unknownQuality } from "../aliexpress/quality";
 import { categories } from "../dealpilot/categories";
 import { queryAffiliateProductsPage, queryProductDetails } from "../aliexpress/affiliate";
-import { newProfileState } from "../aliexpress/detail-profiles";
+import { newProfileState, rejectedProfiles } from "../aliexpress/detail-profiles";
 import { runDiscovery, runPriceRefresh, type Rpc, type Trigger } from "./pipeline";
 import { displayPrice, PRICE_MAX_AGE_HOURS } from "./price-view";
 import type { CatalogItem, CatalogSnapshot } from "../aliexpress/catalog";
@@ -143,14 +143,14 @@ export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: n
         });
   let prices = null;
   if (job !== "discover") {
-    // Start from the parameter profile AliExpress accepted last time.
-    let remembered: string | null = null;
+    // Skip parameter profiles AliExpress rejected in the last 30 days.
+    let rejected: string[] = [];
     try {
-      remembered = ((await rpc("dp_last_detail_profile", {})) as { profile: string | null }).profile;
+      rejected = ((await rpc("dp_last_detail_profile", {})) as { rejected?: string[] }).rejected ?? [];
     } catch {
-      remembered = null;
+      rejected = [];
     }
-    const profileState = newProfileState(remembered);
+    const profileState = newProfileState(rejected);
     prices = await runPriceRefresh({
       rpc,
       trigger,
@@ -158,6 +158,13 @@ export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: n
       deadlineMs: Math.max(0, deadline - (Date.now() - started)),
       fetchDetails: (ids, callsLeft) => queryProductDetails(ids, guard, profileState, callsLeft),
     });
+    // Persist which profiles were rejected, so later runs do not pay for them again.
+    const newlyRejected = rejectedProfiles(profileState);
+    if (newlyRejected.length)
+      await rpc("dp_log_events", {
+        run_id: prices.runId,
+        events: newlyRejected.map((name) => ({ level: "info", code: "DETAIL_PROFILE_REJECTED", detail: name })),
+      }).catch(() => undefined);
   }
   revalidateTag(STORE_TAG, { expire: 0 });
   return { job, discovery, prices };

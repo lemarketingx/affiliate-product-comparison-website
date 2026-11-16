@@ -1,11 +1,15 @@
 // Parameter profiles for aliexpress.affiliate.productdetail.get, from the
 // richest request to the minimal one that passed the live probe on 2026-11-14
 // (`product_ids` = one id, `country=IL`; docs/aliexpress-quality-probe-*.json).
-// The first live price-refresh runs (2026-11-16) failed every batch with
-// PROVIDER_RESULT_402_INVALID_PARAMETER, first with target_currency=ILS and
-// then with USD, so the rejected parameter is not known yet. On an
-// INVALID_PARAMETER answer the job steps to the next profile (one parameter
-// removed at a time) and records which profile the provider accepted. Pure.
+// Live evidence 2026-11-16 (run #6): full, no_language and no_currency were
+// rejected with 402 INVALID_PARAMETER and country_only was accepted. The only
+// difference between no_currency (country + tracking_id) and country_only
+// (country) is tracking_id, so tracking_id is the rejected parameter. Every
+// earlier ILS attempt also carried tracking_id, so "ILS without tracking_id"
+// has never been tried: it is now first, because an ILS answer lets the
+// storefront keep shekel prices instead of showing USD. On INVALID_PARAMETER
+// the job steps to the next profile; rejected profiles are logged and skipped
+// for 30 days (dp_last_detail_profile), so each costs at most one call. Pure.
 import type { AliProduct } from "./normalize.ts";
 import { realSleep, withBanRetry } from "./pacer.ts";
 
@@ -14,11 +18,13 @@ export type DetailProfile = {
   /** Ids per call; 1 = one product per call. */
   batch: number;
   language: boolean;
-  currency: "USD" | null;
+  currency: "ILS" | "USD" | null;
   tracking: boolean;
 };
 
 export const DETAIL_PROFILES: readonly DetailProfile[] = [
+  { name: "ils_no_tracking", batch: 20, language: true, currency: "ILS", tracking: false },
+  { name: "usd_no_tracking", batch: 20, language: true, currency: "USD", tracking: false },
   { name: "full", batch: 20, language: true, currency: "USD", tracking: true },
   { name: "no_language", batch: 20, language: false, currency: "USD", tracking: true },
   { name: "no_currency", batch: 20, language: false, currency: null, tracking: true },
@@ -42,13 +48,16 @@ export const isInvalidParameter = (e: unknown) => /INVALID_PARAMETER|isv\.invali
 export type DetailAttempt = { profile: string; ids: number; code: string | null; detail: string | null };
 export type ProfileState = { index: number; attempts: DetailAttempt[] };
 /**
- * Starts at the profile the provider last accepted (persisted from an earlier
- * run), so known-rejected parameters do not cost calls every day. Unknown → richest.
+ * Starts at the richest profile not rejected recently (rejections are
+ * persisted from earlier runs), so a known-rejected profile costs no calls.
  */
-export const newProfileState = (startAt: string | null = null): ProfileState => ({
-  index: Math.max(0, DETAIL_PROFILES.findIndex((p) => p.name === startAt)),
-  attempts: [],
-});
+export const newProfileState = (rejected: readonly string[] = []): ProfileState => {
+  const i = DETAIL_PROFILES.findIndex((p) => !rejected.includes(p.name));
+  return { index: i < 0 ? DETAIL_PROFILES.length - 1 : i, attempts: [] };
+};
+/** Profiles the provider answered with INVALID_PARAMETER in this run (to persist). */
+export const rejectedProfiles = (state: ProfileState) =>
+  [...new Set(state.attempts.filter((a) => a.code && /INVALID_PARAMETER/i.test(a.code)).map((a) => a.profile))];
 
 /**
  * Fetches details for `ids` with the current profile; on INVALID_PARAMETER

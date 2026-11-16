@@ -57,8 +57,9 @@ globalThis.fetch = async function (input, init) {
         product_detail_url: name.includes("Broken") ? "https://evil.test/x" : `https://he.aliexpress.com/item/${id}.html?gatewayAdapt=glo2isr&aff_fixture=1`,
       }] } });
     }
-    // Product-ID price check (TEST FIXTURE). Mirrors the live behaviour seen on
-    // 2026-11-16: target_currency=ILS is answered with 402 INVALID_PARAMETER.
+    // Product-ID price check (TEST FIXTURE). Simulates a provider that rejects
+    // target_currency=ILS with 402, to exercise the profile fallback to USD.
+    // (Live run #6 points at tracking_id as the rejected parameter instead.)
     // USD answers carry the price +4% vs the search quote, another SKU, and
     // id 1005000000777 is never returned (stale-price scenario).
     if (method === "aliexpress.affiliate.productdetail.get") {

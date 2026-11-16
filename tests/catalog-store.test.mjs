@@ -364,7 +364,8 @@ test("provider 402 keeps a sanitised message for the admin log", () => {
 });
 
 test("detail profiles step down one parameter at a time to the live-probed request", async () => {
-  assert.deepEqual(detailParams(DETAIL_PROFILES[0], ["1", "2"], "trk"), { product_ids: "1,2", country: "IL", target_currency: "USD", target_language: "HE", tracking_id: "trk" });
+  assert.deepEqual(detailParams(DETAIL_PROFILES[0], ["1", "2"], "trk"), { product_ids: "1,2", country: "IL", target_currency: "ILS", target_language: "HE" }, "first: ILS, no tracking_id");
+  assert.deepEqual(detailParams(DETAIL_PROFILES.find((p) => p.name === "full"), ["1"], "trk"), { product_ids: "1", country: "IL", target_currency: "USD", target_language: "HE", tracking_id: "trk" });
   assert.deepEqual(detailParams(DETAIL_PROFILES.at(-1), ["1"], "trk"), { product_ids: "1", country: "IL" }, "last profile = 2026-11-14 probe shape");
   const ids = ["1005100000001", "1005100000002", "1005100000003"];
   const seen = [];
@@ -376,11 +377,12 @@ test("detail profiles step down one parameter at a time to the live-probed reque
     if (p.target_language) throw invalid402();
     return { products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, chunk.map((id) => row(id, "Baseus"))), PRODUCT_DETAIL_ROOT) };
   };
-  const r = await fetchDetailsAdaptive(ids, state, call, 5, "trk");
+  const r = await fetchDetailsAdaptive(ids, state, call, 6, "trk");
   assert.equal(r.profile, "no_language");
-  assert.equal(r.calls, 2);
+  assert.equal(r.calls, 4);
   assert.equal(r.products.length, 3);
-  assert.deepEqual(state.attempts.map((a) => [a.profile, a.code]), [["full", "PROVIDER_RESULT_402_INVALID_PARAMETER"], ["no_language", null]]);
+  const bad = "PROVIDER_RESULT_402_INVALID_PARAMETER";
+  assert.deepEqual(state.attempts.map((a) => [a.profile, a.code]), [["ils_no_tracking", bad], ["usd_no_tracking", bad], ["full", bad], ["no_language", null]]);
   // The learned profile is reused: no second failing call.
   const r2 = await fetchDetailsAdaptive(ids, state, call, 5, "trk");
   assert.equal(r2.calls, 1);
@@ -503,7 +505,8 @@ test("a 1-second ban is waited out once and counted as a second call", async () 
 test("price refresh rides through a frequency ban instead of stopping (run #6 scenario)", async () => {
   const { rpc } = await freshDb();
   await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 30 }).fetchPage, trigger: "test", maxCalls: 3 });
-  const state = newProfileState("country_only");
+  // Run #6 already taught us these were rejected: start straight at country_only.
+  const state = newProfileState(["ils_no_tracking", "usd_no_tracking", "full", "no_language", "no_currency"]);
   let calls = 0;
   const fetchDetails = (ids, left) => fetchDetailsAdaptive(ids, state, async (params, chunk, profile) => {
     calls++;
@@ -564,11 +567,33 @@ test("dp_start_run takes the advisory lock before checking and inserting (static
 
 test("the accepted detail profile is remembered for the next run", async () => {
   const { rpc } = await freshDb();
-  assert.deepEqual(await rpc("dp_last_detail_profile", {}), { profile: null });
+  assert.deepEqual(await rpc("dp_last_detail_profile", {}), { profile: null, rejected: [] });
   const { id } = await rpc("dp_start_run", { kind: "price_refresh", trigger: "test" });
-  await rpc("dp_log_events", { run_id: id, events: [{ level: "info", code: "DETAIL_PROFILE_ACCEPTED", detail: "country_only" }] });
+  await rpc("dp_log_events", { run_id: id, events: [
+    { level: "info", code: "DETAIL_PROFILE_REJECTED", detail: "ils_no_tracking" },
+    { level: "info", code: "DETAIL_PROFILE_ACCEPTED", detail: "usd_no_tracking" },
+  ] });
   await rpc("dp_finish_run", { id, status: "succeeded", stats: {}, error_codes: {} });
-  assert.deepEqual(await rpc("dp_last_detail_profile", {}), { profile: "country_only" });
-  assert.equal(newProfileState("country_only").index, 3);
-  assert.equal(newProfileState("unknown-profile").index, 0);
+  const mem = await rpc("dp_last_detail_profile", {});
+  assert.deepEqual(mem, { profile: "usd_no_tracking", rejected: ["ils_no_tracking"] });
+  assert.equal(DETAIL_PROFILES[newProfileState(mem.rejected).index].name, "usd_no_tracking");
+  assert.equal(newProfileState([]).index, 0);
+  assert.equal(newProfileState(DETAIL_PROFILES.map((p) => p.name)).index, DETAIL_PROFILES.length - 1, "never runs out of profiles");
+});
+
+test("live scenario: only tracking_id is rejected -> ILS profile accepted, shekel prices stay shekel", async () => {
+  const { db, rpc } = await freshDb();
+  await runDiscovery({ rpc, categories, fetchPage: fakeProvider({ perTerm: 5 }).fetchPage, trigger: "test", maxCalls: 3 });
+  const state = newProfileState([]);
+  const fetchDetails = (ids, left) => fetchDetailsAdaptive(ids, state, async (params, chunk, profile) => {
+    const p = params(profile, chunk);
+    if (p.tracking_id) throw invalid402(); // what run #6 showed
+    assert.equal(p.target_currency, "ILS");
+    return { products: normalizeProductResponse(wrap(PRODUCT_DETAIL_ROOT, chunk.map((id) => row(id, "Baseus", { price: "47.00" }))), PRODUCT_DETAIL_ROOT) };
+  }, left, "trk", async () => {});
+  const r = await runPriceRefresh({ rpc, fetchDetails, trigger: "test", maxCalls: 5, minAgeHours: 0 });
+  assert.equal(r.stats.profile, "ils_no_tracking");
+  assert.equal(r.stats.calls, 1, "accepted on the first call");
+  const cur = (await db.query("select distinct currency, price_method from dp_products where status='published'")).rows;
+  assert.deepEqual(cur, [{ currency: "ILS", price_method: "detail" }]);
 });
