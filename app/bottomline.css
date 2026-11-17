@@ -385,3 +385,165 @@ a.bl-more:hover { color: var(--bl-paper); }
 .bl-receipt-note { margin: 4px 0 10px; font-size: 13px; line-height: 1.5; color: var(--bl-ink-2); background: #f6f6f1; border-inline-start: 3px solid var(--bl-hl); padding: 8px 10px; border-radius: 6px; }
 /* A price older than PRICE_WARN_AGE_HOURS may have changed on AliExpress. */
 .bl-card-fresh.is-old, .bl-receipt-fresh.is-old { color: #8a4b00; }
+
+
+/* Colorful brand identity: real assets when available, honest typographic fallback. */
+.dp-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--dp-brand-accent, #334155);
+  font-family: var(--bl-sans), Arial, sans-serif;
+}
+.dp-brand-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 9px;
+  border-radius: 13px;
+  background: var(--dp-brand-tint, #eef2f7);
+  border: 1px solid color-mix(in srgb, var(--dp-brand-accent, #334155) 22%, white);
+}
+.dp-brand-mark img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+.dp-brand-monogram {
+  font: 850 24px/1 Arial, sans-serif;
+  color: var(--dp-brand-accent, #334155);
+}
+.dp-brand-lockup .dp-brand-name,
+.dpb-logo.dp-brand-lockup .dp-brand-name {
+  font: 850 clamp(16px, 1.7vw, 21px)/1.15 var(--bl-sans), Arial, sans-serif;
+  color: var(--dp-brand-accent, #334155);
+  letter-spacing: -.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.dp-brand-lockup.is-compact { gap: 6px; }
+.dp-brand-lockup.is-compact .dp-brand-mark {
+  width: 25px;
+  height: 25px;
+  padding: 4px;
+  border: 0;
+  border-radius: 7px;
+}
+.dp-brand-lockup.is-compact .dp-brand-monogram { font-size: 14px; }
+.dp-brand-lockup.is-compact .dp-brand-name,
+.dpb-logo.dp-brand-lockup.is-compact .dp-brand-name { font-size: 12px; }
+
+/* Home: colorful, tappable branded tiles without implying official affiliation. */
+.bl-home .dpb-logo-tile {
+  min-width: 0;
+  min-height: 91px;
+  height: auto;
+  padding: 12px 8px;
+  background: #fff;
+  border: 1px solid #dde2eb;
+  border-radius: 17px;
+  box-shadow: 0 5px 18px rgb(17 24 39 / 6%);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.bl-home .dpb-logo-tile:hover {
+  transform: translateY(-3px);
+  border-color: #9ca3af;
+  box-shadow: 0 12px 26px rgb(17 24 39 / 12%);
+}
+.bl-home .dpb-logo-tile:focus-visible,
+.fp-brand-card:focus-visible,
+.bl-card-brand:focus-visible {
+  outline: 3px solid #f2bd32;
+  outline-offset: 3px;
+}
+.bl-home .dpb-logo-tile .dp-brand-lockup {
+  flex-direction: column;
+  gap: 6px;
+}
+.bl-home .dpb-logo-tile .dp-brand-mark { width: 40px; height: 40px; }
+.bl-home .dpb-logo-tile .dp-brand-name,
+.bl-home .dpb-logo-tile .dpb-logo strong {
+  font-size: 14px;
+  max-width: 100%;
+}
+
+/* Brand directory: consistent accent mark plus a prominent name. */
+.fp-brands-page .fp-brand-card {
+  overflow: hidden;
+  min-width: 0;
+  min-height: 158px;
+  background: linear-gradient(145deg, #fff 20%, #f6f8fb 100%);
+  border: 1px solid #d8dfeb;
+  text-decoration: none;
+  box-shadow: 0 5px 17px rgb(17 24 39 / 5%);
+}
+.fp-brands-page .fp-brand-card:hover {
+  border-color: #8d9eaf;
+  box-shadow: 0 15px 25px rgb(17 24 39 / 10%);
+}
+.fp-brands-page .fp-brand-card .dp-brand-lockup {
+  justify-content: flex-start;
+  width: 100%;
+}
+.fp-brands-page .fp-brand-card .dp-brand-name,
+.fp-brands-page .fp-brand-card .dpb-logo strong { font-size: clamp(16px, 2vw, 22px); }
+.fp-brands-page .fp-brand-card .fp-brand-count { font-size: 13px; color: #475569; }
+.fp-brands-page .fp-brand-card .fp-brand-card-arrow {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 750;
+  color: #243b53;
+}
+.fp-brands-page .dp-brand-heading { margin-block: 12px 18px; }
+.fp-brands-page .dp-brand-heading .dp-brand-mark { width: 58px; height: 58px; border-radius: 17px; }
+.fp-brands-page .dp-brand-heading .dp-brand-name,
+.fp-brands-page .dp-brand-heading .dpb-logo strong {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.15;
+}
+
+/* Catalog and product pages: small branded logo without crowding the product. */
+a.bl-card-brand {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px 4px 5px;
+  min-width: 0;
+  max-width: 62%;
+  border: 1px solid #dbe3ed;
+  background: #fff;
+  color: #243b53;
+}
+a.bl-card-brand:hover {
+  background: #f7f9fc;
+  color: #243b53;
+  border-color: #9ca3af;
+}
+a.bl-card-brand:hover .dp-brand-name { color: var(--dp-brand-accent, #334155); }
+.bl-product-side a.bl-card-brand { max-width: 100%; }
+
+@media (max-width: 640px) {
+  .bl-home .dpb-logo-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .bl-home .dpb-logo-tile { padding: 8px 4px; min-height: 82px; }
+  .bl-home .dpb-logo-tile .dp-brand-mark { width: 35px; height: 35px; padding: 7px; }
+  .bl-home .dpb-logo-tile .dp-brand-name,
+  .bl-home .dpb-logo-tile .dpb-logo strong { font-size: 12px; }
+  .fp-brands-page .fp-brand-card { padding: 12px; min-height: 138px; }
+  .fp-brands-page .fp-brand-card .dp-brand-lockup { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .fp-brands-page .fp-brand-card .dp-brand-name,
+  .fp-brands-page .fp-brand-card .dpb-logo strong { font-size: 16px; }
+  .fp-brands-page .dp-brand-heading .dp-brand-mark { width: 48px; height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl-home .dpb-logo-tile, .fp-brands-page .fp-brand-card { transition: none; }
+}
