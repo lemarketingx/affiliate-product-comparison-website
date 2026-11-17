@@ -36,7 +36,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       </a>
       <div className="bl-topline">
         <div className="bl-wrap">
-          <span>מחירים שנבדקים כל יום · קישורים שנבדקו · בלי אחוזי הנחה מומצאים</span>
+          <span>מחירים עם זמן בדיקה · עלות יבוא משוערת · גילוי שותפים שקוף</span>
           <Link href="/disclosure">
             האתר משתמש בקישורי שותפים <ArrowUpLeft size={12} aria-hidden="true" />
           </Link>
@@ -77,7 +77,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
           <div className="bl-footer-top">
             <div className="bl-footer-brand">
               <Brand light />
-              <p>{BRAND.tagline}. מוצרי מותגים מוכרים מ־AliExpress, עם מחיר שנבדק, עלות יבוא משוערת וקישור שנבדק.</p>
+              <p>{BRAND.tagline}. מוצרי מותגים מוכרים מ־AliExpress, עם מחיר בשקלים, זמן בדיקה ואומדן מסי יבוא.</p>
             </div>
             <div>
               <strong>לגלות</strong>
