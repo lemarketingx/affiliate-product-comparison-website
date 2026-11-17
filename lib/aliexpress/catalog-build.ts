@@ -7,7 +7,7 @@ import { identifyListedBrand } from "../dealpilot/brands.ts";
 
 export const CATALOG_POLICY = {
   /** Public listing requires strictly more reported sales than this. */
-  minimumReportedSalesExclusive: 5000,
+  minimumReportedSalesExclusive: 499,
   target: 0,
   /** Stop requesting further pages once this many products are publishable. */
   stopAt: 300,
@@ -33,7 +33,7 @@ export type RejectReason =
   | "brand";
 export const REJECT_LABELS: Record<RejectReason, string> = {
   currency: "המחיר לא הוחזר בשקלים (ILS)",
-  sales: "5,000 מכירות מדווחות או פחות (או נתון חסר)",
+  sales: "פחות מ-500 מכירות מדווחות (או נתון חסר)",
   hebrew: "אין כותרת בעברית מהספק",
   price: "מחיר חסר או לא תקין",
   image: "אין תמונה תקינה",
@@ -255,7 +255,7 @@ export async function buildCatalog(opts: BuildOptions): Promise<{ items: Catalog
   const shortfall: string[] = [];
   if (items.length < policy.target) {
     shortfall.push(`פורסמו ${items.length} מוצרים, פחות מהיעד של ${policy.target}. לא הוספנו מוצרים חלשים או מומצאים כדי להשלים.`);
-    if (rejectedPrimary.sales) shortfall.push(`${rejectedPrimary.sales} מוצרים נפסלו כי היו להם 5,000 מכירות מדווחות או פחות.`);
+    if (rejectedPrimary.sales) shortfall.push(`${rejectedPrimary.sales} מוצרים נפסלו כי היו להם פחות מ-500 מכירות מדווחות.`);
     if (rejectedAll.affiliate) shortfall.push(`${rejectedAll.affiliate} מוצרים נפסלו כי לא התקבל עבורם קישור שותפים תקין.`);
     if (rejectedAll.hebrew) shortfall.push(`${rejectedAll.hebrew} מוצרים נפסלו כי לא התקבלה כותרת בעברית.`);
     if (rejectedAll.currency) shortfall.push(`${rejectedAll.currency} מוצרים נפסלו כי המחיר לא הוחזר בשקלים.`);
