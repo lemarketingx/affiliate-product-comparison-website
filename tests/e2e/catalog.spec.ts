@@ -178,7 +178,9 @@ test("a failed product image shows the fallback in the same box, with the brand"
   await expect(card.locator(".bl-card-media img")).toHaveCount(0);
   const box = await card.locator(".bl-card-media").boundingBox();
   expect(box && Math.abs(box.width - box.height)).toBeLessThan(2);
-  const brand = (await card.locator(".bl-card-brand").innerText()).trim();
+  // The brand link shows a logo or monogram plus the name; read the name from its label.
+  const brand = ((await card.locator(".bl-card-brand").getAttribute("aria-label")) ?? "").replace("לכל מוצרי המותג ", "").trim();
+  expect(brand.length).toBeGreaterThan(0);
   await expect(card.locator(".bl-img-fallback b")).toHaveText(brand);
   // Product page: main gallery image falls back too.
   await card.getByRole("link", { name: /^פרטי / }).click();

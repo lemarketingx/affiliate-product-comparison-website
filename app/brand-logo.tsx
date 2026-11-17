@@ -2,14 +2,16 @@
 
 import { useState, type CSSProperties } from "react";
 
-/** Use third-party logo assets when available; never invent an official mark.
- * If the asset is unavailable, show a clearly typographic monogram instead. */
-const marks: Record<string, string> = {
-  xiaomi: "xiaomi", redmi: "redmi", poco: "poco",
-  baseus: "baseus", ugreen: "ugreen", anker: "anker",
-  soundcore: "soundcore", qcy: "qcy", edifier: "edifier",
-  "70mai": "70mai", dreame: "dreame", roborock: "roborock",
-  amazfit: "amazfit", reolink: "reolink", yeelight: "yeelight",
+/** Real logo files, self-hosted under /public/brands, used only to identify the
+ * brand of a listed product (no affiliation implied). Sources and licences:
+ * docs/BRAND-ASSETS.md. "wordmark" logos contain the name and replace the text;
+ * "mark" logos are a symbol shown next to the name. Brands without a free logo
+ * file keep the typographic monogram: an official mark is never invented. */
+const logos: Record<string, { file: string; kind: "wordmark" | "mark" }> = {
+  xiaomi: { file: "/brands/xiaomi.svg", kind: "mark" },
+  anker: { file: "/brands/anker.svg", kind: "wordmark" },
+  creality: { file: "/brands/creality.svg", kind: "wordmark" },
+  anycubic: { file: "/brands/anycubic.svg", kind: "mark" },
 };
 
 const palettes: Record<string, { accent: string; tint: string }> = {
@@ -42,29 +44,30 @@ export default function BrandLogo({ slug, name, compact = false }: {
   compact?: boolean;
 }) {
   const [broken, setBroken] = useState(false);
-  const icon = marks[slug];
+  const logo = broken ? null : logos[slug];
   const palette = palettes[slug] ?? { accent: "#334155", tint: "#edf2f7" };
   const style = {
     "--dp-brand-accent": palette.accent,
     "--dp-brand-tint": palette.tint,
   } as CSSProperties;
 
+  if (logo?.kind === "wordmark")
+    return (
+      <span className={"dpb-logo dp-brand-lockup is-wordmark" + (compact ? " is-compact" : "")} style={style} dir="ltr">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="dp-brand-wordmark" src={logo.file} alt={name} height={compact ? 14 : 30} decoding="async" onError={() => setBroken(true)} />
+      </span>
+    );
+
   return (
     <span className={"dpb-logo dp-brand-lockup" + (compact ? " is-compact" : "")} style={style} dir="ltr">
       <span className="dp-brand-mark" aria-hidden="true">
-        {icon && !broken ? (
+        {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={`https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/${icon}.svg`}
-            alt=""
-            width={30}
-            height={30}
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            onError={() => setBroken(true)}
-          />
-        ) : <span className="dp-brand-monogram">{name.slice(0, 1).toUpperCase()}</span>}
+          <img src={logo.file} alt="" width={30} height={30} decoding="async" onError={() => setBroken(true)} />
+        ) : (
+          <span className="dp-brand-monogram">{name.slice(0, 1).toUpperCase()}</span>
+        )}
       </span>
       <strong className="dp-brand-name">{name}</strong>
     </span>

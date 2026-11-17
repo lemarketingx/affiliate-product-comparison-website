@@ -547,3 +547,13 @@ a.bl-card-brand:hover .dp-brand-name { color: var(--dp-brand-accent, #334155); }
 @media (prefers-reduced-motion: reduce) {
   .bl-home .dpb-logo-tile, .fp-brands-page .fp-brand-card { transition: none; }
 }
+/* Wordmark logos (contain the brand name) replace the text name. */
+.dp-brand-lockup.is-wordmark { min-height: 44px; }
+.dp-brand-wordmark { display: block; height: 30px; width: auto; max-width: 150px; object-fit: contain; }
+.dp-brand-lockup.is-compact.is-wordmark { min-height: 25px; }
+.dp-brand-lockup.is-compact .dp-brand-wordmark { height: 14px; max-width: 76px; }
+/* Wordmarks are wide: undo the legacy 26x26 square (.dpb-logo img). */
+.dpb-logo img.dp-brand-wordmark { width: auto; height: 30px; max-width: 150px; }
+.dpb-logo.is-compact img.dp-brand-wordmark { height: 14px; max-width: 76px; }
+.fp-brands-page .dp-brand-heading img.dp-brand-wordmark { height: 46px; max-width: 260px; }
+@media (max-width: 699px) { .fp-brands-page .dp-brand-heading img.dp-brand-wordmark { height: 36px; } }
