@@ -22,8 +22,11 @@ export const PIPELINE_POLICY = {
   /** An exhausted term is searched again from page 1 after this many days. */
   resetAfterDays: 7,
   detailBatch: 20,
-  /** A product's price is re-checked by product ID at most this often. */
-  priceMinAgeHours: 20,
+  /** A product's price is re-checked by product ID at most this often. Kept well below
+   * the schedule interval (daily cron + 4-hourly GitHub schedule), so no run skips a
+   * product that is almost a day old. Was 20 h: a 17 h-old price was skipped at the
+   * daily run and reached ~41 h before the next check. */
+  priceMinAgeHours: 2,
 } as const;
 
 const errCode = (e: unknown) =>

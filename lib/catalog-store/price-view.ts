@@ -1,8 +1,18 @@
 // Pure price policy and price-gap diagnostics (unit-tested).
 import type { PriceFields } from "../aliexpress/normalize.ts";
 
-/** A stored price older than this is not shown as a current price. */
-export const PRICE_MAX_AGE_HOURS = 48;
+/** A stored price older than this is not shown as a current price. 30 h = the daily
+ * check plus margin; prices moved up to ~9% in a day (Nov 2026), so 48 h was too lax.
+ * DEALPILOT_PRICE_MAX_AGE_HOURS can lower it once the 4-hourly schedule runs. */
+export const PRICE_MAX_AGE_HOURS = 30;
+/** Above this age the storefront says the price may have changed since the check. */
+export const PRICE_WARN_AGE_HOURS = 12;
+
+export function priceAgeHours(observedAt: string | null | undefined, now: Date = new Date()): number | null {
+  if (!observedAt) return null;
+  const t = Date.parse(observedAt);
+  return Number.isFinite(t) ? Math.max(0, (now.getTime() - t) / 3600_000) : null;
+}
 
 export type PriceStatus = "current" | "stale" | "unknown";
 

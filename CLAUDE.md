@@ -34,7 +34,8 @@ npm run test:e2e    # Playwright; use the preinstalled Chromium, do not run `pla
 
 ## Price policy
 - Show only a provider-returned price, with its source field, currency and observation time.
-- A price older than `DEALPILOT_PRICE_MAX_AGE_HOURS` (default 48) is withheld, never shown as current.
+- A price older than `DEALPILOT_PRICE_MAX_AGE_HOURS` (default 30; was 48 until 2026-11-17) is withheld, never shown as current. Above 12 h the storefront says it may have changed.
+- Prices are re-checked by product ID every 4 h (`.github/workflows/price-refresh.yml`, needs repo secret `DEALPILOT_CRON_SECRET`) plus the daily Vercel cron; min re-check age 2 h.
 - Never invent prices, discounts, availability, warranty, ratings, sales, savings or official-store status.
 - Never label a USD amount as ILS. Never convert a positive-feedback % into stars.
 - Price refresh is a scheduled, budgeted job — never a provider call per page view.

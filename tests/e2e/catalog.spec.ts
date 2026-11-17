@@ -118,7 +118,8 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
   expect(await kpi("שורות שהתקבלו")).toBeGreaterThan(unique);
   await expect(page.locator("table").first()).toContainText("אין קישור שותפים תקין");
   await expect(page.locator("table").first()).toContainText("מותג מוכר אינו מזוהה");
-  await expect(page.locator("table").first()).toContainText("5,000 מכירות מדווחות או פחות");
+  // Owner lowered the threshold to 500 reported sales on 2026-11-17 (main 31ccce9).
+  await expect(page.locator("table").first()).toContainText("פחות מ-500 מכירות מדווחות");
   await expect(page.getByText(/גודל עמוד שנוסה/)).toBeVisible();
 
   // Product detail: affiliate redirect works and quality stays "not verified".
