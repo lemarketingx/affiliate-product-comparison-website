@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const b = BRANDS.find(x => x.slug === slug);
-  return { title: (b?.name ?? "מותגים") + " ב־AliExpress | DealPilot" };
+  return { title: (b?.name ?? "מותגים") + " ב־AliExpress | DealPilot", description: b ? `מוצרי ${b.name} ב־AliExpress: מחירים בשקלים, זמן בדיקה, נתוני מכירות ספק ומידע לקנייה לישראל.` : "מוצרי מותגים ב־AliExpress", alternates: { canonical: "/brands/" + slug } };
 }
 export default async function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
