@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CatalogItem } from "../lib/aliexpress/catalog";
 import { formatMoney } from "../lib/dealpilot/urls";
 import ProductImage from "./product-image";
+import BrandLogo from "./brand-logo";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { TaxBadge } from "./tax-badge";
 import { identifyListedBrand } from "../lib/dealpilot/brands";
@@ -23,7 +24,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
         <div className="bl-card-top">
           {brand ? (
             <Link className="bl-card-brand" href={"/brands/" + brand.slug} dir="ltr" aria-label={"לכל מוצרי המותג " + brand.name}>
-              {brand.name}
+              <BrandLogo slug={brand.slug} name={brand.name} compact />
             </Link>
           ) : (
             <span />
@@ -36,7 +37,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
           </Link>
         </h3>
         <div className="dp-product-price">
-          <span>מחיר ב־AliExpress</span>
+          <span>מחיר מדווח מ־AliExpress</span>
           {item.price ? (
             <strong dir="ltr">{formatMoney(item.price, item.currency)}</strong>
           ) : (

@@ -6,9 +6,9 @@ import "./storefront.css";
 import "./bottomline.css";
 
 export const metadata: Metadata = {
-  title: "DealPilot | מותגים מוכרים ב־AliExpress",
+  title: "DealPilot | מוצרי מותגים מ־AliExpress, עם מחיר שנבדק",
   description:
-    "מוצרי מותגים מוכרים ב־AliExpress: טכנולוגיה, בית, אודיו ורכב. מחיר בשקלים, בדיקת עלות לישראל וגילוי שותפים ברור.",
+    "מגלים מוצרי מותגים מ־AliExpress: מחירים בשקלים עם זמן בדיקה, נתוני מכירות ספק ואומדן מסי יבוא לישראל. המחיר הסופי נקבע בקופה.",
   metadataBase: new URL(
     process.env.DEALPILOT_SITE_URL ||
       (process.env.VERCEL_URL
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
     locale: "he_IL",
     type: "website",
   },
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  verification: { google: "uHRr4qQiJ7sZvzp_X-cN0OzNIMyoXDHVKwsb_76xjdc" },
 };
 
 export default function RootLayout({

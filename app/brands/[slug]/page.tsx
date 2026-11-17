@@ -5,12 +5,13 @@ import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
+import BrandLogo from "../../brand-logo";
 import { ShieldAlert } from "lucide-react";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const b = BRANDS.find(x => x.slug === slug);
-  return { title: (b?.name ?? "מותגים") + " ב־AliExpress | DealPilot" };
+  return { title: (b?.name ?? "מותגים") + " ב־AliExpress | DealPilot", description: b ? `מוצרי ${b.name} ב־AliExpress: מחירים בשקלים, זמן בדיקה, נתוני מכירות ספק ומידע לקנייה לישראל.` : "מוצרי מותגים ב־AliExpress", alternates: { canonical: "/brands/" + slug } };
 }
 export default async function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -21,8 +22,8 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
   return <PublicShell><main id="main" className="fp-wrap fp-section fp-brands-page">
     <nav className="fp-crumbs"><Link href="/">בית</Link> / <Link href="/brands">מותגים</Link> / <span dir="ltr">{brand.name}</span></nav>
     <span className="fp-kicker">מותג מזוהה · נתוני ספק מוצלבים</span>
-    <h1 className="fp-catalog-title" dir="ltr">{brand.name}</h1>
-    <p className="fp-lead">מוצרי {brand.name} שנמצאו ב־Affiliate API ועברו את הסינון המחמיר שלנו. זיהוי מותג אינו הוכחה למקוריות או לחנות מורשית.</p>
+    <h1 className="fp-catalog-title dp-brand-heading"><BrandLogo slug={brand.slug} name={brand.name}/></h1>
+    <p className="fp-lead">מוצרי {brand.name} שאותרו ב־AliExpress וסוננו לפי נתוני המוצר והחנות. השוו מחיר בשקלים, בדקו מכירות מדווחות ובחרו את הדגם המתאים. זיהוי מותג אינו אישור מקוריות או מוכר מורשה.</p>
     <p className="fp-notice is-wait"><ShieldAlert size={18} aria-hidden="true" /> בדקו את שם המוכר, ביקורות הקונים ותנאי משלוח לישראל לפני תשלום.</p>
     {items.length ? <div className="fp-grid">{items.map(item => <ProductCard key={item.id} item={item} usdRate={rate} />)}</div>
       : <div className="fp-empty"><h2>לא נמצאו כרגע מוצרים שעברו את בדיקת המותג</h2><p>לא נציג מוצרים ממוכרים לא מזוהים רק כדי למלא את העמוד.</p><Link href="/brands">לכל המותגים</Link></div>}
