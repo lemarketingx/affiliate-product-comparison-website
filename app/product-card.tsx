@@ -17,7 +17,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
   return (
     <article className="dp-product bl-card">
       <div className="bl-card-media" aria-hidden="true">
-        <ProductImage src={item.image} alt="" thumb lazy={!eager} />
+        <ProductImage src={item.image} alt="" thumb lazy={!eager} label={brand?.name ?? null} />
       </div>
       <div className="bl-card-body">
         <div className="bl-card-top">
@@ -35,14 +35,6 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
             {item.title}
           </Link>
         </h3>
-        <p className="bl-card-orders">
-          {item.orders !== null ? item.orders.toLocaleString("he-IL") + " מכירות מדווחות לפי הספק" : "נתוני מכירות אינם זמינים"}
-        </p>
-        {verified && item.quality?.rating && (
-          <p className="bl-card-orders">
-            דירוג {item.quality.rating.value.toFixed(1)}/5 · {item.quality.israelReviews?.count} ביקורות מישראל
-          </p>
-        )}
         <div className="dp-product-price">
           <span>מחיר ב־AliExpress</span>
           {item.price ? (
@@ -51,6 +43,14 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
             <strong className="is-none">אין מחיר עדכני</strong>
           )}
         </div>
+        <p className="bl-card-orders">
+          {item.orders !== null ? item.orders.toLocaleString("he-IL") + " מכירות מדווחות לפי הספק" : "נתוני מכירות אינם זמינים"}
+        </p>
+        {verified && item.quality?.rating && (
+          <p className="bl-card-orders">
+            דירוג {item.quality.rating.value.toFixed(1)}/5 · {item.quality.israelReviews?.count} ביקורות מישראל
+          </p>
+        )}
         {item.priceStatus !== undefined && (
           <small className={"bl-card-fresh" + (fresh && item.price ? "" : " is-unknown")}>
             {item.price ? fresh ?? "זמן הבדיקה אינו ידוע" : "המחיר האחרון לא עדכני ולכן אינו מוצג"}

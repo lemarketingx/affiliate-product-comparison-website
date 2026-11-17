@@ -140,3 +140,46 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
   expect((await request.get("/go/" + rejectedId, { maxRedirects: 0 })).status()).toBe(404);
   expect(await (await request.get("/products/" + rejectedId)).text()).toContain("המוצר אינו זמין כרגע");
 });
+
+// Owner request 2026-11-17: on phones the first products must appear early,
+// without dropping the disclosure (top line, one-line policy, per-card text).
+for (const [w, h, priceToo] of [[320, 568, false], [375, 667, false], [390, 844, true], [412, 915, true]] as const) {
+  test(`mobile catalog: first product starts in the first screen at ${w}x${h}`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await images(page);
+    await page.goto("/deals");
+    const card = page.locator(".dp-product").first();
+    await expect(card).toBeVisible();
+    const media = await card.locator(".bl-card-media").boundingBox();
+    expect(media && media.y).toBeLessThan(h - 40);
+    if (priceToo) {
+      const price = await card.locator(".dp-product-price strong").boundingBox();
+      expect(price && price.y + price.height).toBeLessThanOrEqual(h);
+    }
+    // Disclosure is still on screen: affiliate line, policy summary, and per card.
+    await expect(page.locator(".bl-topline").getByRole("link", { name: /קישורי שותפים/ })).toBeVisible();
+    const policy = page.locator(".dp-selection-policy");
+    await expect(policy.locator("summary")).toContainText("מקוריות המוצר טרם אומתה");
+    await expect(card).toContainText("כולל קישור שותפים");
+    await policy.locator("summary").click();
+    await expect(policy.getByText(/דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו/)).toBeVisible();
+    expect(await noHScroll(page)).toBe(true);
+  });
+}
+
+test("a failed product image shows the fallback in the same box, with the brand", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/alicdn\.com|aliexpress-media\.com/, (route) => route.abort());
+  await page.goto("/deals");
+  const card = page.locator(".dp-product").first();
+  await expect(card.locator(".bl-img-fallback")).toBeVisible();
+  await expect(card.locator(".bl-img-fallback")).toContainText("התמונה אינה זמינה כרגע");
+  await expect(card.locator(".bl-card-media img")).toHaveCount(0);
+  const box = await card.locator(".bl-card-media").boundingBox();
+  expect(box && Math.abs(box.width - box.height)).toBeLessThan(2);
+  const brand = (await card.locator(".bl-card-brand").innerText()).trim();
+  await expect(card.locator(".bl-img-fallback b")).toHaveText(brand);
+  // Product page: main gallery image falls back too.
+  await card.getByRole("link", { name: /^פרטי / }).click();
+  await expect(page.locator(".fp-gallery-main .bl-img-fallback")).toBeVisible();
+});

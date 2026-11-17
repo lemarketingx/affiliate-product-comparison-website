@@ -34,7 +34,7 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 ## Phase 2 — brand and UX (in progress)
 | Task | Status |
 |---|---|
-| Name shortlist with evidence | round 2 done (`docs/BRAND-NAMING.md`): תכל'ס rejected by owner (tachlis.co.il); recommend **מחיר אמת**, backup סופית; Israeli trademarks NOT CHECKED, so the owner checks with ILPO and an attorney |
+| Name shortlist with evidence | round 3 (`docs/BRAND-NAMING.md`): מחיר אמת withdrawn (same-category uses); lead candidate **תחתית**, backup סופית; trademarks and `.co.il` NOT CHECKED; owner check needed |
 | Symbol, favicon, lockups | done |
 | 3 directions + incumbent scored | done: A chosen |
 | Token layer + product card + product page in A | done |
@@ -43,10 +43,24 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | OG image | todo |
 | Rewrite 2 owner-decision e2e tests with roles and labels | done: "not in the box" test replaced by owner decision; populated-flow rewritten with branded products |
 | Accessibility (axe WCAG 2.1 AA) and LCP | done: 0 violations on 8 pages × 2 widths; mobile home LCP 748 ms (baseline 788) |
-| Mobile catalog: first products sit below the fold (policy notice + tax note are long) | todo: shorten or collapse |
+| Mobile catalog: first products early | done: first card image at 441 px at 390×844 (was 605); e2e at 320/375/390/412 |
 | Legacy no-DB `/go` answers 503 for up to 15 s while a cold catalog builds | todo (production reads the DB, so not affected there) |
-| Remove `/admin/design-lab` before merge | todo |
+| Remove `/admin/design-lab` before merge | done |
 | Apply approved name (metadata, wordmark, domain) | blocked: owner approval |
+
+## Launch readiness (see `docs/LAUNCH-READINESS.md`)
+| Task | Status |
+|---|---|
+| Real images on Production + thumbnail on the real CDN | done: 46/46 and 46/46 thumbnails HTTP 200 |
+| Image fallback (pre-hydration failures too) | done, e2e |
+| Live purchase path (product → /go → affiliate → click row) | done: one test click, row id 2 |
+| Catalog audit (duplicates, stale prices, links, unverified data) | done: parts store, promo banners and car category fixed at read time |
+| a11y and performance on real data | done locally (axe 0, CLS ≤ 0.042); Preview run blocked (no Vercel access) |
+| Unpublish Dreame parts listing 1005009849771017 on Production | owner (admin, one click) |
+| New discovery terms: all 24 terms exhausted until ~2026-11-23; home category empty | owner decision |
+| Link check covers 8/day; 30/46 unchecked | todo: raise batch |
+| Store cache key ignores `DEALPILOT_CACHE_NAMESPACE` (local tests only) | todo |
+| Intermittent: first store e2e after cold start (1 of 3 full runs) | todo: investigate |
 
 ## Phase 3 — competitive edge
 Israel vs abroad comparison (needs permitted Israeli price sources), import-cost calculator with sourced, dated tax rules, deal detection from stored price history (needs ≥ 30 days of history). todo

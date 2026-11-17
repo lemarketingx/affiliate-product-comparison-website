@@ -22,7 +22,7 @@ Milestone 1 (persistent catalog, prices, links) is complete and merged; its spec
 ## Acceptance criteria
 | # | Criterion | Status |
 |---|---|---|
-| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 2 done: `docs/BRAND-NAMING.md`; תכל'ס rejected by owner; recommend **מחיר אמת** (backup סופית); trademarks NOT CHECKED; **awaiting owner approval**. Name lives only in `lib/brand.ts` |
+| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 3: מחיר אמת withdrawn; lead candidate תחתית (backup סופית); trademarks and `.co.il` NOT CHECKED; **awaiting owner check and approval** |
 | 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and tokens (`app/bottomline.css`) done; OG image todo (waits for the name) |
 | 3 | 3 directions + incumbent scored with screenshots; one chosen | done: `docs/DESIGN-DIRECTIONS.md`; **A chosen** |
 | 4 | Product card, product page, home, deals/search/category, loading/error/404 in one system | done (screenshots `docs/screenshots/phase2/`) |
@@ -52,3 +52,16 @@ Product-page numbers were measured after visiting /deals, with shared assets cac
 | Desktop | Deals | 480 ms | ~325 KB |
 
 The mobile home LCP element is the h1, so the bold Hebrew face is preloaded. Without the preload it was 1676 ms. Two of the five mobile home runs were about 1.6 s, which looks like emulation jitter. Recheck this on Vercel after the next preview deploy.
+
+## Real-data measurements, 2026-11-17 (see `docs/LAUNCH-READINESS.md`)
+Branch run locally with the 46 real rows and real CDN images; Production (`main`) measured live. Profile: Pixel 7, 4× CPU slowdown, 1.6 Mbps, 150 ms RTT.
+
+| Page (mobile) | Branch LCP | Branch CLS | Branch images | Production LCP | Production CLS | Production images |
+|---|---|---|---|---|---|---|
+| Home | 1.56–1.79 s | 0.027 | 146 KB | 2.20 s | 0.001 | 171 KB |
+| Deals | 1.70 s | 0 | 69 KB | 1.54 s | 0.041 | 218 KB |
+| Category | 1.70–1.72 s | 0 | 79 KB | 1.50 s | 0.012 | 178 KB |
+| Search | 1.62–1.74 s | 0 | 70 KB | 1.39 s | 0.26 | 167 KB |
+| Product | 1.48 s | 0 | 21 KB | 1.26 s | 0 | 118 KB |
+
+LCP is not comparable across the two columns: local has no network TTFB, and Production has a warm CDN. Measure again on a Preview. axe: branch 0 violations; Production home 10–16 colour-contrast violations.

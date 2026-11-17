@@ -33,6 +33,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#121417" />
         {/* The page h1 is the LCP element: fetch its bold Hebrew face with the HTML, not after the CSS. */}
         <link rel="preload" href="/fonts/storefront/ibm-plex-sans-hebrew-hebrew-700-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preload" href="/fonts/storefront/ibm-plex-sans-hebrew-hebrew-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body>{children}</body>
     </html>

@@ -349,3 +349,27 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 - `/admin/design-lab` must be removed before any merge.
 - The OG image waits for the approved name.
 - Product images from the AliExpress CDN are blocked in this sandbox, so image rendering was tested with fixture images. Live images: NOT TESTED here.
+
+## 2026-11-17 · Launch readiness round (owner: no merge, no Production change)
+Full report: `docs/LAUNCH-READINESS.md`. Name research: `docs/BRAND-NAMING.md` (round 3).
+
+### Decisions and corrections
+- **מחיר אמת withdrawn.** A same-category "מחיר אמת" deals site exists; round 2's search method missed it. Round 3 searches each name with category words, in Hebrew and transliteration.
+- **Round 2 `.co.il` results were wrong.** The Vercel registry tool answers "taken" even for a random `.co.il`. Every `.co.il` is now NOT CHECKED.
+- **Price job run #12 made 0 calls, and that was correct.** Prices were 16 h old and the minimum age is 20 h. An earlier "due" count of mine used the wrong condition.
+- **Discovery found 0 new products** because all 24 terms are exhausted (sales-sorted results, threshold 5,000). The rule is correct; growth needs new terms (owner decision). Rules were not relaxed.
+
+### Live checks (Production, read-only except one test click)
+- Environment network: added `affiliate-product-comparison-websit.vercel.app` and `ae-pic-a1.aliexpress-media.com` (owner-approved prompt).
+- Images: 46/46 originals and 46/46 thumbnails HTTP 200.
+- Purchase path: 307 to the stored link, visitor `url=` ignored. One test click was recorded (`dp_click_events` id 2, source `other`, 2026-11-17 07:24:40 UTC).
+
+### Code
+- Display rules: parts and multi-brand stores no longer count as brand proof; seller sale banners are stripped; "car" needs a car word. Applied at read time and at ingest, with unit tests on real rows.
+- Image fallback that also catches failures before hydration. The thumbnail is also used for the `aliexpress-media.com` host.
+- Mobile catalog compacted; e2e checks the first screen at 4 sizes.
+- `font-display: optional` and a body-font preload (CLS was up to 0.23 on real data, now ≤ 0.042).
+- Empty-category state; `/admin/design-lab` removed.
+
+### Tests
+typecheck OK · unit 118/118 · build OK · e2e 43/43 · axe 0 violations on real data (5 pages × 2 viewports).

@@ -96,7 +96,7 @@ export default async function Product({
         </nav>
         <div className="bl-product-grid">
           <div className="bl-product-media">
-            <ProductGallery images={images} title={p.title} />
+            <ProductGallery images={images} title={p.title} label={brand?.name ?? null} />
           </div>
           <div className="bl-product-side">
             {brand && (

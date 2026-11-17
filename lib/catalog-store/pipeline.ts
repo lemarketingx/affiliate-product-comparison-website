@@ -7,6 +7,7 @@ import type { AliProduct } from "../aliexpress/normalize.ts";
 import type { ProductPage } from "../aliexpress/query.ts";
 import { CATALOG_POLICY, publicRejections, type CategoryDef, type RejectReason } from "../aliexpress/catalog-build.ts";
 import { identifyListedBrand } from "../dealpilot/brands.ts";
+import { resolveCategory } from "../dealpilot/listing-rules.ts";
 import { withBanRetry } from "../aliexpress/pacer.ts";
 
 /** Calls one dp_* SQL function with a single jsonb argument. */
@@ -56,8 +57,8 @@ export function toIngestItem(
     brand: brand?.name ?? null,
     supplier_brand: p.supplierBrand,
     shop_name: p.shopName,
-    category_slug: cat.slug,
-    category_label: cat.label,
+    category_slug: (resolveCategory(p.title, cat.slug, brand?.category) ?? cat).slug,
+    category_label: (resolveCategory(p.title, cat.slug, brand?.category) ?? cat).label,
     image: p.image,
     images: p.images.slice(0, 8),
     product_url: p.productUrl,
