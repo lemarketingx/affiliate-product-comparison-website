@@ -4,5 +4,5 @@
 export const BRAND = {
   name: "DealPilot",
   /** Hebrew tagline; name-neutral so it survives a rename. */
-  tagline: "המחיר האמיתי, בשורה התחתונה",
+  tagline: "מוצאים מוצרים. בודקים לפני שקונים",
 } as const;
