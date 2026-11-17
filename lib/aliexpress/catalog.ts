@@ -95,7 +95,7 @@ const MEMO_MS = 60000;
 const sleep = (ms: number) => new Promise<null>((r) => setTimeout(() => r(null), ms));
 
 /**
- * Public catalog: >5000 reported sales, ILS, Hebrew title, valid product data
+ * Public catalog: at least 500 reported sales, ILS, Hebrew title, valid product data
  * and a valid affiliate link. A page view waits at most WAIT_MS; if the catalog
  * is still being built it gets a "warming" snapshot and the build continues
  * after the response (next/server `after`).
