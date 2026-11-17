@@ -383,3 +383,5 @@ a.bl-more:hover { color: var(--bl-paper); }
 .bl-page .bl-page-title { font: 700 clamp(26px, 4vw, 40px)/1.15 var(--bl-sans); color: var(--bl-ink); margin: 28px 0 8px; letter-spacing: -0.01em; }
 .bl-page-lead { color: var(--bl-ink-2); margin: 0 0 20px; max-width: 60ch; }
 .bl-receipt-note { margin: 4px 0 10px; font-size: 13px; line-height: 1.5; color: var(--bl-ink-2); background: #f6f6f1; border-inline-start: 3px solid var(--bl-hl); padding: 8px 10px; border-radius: 6px; }
+/* A price older than PRICE_WARN_AGE_HOURS may have changed on AliExpress. */
+.bl-card-fresh.is-old, .bl-receipt-fresh.is-old { color: #8a4b00; }
