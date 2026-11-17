@@ -36,7 +36,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
           </Link>
         </h3>
         <div className="dp-product-price">
-          <span>מחיר ב־AliExpress</span>
+          <span>מחיר מדווח מ־AliExpress</span>
           {item.price ? (
             <strong dir="ltr">{formatMoney(item.price, item.currency)}</strong>
           ) : (
