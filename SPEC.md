@@ -22,7 +22,7 @@ Milestone 1 (persistent catalog, prices, links) is complete and merged; its spec
 ## Acceptance criteria
 | # | Criterion | Status |
 |---|---|---|
-| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 3: מחיר אמת withdrawn; lead candidate תחתית (backup סופית); trademarks and `.co.il` NOT CHECKED; **awaiting owner check and approval** |
+| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 3: מחיר אמת withdrawn; no strong winner (סופית first, תחתית alternative); trademarks and `.co.il` NOT CHECKED; **awaiting owner** |
 | 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and tokens (`app/bottomline.css`) done; OG image todo (waits for the name) |
 | 3 | 3 directions + incumbent scored with screenshots; one chosen | done: `docs/DESIGN-DIRECTIONS.md`; **A chosen** |
 | 4 | Product card, product page, home, deals/search/category, loading/error/404 in one system | done (screenshots `docs/screenshots/phase2/`) |
@@ -64,4 +64,4 @@ Branch run locally with the 46 real rows and real CDN images; Production (`main`
 | Search | 1.62–1.74 s | 0 | 70 KB | 1.39 s | 0.26 | 167 KB |
 | Product | 1.48 s | 0 | 21 KB | 1.26 s | 0 | 118 KB |
 
-LCP is not comparable across the two columns: local has no network TTFB, and Production has a warm CDN. Measure again on a Preview. axe: branch 0 violations; Production home 10–16 colour-contrast violations.
+LCP is not comparable across the two columns: FCP = LCP on both, local is uncompressed HTTP/1.1 with no network TTFB, and Production is HTTP/2 + brotli. A/B of the body-font preload made no difference. Measure again on a Preview. axe: branch 0 violations; Production home 10–16 colour-contrast violations.

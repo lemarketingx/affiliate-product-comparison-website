@@ -35,3 +35,13 @@ test("the car category needs a car word in the title (Baseus car search returns 
   assert.equal(resolveCategory("UGREEN כבל", "tech", "tech"), null, "other categories are untouched");
   assert.equal(resolveCategory("Baseus carbon fiber SD card reader", "car", "tech")?.slug, "tech", "no substring match on car");
 });
+
+test("sister brands in one store name still corroborate (Xiaomi/Redmi/POCO, Anker/Soundcore)", () => {
+  assert.equal(identifyListedBrand({ title: "Redmi Buds 6 Pro", shopName: "Xiaomi Redmi Official Store" })?.slug, "redmi");
+  assert.equal(identifyListedBrand({ title: "Soundcore Liberty 4 NC", shopName: "Anker Soundcore Store" })?.slug, "soundcore");
+});
+
+test("promo words match whole words only", () => {
+  assert.equal(cleanListingTitle("UGREEN【Laptop Stand】מעמד למחשב נייד"), "UGREEN【Laptop Stand】מעמד למחשב נייד");
+  assert.equal(cleanListingTitle("【Hot Sale】Baseus כבל USB-C 100W"), "Baseus כבל USB-C 100W");
+});

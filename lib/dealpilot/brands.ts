@@ -38,7 +38,9 @@ export function identifyListedBrand(input: { title: string; shopName?: string | 
   const supplied = tokens(input.supplierBrand ?? "");
   // A store named after several brands, or a parts/accessories store, is a
   // reseller of compatible items: its name does not corroborate any brand.
-  const shopBrands = BRANDS.filter(b => b.aliases.some(x => shop.includes(x.toLowerCase()))).length;
+  // Sister brands from one maker count once (a "Xiaomi Redmi Store" is still one maker).
+  const family = (slug: string) => (slug === "redmi" || slug === "poco" ? "xiaomi" : slug === "soundcore" ? "anker" : slug);
+  const shopBrands = new Set(BRANDS.filter(b => b.aliases.some(x => shop.includes(x.toLowerCase()))).map(b => family(b.slug))).size;
   const resellerShop = shopBrands > 1 || shop.some(w => w === "parts" || w === "spare" || w === "replacement");
   for (const b of BRANDS) {
     const aliases = b.aliases.map(x => x.toLowerCase());

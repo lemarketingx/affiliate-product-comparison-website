@@ -371,5 +371,11 @@ Full report: `docs/LAUNCH-READINESS.md`. Name research: `docs/BRAND-NAMING.md` (
 - `font-display: optional` and a body-font preload (CLS was up to 0.23 on real data, now ≤ 0.042).
 - Empty-category state; `/admin/design-lab` removed.
 
-### Tests
-typecheck OK · unit 118/118 · build OK · e2e 43/43 · axe 0 violations on real data (5 pages × 2 viewports).
+### Tests (final build)
+typecheck OK · unit **120/120** · build OK · e2e **43/43** (run right after a real-data local server, which proves the cache fix) · axe 0 violations on real data (5 pages × 2 viewports) · 120/120 card images loaded as thumbnails.
+
+### Follow-up corrections (same day)
+- The "intermittent" store e2e failure was cache leakage between local servers: the store cache key lacked `DEALPILOT_CACHE_NAMESPACE`. Reproduced on demand, then fixed.
+- Mobile LCP: locally FCP = LCP; the local server is uncompressed HTTP/1.1, Production is HTTP/2 + brotli, so the numbers are not comparable. A Preview measurement is needed (LAUNCH-READINESS D12).
+- Names: re-ran the "מחיר אמת"-style query (exact phrase + "השוואת מחירים", extended) on each candidate. "תחתית" is also a product type on Zap and CHP; "שורלי" has a possible insurance-comparison mention. Lead candidate is now **סופית**, with no strong winner.
+- Brand rule: sister brands count once; promo words match whole words only.

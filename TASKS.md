@@ -34,7 +34,7 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 ## Phase 2 — brand and UX (in progress)
 | Task | Status |
 |---|---|
-| Name shortlist with evidence | round 3 (`docs/BRAND-NAMING.md`): מחיר אמת withdrawn (same-category uses); lead candidate **תחתית**, backup סופית; trademarks and `.co.il` NOT CHECKED; owner check needed |
+| Name shortlist with evidence | round 3 (`docs/BRAND-NAMING.md`): מחיר אמת withdrawn; no strong winner; check סופית first (alternative תחתית) or commission a coined-name shortlist; trademarks and `.co.il` NOT CHECKED |
 | Symbol, favicon, lockups | done |
 | 3 directions + incumbent scored | done: A chosen |
 | Token layer + product card + product page in A | done |
@@ -55,12 +55,12 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Image fallback (pre-hydration failures too) | done, e2e |
 | Live purchase path (product → /go → affiliate → click row) | done: one test click, row id 2 |
 | Catalog audit (duplicates, stale prices, links, unverified data) | done: parts store, promo banners and car category fixed at read time |
-| a11y and performance on real data | done locally (axe 0, CLS ≤ 0.042); Preview run blocked (no Vercel access) |
+| a11y and performance on real data | axe 0 and CLS ≤ 0.042 done locally; LCP needs a Preview (no Vercel access) |
 | Unpublish Dreame parts listing 1005009849771017 on Production | owner (admin, one click) |
 | New discovery terms: all 24 terms exhausted until ~2026-11-23; home category empty | owner decision |
 | Link check covers 8/day; 30/46 unchecked | todo: raise batch |
-| Store cache key ignores `DEALPILOT_CACHE_NAMESPACE` (local tests only) | todo |
-| Intermittent: first store e2e after cold start (1 of 3 full runs) | todo: investigate |
+| Store cache key ignores `DEALPILOT_CACHE_NAMESPACE` (caused the 'intermittent' store e2e failure) | done |
+| Mobile LCP of the new design on a Preview (local numbers not comparable) | blocked: Preview link |
 
 ## Phase 3 — competitive edge
 Israel vs abroad comparison (needs permitted Israeli price sources), import-cost calculator with sourced, dated tax rules, deal detection from stored price history (needs ≥ 30 days of history). todo

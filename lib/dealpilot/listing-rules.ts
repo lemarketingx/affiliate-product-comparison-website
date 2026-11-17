@@ -8,7 +8,7 @@
 import { categories } from "./categories.ts";
 
 // A bracketed or leading seller banner that claims a sale, a deal or popularity.
-const PROMO_WORDS = /(sale|deal|hot|top|best|new|offer|promo|discount|clearance|flash|מבצע|הנחה|חדש|לוהט|הכי נמכר|רב מכר|מומלץ)/i;
+const PROMO_WORDS = /(\b(?:sale|deal|hot|top|best|new|offer|promo|discount|clearance|flash)\b|מבצע|הנחה|חדש|לוהט|הכי נמכר|רב מכר|מומלץ)/i;
 const BRACKETED = /[【\[]([^【】\[\]]{1,30})[】\]]/g;
 const LEADING = /^\s*(?:מבצע(?:\s+חדש)?|הנחה|מחיר מבצע|hot\s*sale|big\s*sale|top\s*sale|new\s*arrival|flash\s*deal)\s*[:：!\-–—|]*\s*/i;
 
