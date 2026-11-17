@@ -45,10 +45,10 @@ export default function CatalogBrowser({
       <div className="fp-section-head">
         <div>
           <span className="fp-kicker">קטלוג מותגים מוכרים</span>
-          <h1 className="fp-catalog-title">{title ?? "מצאו את המותג שאתם מחפשים."}</h1>
+          <h1 className="fp-catalog-title">{title ?? "גלו מוצרים של מותגים מוכרים."}</h1>
           <p>
             {snapshot.available
-              ? "מוצרי מותגים נבחרים מ־AliExpress, במחירי ספק בשקלים. מקוריות ומוכר מורשה טרם אומתו."
+              ? "גלו מוצרי מותגים לפי תחום, מחיר ומכירות מדווחות. המחירים כוללים זמן בדיקה ואומדן מסי יבוא לישראל. מקוריות ומוכר מורשה טרם אומתו."
               : "הקטלוג אינו זמין כרגע. נסו שוב מאוחר יותר."}
           </p>
         </div>
@@ -61,7 +61,7 @@ export default function CatalogBrowser({
         </summary>
         <div>
           <p>
-            המוצרים עברו זיהוי מותג בהצלבת שם המוצר ונתוני חנות/ספק, עם יותר מ־{fmt(CATALOG_POLICY.minimumReportedSalesExclusive)} מכירות מדווחות, מחיר בשקלים, כותרת בעברית וקישור
+            המוצרים עברו זיהוי מותג בהצלבת שם המוצר ונתוני חנות/ספק, עם לפחות {fmt(CATALOG_POLICY.minimumReportedSalesExclusive + 1)} מכירות מדווחות, מחיר בשקלים, כותרת בעברית וקישור
             שותפים תקין. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.
           </p>
           <small>מכירות מדווחות הן נתון של הספק לתקופה אחרונה, לא בדיקת איכות. בדקו דירוג, ביקורות ומשלוח ב־AliExpress לפני רכישה.</small>
