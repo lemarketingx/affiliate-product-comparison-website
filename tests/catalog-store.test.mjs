@@ -330,7 +330,18 @@ test("display policy withholds stale or unknown prices", () => {
   assert.equal(stale.status, "stale");
   assert.equal(displayPrice({ price: null, currency: null, price_observed_at: null }, now).status, "unknown");
   assert.equal(displayPrice({ price: "0", currency: "ILS", price_observed_at: "2026-11-16T00:00:00Z" }, now).price, null);
-  assert.equal(priceStatus("2026-11-14T12:00:00Z", now), "current", "exactly 48h is still current");
+  // Owner report 2026-11-17 (site price ≠ AliExpress): the limit is 30 h, not 48 h.
+  assert.equal(priceStatus("2026-11-15T06:00:00Z", now), "current", "exactly 30h is still current");
+  assert.equal(priceStatus("2026-11-15T05:00:00Z", now), "stale", "31h is stale");
+  assert.equal(priceStatus("2026-11-14T12:00:00Z", now), "stale", "48h is no longer shown as current");
+});
+
+test("price age in hours for the 'may have changed' warning", async () => {
+  const { priceAgeHours, PRICE_WARN_AGE_HOURS } = await import("../lib/catalog-store/price-view.ts");
+  const now = new Date("2026-11-16T12:00:00Z");
+  assert.equal(priceAgeHours("2026-11-16T00:00:00Z", now), 12);
+  assert.equal(priceAgeHours(null, now), null);
+  assert.equal(PRICE_WARN_AGE_HOURS, 12);
 });
 
 test("price diagnostics explain likely checkout gaps from returned fields only", () => {
@@ -681,4 +692,10 @@ test("freshness label is honest and Hebrew", async () => {
   assert.equal(freshnessLabel("2026-11-16T07:00:00Z", now), "המחיר נבדק לפני 5 שעות");
   assert.equal(freshnessLabel("2026-11-15T10:00:00Z", now), "המחיר נבדק אתמול");
   assert.equal(freshnessLabel("2026-11-13T12:00:00Z", now), "המחיר נבדק לפני 3 ימים");
+});
+
+test("price re-check interval stays well below the daily schedule", async () => {
+  const { PIPELINE_POLICY } = await import("../lib/catalog-store/pipeline.ts");
+  // A price checked 17 h before the daily run must be re-checked by it (was skipped at 20 h).
+  assert.ok(PIPELINE_POLICY.priceMinAgeHours <= 4, "min age " + PIPELINE_POLICY.priceMinAgeHours);
 });
