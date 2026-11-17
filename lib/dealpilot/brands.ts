@@ -44,7 +44,12 @@ export function identifyListedBrand(input: { title: string; shopName?: string | 
   const family = (slug: string) => (slug === "redmi" || slug === "poco" ? "xiaomi" : slug === "soundcore" ? "anker" : slug);
   const shopBrands = new Set(BRANDS.filter(b => b.aliases.some(x => shop.includes(x.toLowerCase()))).map(b => family(b.slug))).size;
   const resellerShop = shopBrands > 1 || shop.some(w => w === "parts" || w === "spare" || w === "replacement");
+  // A compatible accessory is not necessarily manufactured by Xiaomi/Redmi/POCO.
+  // These phrases signal compatibility, not a manufacturer claim, even if the
+  // storefront happens to mention the device brand in its own name.
+  const compatibleAccessory = /(?:\b(?:for|compatible\s+with|replacement\s+for|fits)\s+(?:xiaomi|redmi|poco)\b|(?:תואם|מתאים|עבור)\s+ל?(?:שיאומי|רדמי|פוקו))/i.test(input.title);
   for (const b of BRANDS) {
+    if (compatibleAccessory && family(b.slug) === "xiaomi") continue;
     const aliases = b.aliases.map(x => x.toLowerCase());
     const titleHit = aliases.some(x => title.includes(x));
     const supplierHit = aliases.some(x => supplied.includes(x));
