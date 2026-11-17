@@ -76,10 +76,11 @@ test("link check job follows affiliate links to the same product", async ({ requ
   const body = await res.json();
   expect(body.discovery).toBeNull();
   expect(body.prices).toBeNull();
-  expect(body.links.stats.checked).toBe(8);
+  // 25 links per run since 2026-11-17 (was 8): 315 new products need checking within days.
+  expect(body.links.stats.checked).toBe(25);
   // The seeded stale product's link has no fixture redirect: unverifiable, not unpublished.
-  expect(body.links.stats.ok + body.links.stats.broken).toBe(8);
-  expect(body.links.stats.ok).toBeGreaterThanOrEqual(7);
+  expect(body.links.stats.ok + body.links.stats.broken).toBe(25);
+  expect(body.links.stats.ok).toBeGreaterThanOrEqual(24);
   expect(body.links.stats.withAffParams).toBe(body.links.stats.ok);
   expect(body.links.stats.unpublished).toBe(0);
 });
