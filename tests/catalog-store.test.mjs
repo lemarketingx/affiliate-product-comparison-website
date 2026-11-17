@@ -111,7 +111,7 @@ test("discovery persists valid products, rejects weak ones, and a rerun creates 
   assert.equal(await count("status='published'"), first.stats.publishedNew);
   assert.ok(first.stats.publishedNew > 90 && first.stats.publishedNew < 150);
   // Every published row is complete; every rejected row says why.
-  assert.equal(await count("status='published' and (affiliate_url is null or image is null or orders <= 5000)"), 0);
+  assert.equal(await count("status='published' and (affiliate_url is null or image is null or orders < 500)"), 0);
   assert.equal(await count("status='rejected' and cardinality(reject_reasons)=0"), 0);
   assert.ok(first.stats.rejected.sales > 0 && first.stats.rejected.affiliate > 0);
 
@@ -259,7 +259,7 @@ test("discovery spends its budget going deeper and stops a term at the first pag
   const { rpc: rpc2, db: db2 } = await freshDb();
   const weak = async (term, pageNo, size) => {
     const page = await provider.fetchPage(term, pageNo, size);
-    if (pageNo === 2) page.products.forEach((p) => (p.orders = 4000));
+    if (pageNo === 2) page.products.forEach((p) => (p.orders = 400));
     return page;
   };
   await runDiscovery({ rpc: rpc2, categories, fetchPage: weak, trigger: "test", maxCalls: 6 });
