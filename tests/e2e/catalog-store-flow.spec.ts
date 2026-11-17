@@ -25,7 +25,7 @@ test("a stored product with a 5-day-old price is listed without a price", async 
   await page.goto(BASE + "/products/1005000000777");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("מחיר לא עדכני");
   await expect(page.getByText(/ולכן אינו מוצג כעדכני/)).toBeVisible();
-  await expect(page.locator(".fp-ticket-price strong")).toHaveText("אין מחיר עדכני");
+  await expect(page.getByRole("region", { name: "מחיר וקנייה" }).locator("strong").first()).toHaveText("אין מחיר עדכני");
   await expect(page.getByText("77.70")).toHaveCount(0);
 });
 
@@ -85,19 +85,31 @@ test("link check job follows affiliate links to the same product", async ({ requ
 });
 
 test("storefront reads the database and shows detail-checked prices with their age", async ({ page }) => {
-  await page.goto(BASE + "/deals");
-  // The seeded stale product sorts first (most sales); take the next real one.
-  const first = page.locator('a[href^="/products/"]:not([href*="1005000000777"])').first();
-  await expect(first).toBeVisible();
-  const href = (await first.getAttribute("href"))!;
+  // The price job checks the highest-selling products first, within a call budget, so
+  // list by sales. The seeded stale product sorts first (most sales); skip it.
+  // A later import run (previous test) can add newer best sellers that are not checked yet,
+  // so scan the first two pages.
+  const hrefs: string[] = [];
+  for (const pg of [1, 2]) {
+    await page.goto(BASE + "/deals?sort=orders&page=" + pg);
+    await expect(page.locator(".dp-product").first()).toBeVisible();
+    hrefs.push(...((await page.locator('a[href^="/products/"]:not([href*="1005000000777"])').evaluateAll((els) =>
+      els.map((e) => e.getAttribute("href")!))) as string[]));
+  }
+  expect(hrefs.length).toBeGreaterThan(0);
+  let href = "";
+  for (const h of [...new Set(hrefs)]) {
+    await page.goto(BASE + h);
+    if (await page.getByText(/בדיקה לפי מזהה מוצר.*נבדק/).count()) { href = h; break; }
+  }
+  expect(href, "a listed product shows a detail-checked price").not.toBe("");
   refreshedId = href.split("/").pop()!.split("?")[0];
-  await page.goto(BASE + href);
   await expect(page.getByText(/בדיקה לפי מזהה מוצר.*נבדק/)).toBeVisible();
   // Detail fixture answers in USD (search ILS / 3.7 × 1.04, TEST FIXTURE). The search rows
   // carry no USD price to confirm against, so the fresh USD quote is shown as USD — never relabelled ILS.
   const search = 9.9 + (Number(refreshedId.slice(-3)) % 200) * 4;
   const expected = new Intl.NumberFormat("he-IL", { style: "currency", currency: "USD" }).format(Number(((search / 3.7) * 1.04).toFixed(2)));
-  await expect(page.locator(".fp-ticket-price strong")).toHaveText(expected);
+  await expect(page.getByRole("region", { name: "מחיר וקנייה" }).locator("strong").first()).toHaveText(expected);
   await expect(page.getByText(/SKU 99/)).toBeVisible();
 });
 

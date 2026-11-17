@@ -279,3 +279,120 @@ This is what the code shows. It has not yet been confirmed against live AliExpre
 ### Gate 3: CI and Production
 - CI (`verify`: typecheck, unit, build) runs on every push to PR #20.
 - Production env vars (DB, `CRON_SECRET`, AliExpress) cannot be read from here (Vercel 403). Without them, Production keeps the legacy live-cache catalog and the crons answer 503 `STORE_NOT_CONFIGURED`, so the merge is safe either way.
+
+## 2026-11-16 · Milestone 2 started: brand and one storefront
+- The branch was restarted from `main` (`bae2e6f`) after PR #20 merged.
+- **Baseline:**
+  - Screenshots of the incumbent (`docs/screenshots/design-lab/before-*`) show the home page navy/gold and the product page boarding-pass cream, two different languages.
+  - The header search button is an empty circle.
+  - Speed baseline recorded in `SPEC.md`.
+- **Name:** `docs/BRAND-NAMING.md`, with domains checked live (Vercel registry) and conflicts searched.
+  - DealPilot: all main domains are taken, and a same-category "DealPilot" coupon app exists (LoudCrowd).
+  - "שקוף": rejected, because Shakuf is an Israeli news nonprofit.
+  - **Recommended: תכל'ס (Tachles).** `tachles.shop`, `.deals` and `.io` are free. `.co.il` and the trademark register are NOT CHECKED.
+  - Nothing renamed on the site; awaiting owner approval.
+- **Symbol:** a tag with a "bottom line" bar and a check, not a cart. It replaces `public/favicon.svg` (name-neutral). Lockups for the proposed name, light and dark, are in `public/brand/`.
+- **Design lab:** `/admin/design-lab` renders three directions on the same slice with real catalog rows; no horizontal overflow at 390 and 1440. Scored in `docs/DESIGN-DIRECTIONS.md`: **A "השורה התחתונה" chosen (18/20).**
+- **Inputs:** PRs #3 and #16 were read as inputs, not merged. Both target an old base branch.
+- **Next:** token layer, then migrate in revenue order (product card → product page → home → listings → states), with e2e updated in the same commits.
+
+### Milestone 2, increment 1: product card and product page in direction A
+- **Built:**
+  - `app/bottomline.css`: the token layer (`--bl-*`), plus card and product-page styles.
+  - The card (`app/product-card.tsx`) loses the boarding-pass elements (flight code, barcode, perforation). It shows the brand, a 2-line title, reported sales, the price as a receipt line in tabular mono, "המחיר נבדק לפני N שעות" (`freshnessLabel`, unit-tested), the tax badge and an honest verification chip. The whole card is one link.
+  - Product page: one visible h1, and a receipt block covering the price with its source and check time, import tax, shipping ("מוצג בקופה") and "השורה התחתונה", which links to the existing true-cost calculator.
+  - The CTA goes through `/go`. A mobile sticky buy bar was added. The "חלופות מאותה קטגוריה" section replaces the airport copy.
+  - `lib/brand.ts` centralises the brand name. It is still DealPilot, pending approval.
+- **Bugs found and fixed during QA:**
+  - **The CTA text was invisible.** The legacy `.fp a { color: inherit }` beat `.bl-cta`; links now use `a.bl-cta` specificity.
+  - **Narrow cards clipped the title and price** at 390 px (two columns). Fixed with a `minmax(0, 1fr)` track and a container query that stacks the price.
+  - **A QA pitfall, recorded so it isn't repeated:** a stale `next-server` process kept serving HTML from an old build, which made the page look unstyled. Kill `next-server` too, not only `next start`.
+- **Checks:**
+  - No horizontal overflow and exactly one h1 at 320, 375, 390, 768, 1024, 1440 and 1920 on `/deals` and the product page.
+  - The CTA text computes to white.
+  - No card child sits outside its card at 320, 390 or 1440.
+  - Unit 113/113. e2e 36/38: the 2 owner-decision tests remain failing; selectors moved to roles and labels.
+- **Not done yet:**
+  - The header and footer shell still use the old cream/airport language ("מגדל פיקוח", "שעון ישראל").
+  - Home, listings, category/brand pages and the loading/error/404 states are not migrated.
+  - The OG image is missing.
+
+## 2026-11-16 · Phase 2 continued: owner decisions, full storefront in direction A
+### Owner decisions applied
+1. **תכל'ס is not approved:** the active Israeli site "תאכלס" (tachlis.co.il) creates a confusion risk. Name research round 2 is in `docs/BRAND-NAMING.md`: five names scored, with a live domain check; Israeli trademarks are **NOT CHECKED** (the ILPO host is unreachable from here and gov.il returns 403). Recommendation: **מחיר אמת**, backup **סופית**. The live name stays DealPilot; it lives only in `lib/brand.ts`.
+2. **"מה כנראה לא בקופסה"** stays removed until verified product data exists. The browser test that asserted it was replaced; a comment in `tests/e2e/preflight.spec.ts` records the decision, and the test now asserts that the heading is absent.
+3. **populated-flow rewritten** for branded products: card, brand link, ₪ price only, header search, product receipt, CTA `rel=sponsored`, `/go` ignores `?url=`, brand page, and a 375 px buy bar.
+
+### Built
+- Shell: symbol, swappable wordmark, disclosure top line, search with a visible "חיפוש" button (it used to be an empty circle), nav and mobile menu, footer. All airport copy removed.
+- Home: h1 with the promise, real catalog facts (count of prices checked within 48 h, DB only), the official-campaign carousel restyled, brand logos, category banners, how-it-works, and best sellers.
+- Catalog, search, category and brand lists; category tiles; loading skeleton (respects reduced motion); error page; 404 with search.
+- `freshnessLabel()` in `price-view.ts` (unit-tested).
+
+### Tests (local, fixtures)
+- typecheck OK · unit **113/113** · build OK · e2e **38/38**.
+- QA: 8 pages × 7 widths (320–1920): no horizontal scroll, exactly one h1, no broken images, minimum price font 19 px.
+- axe-core 4.10.3 WCAG 2.1 A/AA: **0 violations** on 8 pages at 390 and 1440. Fixed along the way:
+  - invisible "סינון" button text (legacy `!important`)
+  - pager contrast
+  - five brand-logo colours below 4.5:1
+- Speed: see `SPEC.md` (no regression; mobile deals improved from 724 to 432 ms).
+- Screenshots: `docs/screenshots/phase2/`.
+
+### Findings
+- Test flake root cause: during streaming, Next keeps content in a hidden wrapper for about 30 ms, so role queries could see 0 links. Tests now wait for the first card to be visible.
+- The legacy no-DB `/go` path waits up to 15 s and answers 503 while a cold catalog builds. Production reads the database, so it is unaffected; this is logged in TASKS.
+- On mobile, the catalog's policy notice and tax note push the first products below the fold; logged in TASKS.
+
+### Not done / blocked
+- Production unchanged; nothing merged to `main`.
+- `/admin/design-lab` must be removed before any merge.
+- The OG image waits for the approved name.
+- Product images from the AliExpress CDN are blocked in this sandbox, so image rendering was tested with fixture images. Live images: NOT TESTED here.
+
+## 2026-11-17 · Launch readiness round (owner: no merge, no Production change)
+Full report: `docs/LAUNCH-READINESS.md`. Name research: `docs/BRAND-NAMING.md` (round 3).
+
+### Decisions and corrections
+- **מחיר אמת withdrawn.** A same-category "מחיר אמת" deals site exists; round 2's search method missed it. Round 3 searches each name with category words, in Hebrew and transliteration.
+- **Round 2 `.co.il` results were wrong.** The Vercel registry tool answers "taken" even for a random `.co.il`. Every `.co.il` is now NOT CHECKED.
+- **Price job run #12 made 0 calls, and that was correct.** Prices were 16 h old and the minimum age is 20 h. An earlier "due" count of mine used the wrong condition.
+- **Discovery found 0 new products** because all 24 terms are exhausted (sales-sorted results, threshold 5,000). The rule is correct; growth needs new terms (owner decision). Rules were not relaxed.
+
+### Live checks (Production, read-only except one test click)
+- Environment network: added `affiliate-product-comparison-websit.vercel.app` and `ae-pic-a1.aliexpress-media.com` (owner-approved prompt).
+- Images: 46/46 originals and 46/46 thumbnails HTTP 200.
+- Purchase path: 307 to the stored link, visitor `url=` ignored. One test click was recorded (`dp_click_events` id 2, source `other`, 2026-11-17 07:24:40 UTC).
+
+### Code
+- Display rules: parts and multi-brand stores no longer count as brand proof; seller sale banners are stripped; "car" needs a car word. Applied at read time and at ingest, with unit tests on real rows.
+- Image fallback that also catches failures before hydration. The thumbnail is also used for the `aliexpress-media.com` host.
+- Mobile catalog compacted; e2e checks the first screen at 4 sizes.
+- `font-display: optional` and a body-font preload (CLS was up to 0.23 on real data, now ≤ 0.042).
+- Empty-category state; `/admin/design-lab` removed.
+
+### Tests (final build)
+typecheck OK · unit **120/120** · build OK · e2e **43/43** (run right after a real-data local server, which proves the cache fix) · axe 0 violations on real data (5 pages × 2 viewports) · 120/120 card images loaded as thumbnails.
+
+### Follow-up corrections (same day)
+- The "intermittent" store e2e failure was cache leakage between local servers: the store cache key lacked `DEALPILOT_CACHE_NAMESPACE`. Reproduced on demand, then fixed.
+- Mobile LCP: locally FCP = LCP; the local server is uncompressed HTTP/1.1, Production is HTTP/2 + brotli, so the numbers are not comparable. A Preview measurement is needed (LAUNCH-READINESS D12).
+- Names: re-ran the "מחיר אמת"-style query (exact phrase + "השוואת מחירים", extended) on each candidate. "תחתית" is also a product type on Zap and CHP; "שורלי" has a possible insurance-comparison mention. Lead candidate is now **סופית**, with no strong winner.
+- Brand rule: sister brands count once; promo words match whole words only.
+
+## 2026-11-17 (afternoon) · Business readiness for a trial launch
+Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`. Expansion data: `docs/CATALOG-EXPANSION.md`. Names: `docs/BRAND-NAMING.md` (round 4).
+
+- **Production data (owner-requested):**
+  - Product 1005009849771017 unpublished via `dp_set_unpublished` after verifying it is a multi-brand parts listing; event logged.
+  - All 46 affiliate links checked with the job's code and recorded as run 14: 46/46 ok, same product ID.
+  - An unintended test click (row 3) came from a stale-cache redirect; the cause is documented.
+- **Branch:**
+  - Empty categories hidden everywhere.
+  - Final-price note on the product page.
+  - Toocki brand and 12 model-level terms, chosen from provider data (`orders`, `commission_rate`, brand-run stores).
+  - Tests updated for the new behaviour: the empty-catalog test now expects no category tabs; the warm-up wait is longer for the no-DB path; the store test scans for a detail-checked product.
+- **Tests:** unit 121/121 · e2e 44/44 · typecheck and build OK.
+- **Blocked:**
+  - Preview performance: no Preview link yet.
+  - `.co.il` and trademarks: ISOC and TMview block automated access.

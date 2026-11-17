@@ -111,7 +111,7 @@ test("discovery persists valid products, rejects weak ones, and a rerun creates 
   assert.equal(await count("status='published'"), first.stats.publishedNew);
   assert.ok(first.stats.publishedNew > 90 && first.stats.publishedNew < 150);
   // Every published row is complete; every rejected row says why.
-  assert.equal(await count("status='published' and (affiliate_url is null or image is null or orders <= 5000)"), 0);
+  assert.equal(await count("status='published' and (affiliate_url is null or image is null or orders < 500)"), 0);
   assert.equal(await count("status='rejected' and cardinality(reject_reasons)=0"), 0);
   assert.ok(first.stats.rejected.sales > 0 && first.stats.rejected.affiliate > 0);
 
@@ -259,7 +259,7 @@ test("discovery spends its budget going deeper and stops a term at the first pag
   const { rpc: rpc2, db: db2 } = await freshDb();
   const weak = async (term, pageNo, size) => {
     const page = await provider.fetchPage(term, pageNo, size);
-    if (pageNo === 2) page.products.forEach((p) => (p.orders = 4000));
+    if (pageNo === 2) page.products.forEach((p) => (p.orders = 400));
     return page;
   };
   await runDiscovery({ rpc: rpc2, categories, fetchPage: weak, trigger: "test", maxCalls: 6 });
@@ -669,4 +669,16 @@ test("link check job records results, unpublishes only definitive failures, and 
   const { id } = await rpc("dp_start_run", { kind: "price_refresh", trigger: "test" });
   await assert.rejects(runLinkCheck({ rpc, check, trigger: "test", maxChecks: 5 }), (e) => e.code === "DP409");
   await rpc("dp_finish_run", { id, status: "succeeded", stats: {}, error_codes: {} });
+});
+
+test("freshness label is honest and Hebrew", async () => {
+  const { freshnessLabel } = await import("../lib/catalog-store/price-view.ts");
+  const now = new Date("2026-11-16T12:00:00Z");
+  assert.equal(freshnessLabel(null, now), null);
+  assert.equal(freshnessLabel("garbage", now), null);
+  assert.equal(freshnessLabel("2026-11-16T11:40:00Z", now), "המחיר נבדק בשעה האחרונה");
+  assert.equal(freshnessLabel("2026-11-16T11:00:00Z", now), "המחיר נבדק לפני שעה");
+  assert.equal(freshnessLabel("2026-11-16T07:00:00Z", now), "המחיר נבדק לפני 5 שעות");
+  assert.equal(freshnessLabel("2026-11-15T10:00:00Z", now), "המחיר נבדק אתמול");
+  assert.equal(freshnessLabel("2026-11-13T12:00:00Z", now), "המחיר נבדק לפני 3 ימים");
 });

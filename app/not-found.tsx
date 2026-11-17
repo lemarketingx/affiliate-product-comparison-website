@@ -3,11 +3,16 @@ import { PublicShell } from "./public-shell";
 export default function NotFound() {
   return (
     <PublicShell>
-      <main id="main" className="fp-wrap fp-section">
-        <div className="fp-empty">
+      <main id="main" className="bl-state">
+        <div className="bl-state-card">
+          <span className="bl-state-mark" aria-hidden="true">404</span>
           <h1>העמוד לא נמצא</h1>
-          <p>אפשר להמשיך לגלות מוצרים בקטלוג.</p>
-          <Link className="fp-btn" href="/deals">
+          <p>ייתכן שהמוצר הוסר מהקטלוג או שהכתובת השתנתה.</p>
+          <form action="/search" role="search" className="bl-state-search">
+            <input name="q" maxLength={80} aria-label="חיפוש מוצר" placeholder="חפשו מותג או מוצר" />
+            <button type="submit" className="bl-cta">חיפוש</button>
+          </form>
+          <Link className="bl-cta is-ghost" href="/deals">
             לכל המוצרים
           </Link>
         </div>

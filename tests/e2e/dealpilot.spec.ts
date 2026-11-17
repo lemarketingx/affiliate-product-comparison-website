@@ -15,13 +15,12 @@ test("public discovery navigation, filters and explicit unavailable catalog", as
     .last()
     .click();
   await expect(page).toHaveURL(/\/deals/);
-  await page.getByRole("link", { name: "מותגים לרכב", exact: true }).click(); // category label since 88d4376
-  await expect(page).toHaveURL(/\/deals\?cat=car/);
-  await expect(
-    page.getByRole("link", { name: "מותגים לרכב", exact: true }),
-  ).toHaveAttribute("aria-current", "page");
-  await page.getByRole("link", { name: "הכול", exact: true }).click();
-  await expect(page).toHaveURL(/\/deals$/);
+  // Owner rule 2026-11-17: a category appears in navigation only when it holds verified
+  // products. This server has no catalog, so no category tab is offered; "הכול" remains.
+  const tabs = page.getByRole("navigation", { name: "קטגוריות" });
+  await expect(tabs.getByRole("link")).toHaveCount(1);
+  await expect(tabs.getByRole("link", { name: "הכול", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "מותגים לרכב", exact: true })).toHaveCount(0);
   await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");
   await expect(page).toHaveURL(/sort=orders/);
   await expect(page.getByRole("combobox", { name: "סדר מוצרים" })).toHaveValue("orders");

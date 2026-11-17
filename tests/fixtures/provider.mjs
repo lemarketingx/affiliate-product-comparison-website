@@ -121,7 +121,9 @@ globalThis.fetch = async function (input, init) {
   const products = [
     {
       product_id: "1005001234567",
-      product_title: "TEST FIXTURE — מארגן כבלים לבדיקה בלבד",
+      // Brand-first catalog: corroborated brand (title + shop) so it can be listed.
+      product_title: "TEST FIXTURE — Baseus מטען מהיר 65W לבדיקה בלבד",
+      shop_name: "Baseus Official Store",
       target_sale_price: "12.50",
       target_sale_price_currency: "ILS",
       lastest_volume: 12000,
@@ -220,8 +222,8 @@ globalThis.fetch = async function (input, init) {
           result: {
             products: {
               product: [
-                mission("1005005550001", "TEST FIXTURE — מצלמת דרך קדמית ואחורית Dash Cam 4K", "149.90"),
-                mission("1005005550002", "TEST FIXTURE — מקליט NVR 8CH PoE H.265 למצלמות", "389.00"),
+                { ...mission("1005005550001", "TEST FIXTURE — 70mai מצלמת דרך קדמית ואחורית Dash Cam 4K", "149.90"), shop_name: "70mai Official Store" },
+                { ...mission("1005005550002", "TEST FIXTURE — Reolink מקליט NVR 8CH PoE H.265 למצלמות", "389.00"), shop_name: "Reolink Official Store" },
               ],
             },
           },

@@ -3,6 +3,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { unknownQuality } from "../aliexpress/quality";
 import { categories } from "../dealpilot/categories";
+import { identifyListedBrand } from "../dealpilot/brands";
+import { cleanListingTitle, resolveCategory } from "../dealpilot/listing-rules";
 import { queryAffiliateProductsPage, queryProductDetails } from "../aliexpress/affiliate";
 import { newProfileState, rejectedProfiles } from "../aliexpress/detail-profiles";
 import { runDiscovery, runLinkCheck, runPriceRefresh, type Rpc, type Trigger } from "./pipeline";
@@ -58,9 +60,11 @@ type Row = {
 
 export function rowToItem(r: Row, now = new Date()): CatalogItem {
   const shown = displayPrice(r, now, priceMaxAgeHours());
+  const brand = identifyListedBrand({ title: r.title, shopName: r.shop_name, supplierBrand: r.supplier_brand });
+  const cat = resolveCategory(r.title, r.category_slug, brand?.category) ?? { slug: r.category_slug, label: r.category_label };
   return {
     id: r.product_id,
-    title: r.title,
+    title: cleanListingTitle(r.title),
     price: shown.price,
     currency: shown.currency,
     image: r.image,
@@ -78,8 +82,8 @@ export function rowToItem(r: Row, now = new Date()): CatalogItem {
     quality: unknownQuality(),
     priceField: shown.price ? r.price_field : null,
     priceFields: { skuId: r.sku_id } as CatalogItem["priceFields"],
-    category: r.category_label,
-    categorySlug: r.category_slug,
+    category: cat.label,
+    categorySlug: cat.slug,
     priceStatus: shown.status,
     priceObservedAt: shown.observedAt,
     priceMethod: r.price_method,
@@ -87,7 +91,7 @@ export function rowToItem(r: Row, now = new Date()): CatalogItem {
 }
 
 const STORE_TAG = "dealpilot-store-catalog";
-const cachedRows = unstable_cache(async () => (await rpc("dp_catalog", { limit: 1200 })) as Row[], ["dp-store-catalog-v1"], {
+const cachedRows = unstable_cache(async () => (await rpc("dp_catalog", { limit: 1200 })) as Row[], ["dp-store-catalog-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"], {
   revalidate: 300,
   tags: [STORE_TAG],
 });
@@ -95,7 +99,9 @@ const cachedRows = unstable_cache(async () => (await rpc("dp_catalog", { limit: 
 /** Published catalog from the database (cached 5 minutes, invalidated after each job). */
 export async function getStoredSnapshot(): Promise<CatalogSnapshot> {
   const rows = await cachedRows();
-  const items = rows.map((r) => rowToItem(r));
+  // Rules tightened after a row was published still apply: a row whose brand
+  // no longer verifies (e.g. a multi-brand parts store) is not listed.
+  const items = rows.map((r) => rowToItem(r)).filter((i) => identifyListedBrand(i) !== null);
   const seen = rows.map((r) => r.last_seen_at).sort();
   return { items, fetchedAt: seen[0] ?? null, available: true, partial: false, qualityFiltered: false, source: "store" };
 }

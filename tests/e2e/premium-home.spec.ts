@@ -7,7 +7,7 @@ test("premium brand home: carousel buttons switch slides; brands and curated car
   await page.goto("/");
   await expect(page.locator(".dpb-campaign")).toBeVisible();
   await expect(page.locator(".dpb-logo-tile").first()).toBeVisible();
-  await expect(page.locator(".dpb-product").first()).toBeVisible();
+  await expect(page.locator(".dp-product").first()).toBeVisible();
   await expect(page.locator(".dpb-category").first()).toBeVisible();
   const before = await page.locator(".dpb-campaign-copy h2").innerText();
   await page.getByRole("button", { name: "לבאנר הבא" }).click();
@@ -16,7 +16,7 @@ test("premium brand home: carousel buttons switch slides; brands and curated car
   await page.getByRole("button", { name: "עצירת החלפה אוטומטית" }).click();
   await expect(page.getByRole("button", { name: "הפעלת החלפה אוטומטית" })).toBeVisible();
   // Every card, not one: no invented discount percentage anywhere.
-  for (const text of await page.locator(".dpb-product").allInnerTexts()) expect(text).not.toMatch(/-[1-9]\d*%/);
+  for (const text of await page.locator(".dp-product").allInnerTexts()) expect(text).not.toMatch(/-[1-9]\d*%/);
 });
 
 test("premium brand home: no horizontal overflow on mobile", async ({ page }) => {

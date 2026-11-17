@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, PackageSearch, RadioTower, Search, ArrowUpLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, PackageSearch, ShieldCheck, Search, ArrowUpLeft } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
-import { categories } from "../lib/dealpilot/categories";
+import { categories, liveCategorySlugs } from "../lib/dealpilot/categories";
 import { CATALOG_POLICY } from "../lib/aliexpress/catalog-build";
 import { filterCatalog, pageWindow, SORTS, viewHref, type ViewParams } from "../lib/aliexpress/catalog-view";
 import { ProductCard } from "./product-card";
@@ -41,7 +41,7 @@ export default function CatalogBrowser({
   const activeCat = lockedCategory ?? params.cat;
   const filtered = Boolean(params.q || activeCat || exemptOnly);
   return (
-    <section className="fp-section fp-wrap fp-catalog" id="products">
+    <section className="fp-section fp-wrap fp-catalog bl-catalog" id="products">
       <div className="fp-section-head">
         <div>
           <span className="fp-kicker">קטלוג מותגים מוכרים</span>
@@ -53,36 +53,28 @@ export default function CatalogBrowser({
           </p>
         </div>
       </div>
-      <div className="dp-selection-policy fp-notice">
-        <RadioTower size={18} aria-hidden="true" />
-        <div>
+      <details className="dp-selection-policy fp-notice bl-policy-line">
+        <summary>
+          <ShieldCheck size={18} aria-hidden="true" />
           <strong>רק מותגים מזוהים · מקוריות המוצר טרם אומתה</strong>
+          <span className="bl-policy-more">איך בחרנו?</span>
+        </summary>
+        <div>
           <p>
             המוצרים עברו זיהוי מותג בהצלבת שם המוצר ונתוני חנות/ספק, עם יותר מ־{fmt(CATALOG_POLICY.minimumReportedSalesExclusive)} מכירות מדווחות, מחיר בשקלים, כותרת בעברית וקישור
             שותפים תקין. דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו.
           </p>
           <small>מכירות מדווחות הן נתון של הספק לתקופה אחרונה, לא בדיקת איכות. בדקו דירוג, ביקורות ומשלוח ב־AliExpress לפני רכישה.</small>
         </div>
-      </div>
+      </details>
 
-      <p className="fp-tax-note">
-        {usdRate ? (
-          <>
-            מיסוי ביבוא אישי: עד {IMPORT_TAX.exemptionUsd}$ פטור, מעל זה מע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%. לכל מוצר מסומן אם הוא צפוי
-            להיות פטור, לפי השער היציג ({usdRate.rate} ₪, {new Date(usdRate.date).toLocaleDateString("he-IL")}). כמה פריטים מאותו מוכר נספרים יחד.{" "}
-            <a href={IMPORT_TAX.sources[0].url} target="_blank" rel="noopener noreferrer">מקור: רשות המסים</a>
-          </>
-        ) : (
-          <>שער הדולר אינו זמין כרגע, ולכן סימון המיסוי לכל מוצר לא חושב.</>
-        )}
-      </p>
       <form className="fp-filters" action={base} method="get" role="search" aria-label="סינון הקטלוג">
         {!lockedCategory && (
           <nav className="fp-tabs" aria-label="קטגוריות">
             <Link href={viewHref(base, { q: params.q, sort: params.sort, tax: params.tax })} aria-current={!activeCat ? "page" : undefined}>
               הכול
             </Link>
-            {categories.map((c) => (
+            {categories.filter((c) => liveCategorySlugs(snapshot.items).has(c.slug)).map((c) => (
               <Link key={c.slug} href={viewHref(base, { q: params.q, sort: params.sort, cat: c.slug, tax: params.tax })} aria-current={activeCat === c.slug ? "page" : undefined}>
                 {c.label}
               </Link>
@@ -116,9 +108,12 @@ export default function CatalogBrowser({
             {view.total > 0 && (
               <> · מוצגים {fmt(view.start + 1)}–{fmt(view.start + view.items.length)} · עמוד {fmt(view.page)} מתוך {fmt(view.pages)}</>
             )}
-            {snapshot.fetchedAt &&
-              " · נתוני ספק מ־" +
-                new Intl.DateTimeFormat("he-IL", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Jerusalem" }).format(new Date(snapshot.fetchedAt))}
+            {snapshot.fetchedAt && (
+              <span className="bl-status-time">
+                {" · נתוני ספק מ־" +
+                  new Intl.DateTimeFormat("he-IL", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Jerusalem" }).format(new Date(snapshot.fetchedAt))}
+              </span>
+            )}
           </>
         ) : (
           "ממתינים לחיבור הקטלוג"
@@ -139,12 +134,23 @@ export default function CatalogBrowser({
       ) : (
         <div className="fp-empty">
           <span><PackageSearch size={34} /></span>
-          <h3>{snapshot.available ? "לא נמצאו מוצרים בסינון הזה" : "קצת סבלנות, הגילוי בדרך."}</h3>
+          <h3>
+            {!snapshot.available
+              ? "קצת סבלנות, הגילוי בדרך."
+              : snapshot.available && lockedCategory && !params.q && !exemptOnly
+                ? "עדיין אין כאן מוצרים שעברו את הבדיקות"
+                : "לא נמצאו מוצרים בסינון הזה"}
+          </h3>
           <p>
-            {snapshot.available
-              ? "נסו שם אחר או בחרו קטגוריה נוספת."
-              : "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."}
+            {!snapshot.available
+              ? "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."
+              : snapshot.available && lockedCategory && !params.q && !exemptOnly
+                ? "אנחנו מפרסמים רק מוצרים שהמותג שלהם אומת מול נתוני החנות, עם מחיר שנבדק. מוצרים חדשים נבדקים כל יום."
+                : "נסו שם אחר או בחרו קטגוריה נוספת."}
           </p>
+          {snapshot.available && lockedCategory && !params.q && !exemptOnly && (
+            <Link className="fp-link" href="/deals">לכל מוצרי המותגים <ArrowUpLeft size={17} /></Link>
+          )}
           {!snapshot.available && (
             <Link className="fp-link" href="/guides">איך קונים חכם <ArrowUpLeft size={17} /></Link>
           )}
@@ -181,6 +187,17 @@ export default function CatalogBrowser({
       <p className="fp-fine">
         קישורי שותפים עשויים לזכות אותנו בעמלה. איננו מוכרים את המוצרים; המחיר הסופי, תנאי המשלוח והזמינות נקבעים
         ב־AliExpress. <Link href="/disclosure">לגילוי המלא</Link> · <Link href="/catalog-status">איך נבנה הקטלוג</Link>
+      </p>
+      <p className="fp-tax-note">
+        {usdRate ? (
+          <>
+            מיסוי ביבוא אישי: עד {IMPORT_TAX.exemptionUsd}$ פטור, מעל זה מע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%. לכל מוצר מסומן אם הוא צפוי
+            להיות פטור, לפי השער היציג ({usdRate.rate} ₪, {new Date(usdRate.date).toLocaleDateString("he-IL")}). כמה פריטים מאותו מוכר נספרים יחד.{" "}
+            <a href={IMPORT_TAX.sources[0].url} target="_blank" rel="noopener noreferrer">מקור: רשות המסים</a>
+          </>
+        ) : (
+          <>שער הדולר אינו זמין כרגע, ולכן סימון המיסוי לכל מוצר לא חושב.</>
+        )}
       </p>
     </section>
   );

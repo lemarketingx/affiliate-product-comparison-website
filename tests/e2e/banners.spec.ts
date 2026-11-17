@@ -25,6 +25,6 @@ test.describe("isolated Affiliate API fixture on 3104", () => {
       .toBeGreaterThan(0);
     await page.locator(".fp-brand-card").first().click();
     await expect(page.locator(".dp-product").first()).toBeVisible();
-    await expect(page.locator(".dp-product").first().locator(".fp-product-brand-tag")).toBeVisible();
+    await expect(page.locator(".dp-product").first().getByRole("link", { name: /^לכל מוצרי המותג / })).toBeVisible();
   });
 });

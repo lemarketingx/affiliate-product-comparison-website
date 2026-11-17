@@ -26,6 +26,8 @@ export const BRANDS = [
   { slug: "ulanzi", name: "Ulanzi", aliases: ["ulanzi"], category: "tech" },
   { slug: "creality", name: "Creality", aliases: ["creality"], category: "tech" },
   { slug: "anycubic", name: "Anycubic", aliases: ["anycubic"], category: "tech" },
+  // Added 2026-11-17 from catalog data: 4 brand-run stores, 2 items >5,000 reported sales, 9% commission.
+  { slug: "toocki", name: "Toocki", aliases: ["toocki"], category: "tech" },
 ] as const;
 export type KnownBrand = (typeof BRANDS)[number];
 const tokens = (s: string) => s.toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(/\s+/);
@@ -36,11 +38,17 @@ export function identifyListedBrand(input: { title: string; shopName?: string | 
   const title = tokens(input.title);
   const shop = tokens(input.shopName ?? "");
   const supplied = tokens(input.supplierBrand ?? "");
+  // A store named after several brands, or a parts/accessories store, is a
+  // reseller of compatible items: its name does not corroborate any brand.
+  // Sister brands from one maker count once (a "Xiaomi Redmi Store" is still one maker).
+  const family = (slug: string) => (slug === "redmi" || slug === "poco" ? "xiaomi" : slug === "soundcore" ? "anker" : slug);
+  const shopBrands = new Set(BRANDS.filter(b => b.aliases.some(x => shop.includes(x.toLowerCase()))).map(b => family(b.slug))).size;
+  const resellerShop = shopBrands > 1 || shop.some(w => w === "parts" || w === "spare" || w === "replacement");
   for (const b of BRANDS) {
     const aliases = b.aliases.map(x => x.toLowerCase());
     const titleHit = aliases.some(x => title.includes(x));
     const supplierHit = aliases.some(x => supplied.includes(x));
-    const shopHit = aliases.some(x => shop.includes(x));
+    const shopHit = !resellerShop && aliases.some(x => shop.includes(x));
     if ((titleHit && (supplierHit || shopHit)) || (supplierHit && shopHit)) return b;
   }
   return null;

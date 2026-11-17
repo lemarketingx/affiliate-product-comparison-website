@@ -40,10 +40,10 @@ test("page meta: provider counters parsed, unknown stays null (never 0)", () => 
   assert.equal(parsePageMeta(odd, 1, 10).currentRecordCount, null);
 });
 
-test("public rules: >5000 sales, ILS, Hebrew, product data and a real affiliate link", () => {
+test("public rules: >=500 sales, ILS, Hebrew, product data and a real affiliate link", () => {
   assert.deepEqual(publicRejections(product()), []);
-  assert.deepEqual(publicRejections(product({ orders: 5000 })), ["sales"]);
-  assert.deepEqual(publicRejections(product({ orders: 5001 })), []);
+  assert.deepEqual(publicRejections(product({ orders: 499 })), ["sales"]);
+  assert.deepEqual(publicRejections(product({ orders: 500 })), []);
   assert.deepEqual(publicRejections(product({ orders: null })), ["sales"]);
   assert.deepEqual(publicRejections(product({ currency: "USD" })), ["currency"]);
   assert.deepEqual(publicRejections(product({ title: "English only title" })), ["brand", "hebrew"]);

@@ -120,27 +120,27 @@ for (const width of [304, 375, 768, 1440]) {
 
 test.describe("typed catalog products (isolated fixture server)", () => {
   test.use({ baseURL: "http://127.0.0.1:3103" });
-  test("product page shows 'probably not in the box', Israel fit and a landed cost that never invents a gap", async ({ page, request }) => {
+  // Owner decision 2026-11-16: the "מה כנראה לא בקופסה" block stays removed from product
+  // pages until it can be backed by verified product data, so its assertions (and the
+  // landed-cost widget that lived inside it) were deleted. The checks below cover
+  // features that still exist on this page.
+  test("typed product page: import-tax estimate, affiliate disclosure and tracked redirect", async ({ page, request }) => {
+    test.setTimeout(150000);
     await fixtureImage(page);
-    await page.goto("/products/1005005550001");
-    const brief = page.locator(".fp-pbrief");
-    await expect(brief.getByRole("heading", { name: "מה כנראה לא בקופסה" })).toBeVisible();
-    await expect(brief).toContainText("זיהינו את המוצר כ\"מצלמת דרך לרכב\"");
-    await expect(brief).toContainText("High Endurance");
-    await expect(brief).toContainText("בדרך כלל לא כלול · חובה");
-    await expect(brief).toContainText("בדקו בתיאור המוכר");
-    const cost = brief.locator(".fp-cost");
-    await expect(cost.getByRole("textbox", { name: "מחיר באליאקספרס (₪)" })).toHaveValue("149.9");
-    await cost.getByRole("textbox", { name: /משלוח לישראל/ }).fill("0");
-    await cost.getByRole("textbox", { name: /כרטיס microSD/ }).fill("40");
-    await cost.getByRole("textbox", { name: "המחיר שראיתם בישראל (₪)" }).fill("450");
-    // Verified tax rules + (fixture) representative rate: 149.9 ₪ ≈ 47$ → exempt, so the gap is computed.
-    await expect(cost.locator(".fp-cost-table tr", { hasText: "מע\"מ ביבוא אישי" })).toContainText("עד התקרה של 75$: פטור");
-    await expect(cost).toContainText("פער משוער");
-    await expect(cost).toContainText("זו הערכה ולא חיסכון מובטח");
+    // A cold catalog builds in the background (by design); wait for the product to be listed.
+    await expect
+      .poll(async () => { await page.goto("/products/1005005550001"); return page.getByRole("heading", { level: 1 }).innerText(); }, { timeout: 110000, intervals: [1000, 2000, 5000] }) // no-DB cold build
+      .toContain("מצלמת דרך");
+    await expect(page.getByRole("heading", { name: "מה כנראה לא בקופסה" })).toHaveCount(0);
+    // Verified tax rules + (fixture) representative rate: 149.9 ₪ ≈ 47$ → exempt.
     await expect(page.locator(".fp-tax-box")).toContainText("פטור ממסים (עד 75$)");
     await expect(page.getByText("קישור שותפים: ייתכן שנקבל עמלה")).toBeVisible();
-    const go = await request.get("/go/1005005550001", { maxRedirects: 0 });
+    // Legacy (no-database) path: /go may answer 503 + Retry-After while its catalog warms.
+    let go = await request.get("/go/1005005550001", { maxRedirects: 0, timeout: 20000 });
+    for (let i = 0; i < 10 && go.status() === 503; i++) {
+      await page.waitForTimeout(2000);
+      go = await request.get("/go/1005005550001", { maxRedirects: 0, timeout: 20000 });
+    }
     expect(go.status()).toBe(307);
     for (const [w, h, name] of [[1440, 1000, "desktop"], [375, 812, "mobile"]] as const) {
       await page.setViewportSize({ width: w, height: h });

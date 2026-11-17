@@ -9,8 +9,14 @@ const images = (page: Page) =>
   page.route(/https:\/\/ae01\.alicdn\.com\/.*/, (route) => route.fulfill({ contentType: "image/svg+xml", body: svg }));
 const noHScroll = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
 
-test.beforeAll(async () => {
+test.beforeAll(async ({ browser }) => {
   await mkdir(SHOTS, { recursive: true });
+  // A cold catalog builds in the background by design ("הקטלוג מתעדכן ברקע"): wait until it is listed.
+  const page = await browser.newPage({ baseURL: "http://127.0.0.1:3104" });
+  await expect
+    .poll(async () => { await page.goto("/deals"); return page.locator(".dp-product").count(); }, { timeout: 60000, intervals: [1000, 2000, 3000] })
+    .toBe(24);
+  await page.close();
 });
 
 test("brand-only products: no generic products, 24 per page, filters, search and pagination", async ({ page }) => {
@@ -23,10 +29,12 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page.locator(".dp-product")).toHaveCount(24);
   await expect(status).toContainText("מוצגים 1–24");
   // No duplicates on a page; every card is a published fixture with an affiliate link.
-  const ids = await page.locator(".dp-product .fp-pass-go").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+  // Streamed content is revealed a few ms after it arrives (Next loading boundary); role queries need it visible.
+  await expect(page.locator(".dp-product").first()).toBeVisible();
+  const ids = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(new Set(ids).size).toBe(24);
   await expect(page.locator(".dp-product").first()).toContainText("כולל קישור שותפים");
-  await expect(page.locator(".dp-product").first().locator(".fp-product-brand-tag")).toBeVisible();
+  await expect(page.locator(".dp-product").first().getByRole("link", { name: /^לכל מוצרי המותג / })).toBeVisible();
   await expect(page.locator(".fp-shortfall")).toHaveCount(0);
 
   // Every card states its personal-import tax outcome (fixture rate 3.2 ₪/$).
@@ -56,7 +64,9 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page).toHaveURL(/page=2/);
   await expect(page.locator(".fp-status-line")).toContainText("מוצגים 25–48");
   await expect(pager.getByRole("link", { name: "עמוד 2", exact: true })).toHaveAttribute("aria-current", "page");
-  const page2 = await page.locator(".dp-product .fp-pass-go").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+  // Streamed content is revealed a few ms after it arrives (Next loading boundary); role queries need it visible.
+  await expect(page.locator(".dp-product").first()).toBeVisible();
+  const page2 = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(page2.some((h) => ids.includes(h))).toBe(false);
   const lastPage = Math.ceil(total / 24);
   await page.goto("/deals?page=" + lastPage);
@@ -80,7 +90,7 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   for (const title of await page.locator(".dp-product h3").allInnerTexts()) expect(title).toContain("70mai");
   await page.getByRole("combobox", { name: "סדר מוצרים" }).selectOption("orders");
   await expect(page).toHaveURL(/sort=orders/);
-  const orders = (await page.locator(".dp-product .fp-pass-orders").allInnerTexts()).map((t) => Number(t.replace(/[^\d]/g, "")));
+  const orders = (await page.locator(".dp-product").getByText(/מכירות מדווחות לפי הספק/).allInnerTexts()).map((t) => Number(t.replace(/[^\d]/g, "")));
   expect([...orders].sort((a, b) => b - a)).toEqual(orders);
   expect(orders.every((n) => n > 5000)).toBe(true);
 
@@ -113,7 +123,7 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
 
   // Product detail: affiliate redirect works and quality stays "not verified".
   await page.goto("/deals");
-  const href = await page.locator(".dp-product .fp-pass-go").first().getAttribute("href");
+  const href = await page.locator(".dp-product").first().getByRole("link", { name: /^פרטי / }).getAttribute("href");
   const id = href!.split("/").pop()!;
   await page.goto("/products/" + id);
   // Copy since 86f72ca; quality must still be shown as NOT verified.
@@ -129,4 +139,67 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
   const rejectedId = "1005090000001"; // pool row 1 → kind 1: no promotion link
   expect((await request.get("/go/" + rejectedId, { maxRedirects: 0 })).status()).toBe(404);
   expect(await (await request.get("/products/" + rejectedId)).text()).toContain("המוצר אינו זמין כרגע");
+});
+
+// Owner request 2026-11-17: on phones the first products must appear early,
+// without dropping the disclosure (top line, one-line policy, per-card text).
+for (const [w, h, priceToo] of [[320, 568, false], [375, 667, false], [390, 844, true], [412, 915, true]] as const) {
+  test(`mobile catalog: first product starts in the first screen at ${w}x${h}`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await images(page);
+    await page.goto("/deals");
+    const card = page.locator(".dp-product").first();
+    await expect(card).toBeVisible();
+    const media = await card.locator(".bl-card-media").boundingBox();
+    expect(media && media.y).toBeLessThan(h - 40);
+    if (priceToo) {
+      const price = await card.locator(".dp-product-price strong").boundingBox();
+      expect(price && price.y + price.height).toBeLessThanOrEqual(h);
+    }
+    // Disclosure is still on screen: affiliate line, policy summary, and per card.
+    await expect(page.locator(".bl-topline").getByRole("link", { name: /קישורי שותפים/ })).toBeVisible();
+    const policy = page.locator(".dp-selection-policy");
+    await expect(policy.locator("summary")).toContainText("מקוריות המוצר טרם אומתה");
+    await expect(card).toContainText("כולל קישור שותפים");
+    await policy.locator("summary").click();
+    await expect(policy.getByText(/דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו/)).toBeVisible();
+    expect(await noHScroll(page)).toBe(true);
+  });
+}
+
+test("a failed product image shows the fallback in the same box, with the brand", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/alicdn\.com|aliexpress-media\.com/, (route) => route.abort());
+  await page.goto("/deals");
+  const card = page.locator(".dp-product").first();
+  await expect(card.locator(".bl-img-fallback")).toBeVisible();
+  await expect(card.locator(".bl-img-fallback")).toContainText("התמונה אינה זמינה כרגע");
+  await expect(card.locator(".bl-card-media img")).toHaveCount(0);
+  const box = await card.locator(".bl-card-media").boundingBox();
+  expect(box && Math.abs(box.width - box.height)).toBeLessThan(2);
+  const brand = (await card.locator(".bl-card-brand").innerText()).trim();
+  await expect(card.locator(".bl-img-fallback b")).toHaveText(brand);
+  // Product page: main gallery image falls back too.
+  await card.getByRole("link", { name: /^פרטי / }).click();
+  await expect(page.locator(".fp-gallery-main .bl-img-fallback")).toBeVisible();
+});
+
+test("category tabs list only categories that hold listed products", async ({ page }) => {
+  await images(page);
+  await page.goto("/deals");
+  await expect(page.locator(".dp-product").first()).toBeVisible(); // streamed content is revealed
+  const cats = await page.locator(".dp-product .bl-card-cat").allInnerTexts();
+  const tabs = page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link");
+  const labels = (await tabs.allInnerTexts()).map((t) => t.trim()).filter((t) => t !== "הכול");
+  expect(labels.length).toBeGreaterThan(0);
+  // Every tab leads to a category page that lists products.
+  for (const label of labels) {
+    await page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: label, exact: true }).click();
+    await expect(page).toHaveURL(/\/deals\?cat=[a-z]+/);
+    await expect(page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: label, exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.locator(".dp-product").first()).toBeVisible();
+    await page.goto("/deals");
+    await expect(page.locator(".dp-product").first()).toBeVisible();
+  }
+  expect(cats.length).toBeGreaterThan(0);
 });

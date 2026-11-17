@@ -67,3 +67,17 @@ export function compareObservations(
   if (search.currency !== detail.currency) out.push("currency_changed");
   return out;
 }
+
+/** Human freshness of a price observation, in Hebrew. Null when unknown. */
+export function freshnessLabel(observedAt: string | null | undefined, now: Date = new Date()): string | null {
+  if (!observedAt) return null;
+  const t = Date.parse(observedAt);
+  if (!Number.isFinite(t)) return null;
+  const minutes = Math.max(0, Math.round((now.getTime() - t) / 60000));
+  if (minutes < 60) return "המחיר נבדק בשעה האחרונה";
+  const hours = Math.round(minutes / 60);
+  if (hours === 1) return "המחיר נבדק לפני שעה";
+  if (hours < 24) return `המחיר נבדק לפני ${hours} שעות`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? "המחיר נבדק אתמול" : `המחיר נבדק לפני ${days} ימים`;
+}

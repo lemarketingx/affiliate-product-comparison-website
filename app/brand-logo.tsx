@@ -12,11 +12,11 @@ const marks: Record<string, string> = {
   amazfit: "amazfit", reolink: "reolink", yeelight: "yeelight",
 };
 const colors: Record<string, string> = {
-  xiaomi: "#ff6900", redmi: "#ef4a59", poco: "#c69a00",
+  xiaomi: "#c2410c", redmi: "#be123c", poco: "#7a5f00", // darkened to WCAG AA (≥4.5:1 on white)
   baseus: "#242424", ugreen: "#087f40", anker: "#1264b0",
-  soundcore: "#0a91c3", qcy: "#121c2e", edifier: "#161f30",
+  soundcore: "#0369a1", qcy: "#121c2e", edifier: "#161f30",
   "70mai": "#263a4c", dreame: "#172b34", roborock: "#e31d34",
-  amazfit: "#8e43c6", reolink: "#1898e0", yeelight: "#266ce2",
+  amazfit: "#8e43c6", reolink: "#0b6aa8", yeelight: "#266ce2",
 };
 
 export default function BrandLogo({ slug, name }: { slug: string; name: string }) {
