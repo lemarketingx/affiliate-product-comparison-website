@@ -14,7 +14,7 @@ import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { TaxBadge } from "../../tax-badge";
 import ProductCostCalculator from "../../product-cost-calculator";
 import { IMPORT_TAX } from "../../../lib/preflight/import-tax";
-import { freshnessLabel } from "../../../lib/catalog-store/price-view";
+import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../../../lib/catalog-store/price-view";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -115,7 +115,12 @@ export default async function Product({
                 <span>{priceLabel}</span>
                 <strong dir="ltr">{p.price ? formatMoney(p.price, p.currency) : "אין מחיר עדכני"}</strong>
               </div>
-              {p.price && fresh && <p className="bl-receipt-fresh">{fresh}</p>}
+              {p.price && fresh && (
+                <p className={"bl-receipt-fresh" + ((priceAgeHours(p.priceObservedAt) ?? 0) > PRICE_WARN_AGE_HOURS ? " is-old" : "")}>
+                  {fresh}
+                  {(priceAgeHours(p.priceObservedAt) ?? 0) > PRICE_WARN_AGE_HOURS && " · ייתכן שהמחיר השתנה מאז, בדקו אותו ב־AliExpress"}
+                </p>
+              )}
               {p.price && (
                 <p className="bl-receipt-note" role="note">
                   המחיר הסופי נקבע בקופה של AliExpress. ייתכנו דמי משלוח, תוספת לדגם או לצבע אחר, ושינוי מחיר מאז הבדיקה.
