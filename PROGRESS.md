@@ -411,7 +411,7 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
 - Above 12 h, the card and product page say the price may have changed.
 - A 4-hourly GitHub Actions schedule runs the price and link jobs (needs secret `DEALPILOT_CRON_SECRET`).
 - Link checks per run 8 → 25 (315 links are unchecked).
-- Tests: unit 124/124; e2e 44/44 (link-count and 500-threshold expectations updated).
+- Tests: unit 123/123; e2e 44/44 (link-count and 500-threshold expectations updated).
 
 **Owner actions:**
 1. Run the price check now from `/admin/catalog` (it covers all 360).
