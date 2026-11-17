@@ -161,7 +161,7 @@ export async function runLinkJob(trigger: Trigger, deadlineMs = 50_000) {
   const result = await runLinkCheck({
     rpc,
     trigger,
-    maxChecks: intEnv("DEALPILOT_LINK_CHECKS", 8, 0, 50),
+    maxChecks: intEnv("DEALPILOT_LINK_CHECKS", 25, 0, 50),
     deadlineMs,
     check: (link, id) => checkAffiliateLink(link, id, fetchHop),
   });
@@ -216,6 +216,7 @@ export async function runCatalogJobs(trigger: Trigger, options: { deadlineMs?: n
       rpc,
       trigger,
       maxCalls: priceCalls,
+      minAgeHours: intEnv("DEALPILOT_PRICE_MIN_AGE_HOURS", 2, 1, 48),
       deadlineMs: Math.max(0, deadline - (Date.now() - started)),
       fetchDetails: (ids, callsLeft) => queryProductDetails(ids, guard, profileState, callsLeft),
     });
