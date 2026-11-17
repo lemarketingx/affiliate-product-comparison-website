@@ -6,7 +6,9 @@
 
 ## What the data says
 
-| Search term | Fetched | Brand verified | Above 5,000 sales with brand | 1,000–5,000 sales with brand | Avg. commission (brand) | Published |
+Per search term. **A term is not a brand:** the Soundcore, Edifier and POCO rows below count Baseus and UGREEN products those searches returned; no Soundcore, Edifier or POCO product is published.
+
+| Search term | Fetched | Brand verified (any brand) | Above 5,000 sales with brand | 1,000–5,000 sales with brand | Avg. commission (brand) | Published |
 |---|---|---|---|---|---|---|
 | UGREEN | 94 | 79 | **15** | 64 | 7.5% | 15 |
 | ROCKBROS | 100 | 38 | **12** | 26 | 7.0% | 12 |
@@ -39,12 +41,21 @@ Findings:
 
 ## What changed in the code (branch only)
 - **New brand:** Toocki (four brand stores, 9% commission, two items above 5,000).
-- **Model-level search terms.** Results are sorted by sales, so a new term surfaces new products, while a repeated term returns the same exhausted list.
+- **Model-level search terms.** This is an assumption: a new term *may* surface products the broad term missed. Two of its targets, Nexode Air and Studio Pro, are already published.
   - Tech: `UGREEN Nexode`, `UGREEN USB C hub`, `UGREEN earbuds`, `Baseus charger`, `Baseus power bank`, `Baseus earbuds`, `QCY earbuds`, `Toocki`.
   - Car: `Baseus car holder`, `Baseus car charger`.
   - Sport: `ROCKBROS bike light`, `ROCKBROS cycling bag`.
 - **Removed:** the bare `Baseus` term (99 results, 0 verified: it returned unrelated products). Removed terms are deactivated automatically on the next sync.
 - **Not added:** Ulanzi, 70mai, eufy, Naturehike, Haylou and Moondrop. They have brand stores, but no product above 5,000 sales. That is the owner's threshold decision to keep, and it was not relaxed.
+
+## Provable yield, and the real lever (read-only queries)
+- **Toocki:** 3 stored products would pass every rule once the brand is added. That is the only yield the data proves.
+- **Brand-verified products above 5,000 sales that are not yet published:** 0. The 1 found was the parts listing, now removed. Headroom above the current threshold is close to exhausted for these brands.
+- **The real growth lever is the threshold:**
+  - 73 brand-verified stored products have 3,000–5,000 reported sales, 45 of them from brand-run stores (UGREEN, Ulanzi, QCY, Toocki and others).
+  - Lowering the threshold to 3,000 would make them eligible.
+  - **That is the owner's decision.** It was not changed here.
+- Re-ingesting a product does not change its category (`dp_ingest` keeps the first one), so the new "Baseus charger" term cannot pull car products out of "car".
 
 ## What is NOT verified
 - **No new product was imported in this round.** The new terms reach the live job only after a merge; there are no AliExpress API credentials in this environment. How many new products they will yield is unknown. Expect some, not a target number.

@@ -1,8 +1,13 @@
 # Trial launch readiness, 2026-11-17
 
-**Scope:** business readiness for a limited trial launch.
-- **Nothing merged to `main`.** Production code is unchanged.
-- **Two owner-requested data actions on Production:** the parts listing was unpublished, and the full link check was recorded. Both are in `docs/CATALOG-ACTIONS.md`.
+**Scope:** business readiness for a limited trial launch. Nothing merged to `main`; Production code is unchanged.
+
+**Done outside the repository** (details in `docs/CATALOG-ACTIONS.md`):
+1. Unpublished product 1005009849771017 in the Production database (owner request), with an event logged.
+2. Recorded run 14 (`link_check`, manual) and set `link_status` on 46 products.
+3. **Followed 46 AliExpress promotion links** from this session. They may appear as about 46 clicks in the AliExpress affiliate portal.
+4. Test click rows 2 and 3 in `dp_click_events`. Row 3 was unintended.
+5. Eight hosts added to this cloud environment's network allowlist, through owner-approved prompts.
 
 ## Numbers (live database, 2026-11-17)
 | Measure | Value | Evidence |
@@ -40,18 +45,21 @@
 | 4 | Price refresh has no slack: one missed daily run pushes prices past 48 h (then hidden) | Catalog could go priceless for a day | Consider a second daily window |
 | 5 | Unpublishing by SQL leaves a stale cached redirect for up to one request | Use `/admin/catalog`, which clears the cache | Process |
 | 6 | Test click rows 2–3 in the click table | Inflates click count by 2 | Exclude or delete on owner's word |
-| 7 | The no-DB fallback path builds slowly with more terms (about 65 s cold) | Local or fallback only; Production uses the DB | Low |
+| 7 | **Regression on the no-DB path:** the cold build now takes about 65 s (was under 30 s) with the extra terms. Test warm-up waits were raised to 110 s to match | Local tests and the fallback only; Production reads the DB | Low |
 | 8 | Availability, stock and checkout price per variant | NOT VERIFIED; the site makes no claim | – |
 
 ## Assessment
-**Ready for a limited, invite-only trial on Production as it is today (`main`):**
-- prices are verified and fresh;
-- 45/45 links are verified;
-- click tracking works;
-- the invalid listing is removed.
+**Production as it is today (`main`) does NOT meet the owner's rules for a trial.** Checked live on 2026-11-17:
+- The **empty "home" category is still linked** in the catalog tabs (`/deals?cat=home`), and `/categories/home` shows "0 products".
+- Seller sale banners appear in titles ("מבצע חדש", "Top Sale"), and wall chargers are listed under "car".
+- There are 10–16 colour-contrast violations on the home page, and no final-price note.
 
-**The branch is better for a trial**, with its accessibility, image weight, honest categories and the final-price note. But it must not go live until the owner:
-- (a) sends the Preview link and the LCP check passes;
-- (b) approves the merge.
+**Prices, links and click tracking are already sound on `main`**: 45/45 links verified, prices under 48 h, clicks recorded.
 
-**Not ready for a public, branded launch:** the name is not chosen, and trademark and `.co.il` are unverified.
+**The branch fixes those gaps** and passes all tests (unit 121/121, e2e 44/44, axe 0 on real data). A limited trial is reasonable **after**:
+- (a) the owner sends the Preview link and the LCP check on Preview passes;
+- (b) the owner approves the merge.
+
+If the owner prefers to start before the merge, it should be with these gaps accepted knowingly.
+
+**Not ready for a public, branded launch:** no name is chosen, and trademark and `.co.il` are unverified.

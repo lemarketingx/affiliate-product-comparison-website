@@ -195,8 +195,11 @@ test("category tabs list only categories that hold listed products", async ({ pa
   // Every tab leads to a category page that lists products.
   for (const label of labels) {
     await page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: label, exact: true }).click();
+    await expect(page).toHaveURL(/\/deals\?cat=[a-z]+/);
+    await expect(page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: label, exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.locator(".dp-product").first()).toBeVisible();
     await page.goto("/deals");
+    await expect(page.locator(".dp-product").first()).toBeVisible();
   }
   expect(cats.length).toBeGreaterThan(0);
 });

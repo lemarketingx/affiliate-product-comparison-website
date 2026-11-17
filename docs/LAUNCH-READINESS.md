@@ -1,3 +1,5 @@
+> **Superseded 2026-11-17 (afternoon) by `docs/TRIAL-READINESS.md`.** Since this report: the Dreame listing was unpublished, all 46 links were checked (run 14), and empty categories are hidden on the branch.
+
 # Launch readiness, 2026-11-17
 
 Branch `claude/sharp-meitner-w6pgaa`. Production code is unchanged and nothing is merged to `main`.

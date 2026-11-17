@@ -17,7 +17,7 @@ export const categories = [
   {
     slug: "car", label: "מותגים לרכב", term: "70mai",
     terms: ["70mai", "VIOFO", "DDPAI", "Baseus car", "Baseus car holder", "Baseus car charger"],
-    description: "מצלמות דרך ואביזרי רכב ממותגים מוכרים.",
+    description: "אביזרי רכב ממותגים מוכרים: טעינה, אחיזה ומשאבות.",
   },
   {
     slug: "sport", label: "כושר וטיולים", term: "Amazfit",
