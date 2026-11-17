@@ -52,3 +52,17 @@ test("live categories are the ones with at least one listed product", async () =
   assert.deepEqual([...live].sort(), ["sport", "tech"]);
   assert.equal(liveCategorySlugs([]).size, 0);
 });
+
+test("Xiaomi-family searches exclude explicitly compatible third-party accessories", () => {
+  for (const title of [
+    "Case for Xiaomi Redmi Note 13",
+    "Compatible with POCO X6 phone cable",
+    "Replacement for Xiaomi Mijia vacuum filter",
+    "כיסוי תואם לשיאומי Redmi",
+    "אביזר מתאים לרדמי",
+  ]) {
+    assert.equal(identifyListedBrand({ title, shopName: "Xiaomi Redmi Choice Store" }), null, title);
+  }
+  assert.equal(identifyListedBrand({ title: "Xiaomi Smart Band 9", shopName: "Xiaomi Store" })?.slug, "xiaomi");
+  assert.equal(identifyListedBrand({ title: "Redmi Buds 6 Pro", shopName: "Xiaomi Redmi Official Store" })?.slug, "redmi");
+});
