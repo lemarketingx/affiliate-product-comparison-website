@@ -5,7 +5,7 @@ import ProductImage from "./product-image";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { TaxBadge } from "./tax-badge";
 import { identifyListedBrand } from "../lib/dealpilot/brands";
-import { freshnessLabel } from "../lib/catalog-store/price-view";
+import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../lib/catalog-store/price-view";
 import type { UsdRate } from "../lib/preflight/tax-estimate";
 
 /* "השורה התחתונה" card: brand, title, the price as a receipt line, and when
@@ -52,8 +52,10 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
           </p>
         )}
         {item.priceStatus !== undefined && (
-          <small className={"bl-card-fresh" + (fresh && item.price ? "" : " is-unknown")}>
-            {item.price ? (fresh ?? "זמן הבדיקה אינו ידוע") + " · סופי בקופה" : "המחיר האחרון לא עדכני ולכן אינו מוצג"}
+          <small className={"bl-card-fresh" + (fresh && item.price ? "" : " is-unknown") + ((priceAgeHours(item.priceObservedAt) ?? 0) > PRICE_WARN_AGE_HOURS ? " is-old" : "")}>
+            {item.price
+              ? (fresh ?? "זמן הבדיקה אינו ידוע") + ((priceAgeHours(item.priceObservedAt) ?? 0) > PRICE_WARN_AGE_HOURS ? " · ייתכן שהשתנה" : "") + " · סופי בקופה"
+              : "המחיר האחרון לא עדכני ולכן אינו מוצג"}
           </small>
         )}
         <TaxBadge price={item.currency === "ILS" ? item.price : null} usdRate={usdRate} />
