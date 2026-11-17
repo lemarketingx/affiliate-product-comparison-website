@@ -53,7 +53,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
         )}
         {item.priceStatus !== undefined && (
           <small className={"bl-card-fresh" + (fresh && item.price ? "" : " is-unknown")}>
-            {item.price ? fresh ?? "זמן הבדיקה אינו ידוע" : "המחיר האחרון לא עדכני ולכן אינו מוצג"}
+            {item.price ? (fresh ?? "זמן הבדיקה אינו ידוע") + " · סופי בקופה" : "המחיר האחרון לא עדכני ולכן אינו מוצג"}
           </small>
         )}
         <TaxBadge price={item.currency === "ILS" ? item.price : null} usdRate={usdRate} />

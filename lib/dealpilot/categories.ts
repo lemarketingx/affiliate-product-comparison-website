@@ -3,7 +3,10 @@
 export const categories = [
   {
     slug: "tech", label: "טכנולוגיה וטעינה", term: "Baseus",
-    terms: ["Baseus", "UGREEN", "Anker charger", "Xiaomi", "Redmi", "POCO", "QCY", "Soundcore", "Edifier", "Ulanzi", "Creality", "Anycubic"],
+    // Expansion 2026-11-17 (docs/CATALOG-EXPANSION.md): model-level terms for brands whose
+    // official stores already pass the rules; the bare "Baseus" term returned unrelated items.
+    terms: ["UGREEN", "UGREEN Nexode", "UGREEN USB C hub", "UGREEN earbuds", "Baseus charger", "Baseus power bank", "Baseus earbuds",
+      "QCY", "QCY earbuds", "Toocki", "Soundcore", "Edifier", "Anker charger", "Xiaomi", "Redmi", "POCO", "Ulanzi", "Creality", "Anycubic"],
     description: "מותגים מוכרים באביזרי טעינה, אודיו, סלולר וטכנולוגיה.",
   },
   {
@@ -13,12 +16,20 @@ export const categories = [
   },
   {
     slug: "car", label: "מותגים לרכב", term: "70mai",
-    terms: ["70mai", "VIOFO", "DDPAI", "Baseus car"],
+    terms: ["70mai", "VIOFO", "DDPAI", "Baseus car", "Baseus car holder", "Baseus car charger"],
     description: "מצלמות דרך ואביזרי רכב ממותגים מוכרים.",
   },
   {
     slug: "sport", label: "כושר וטיולים", term: "Amazfit",
-    terms: ["Amazfit", "Naturehike", "ROCKBROS"],
+    terms: ["Amazfit", "Naturehike", "ROCKBROS", "ROCKBROS bike light", "ROCKBROS cycling bag"],
     description: "ציוד כושר וטיולים ממותגים מוכרים.",
   },
 ] as const;
+
+/** Category slugs that hold at least one listed (verified) product. A category
+ * with none is not shown in navigation, tabs or banners, and its page 404s. */
+export function liveCategorySlugs(items: readonly { categorySlug?: string | null }[]): Set<string> {
+  const out = new Set<string>();
+  for (const i of items) if (i.categorySlug) out.add(i.categorySlug);
+  return out;
+}

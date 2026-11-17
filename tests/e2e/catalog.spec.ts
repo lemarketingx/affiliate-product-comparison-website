@@ -183,3 +183,20 @@ test("a failed product image shows the fallback in the same box, with the brand"
   await card.getByRole("link", { name: /^פרטי / }).click();
   await expect(page.locator(".fp-gallery-main .bl-img-fallback")).toBeVisible();
 });
+
+test("category tabs list only categories that hold listed products", async ({ page }) => {
+  await images(page);
+  await page.goto("/deals");
+  await expect(page.locator(".dp-product").first()).toBeVisible(); // streamed content is revealed
+  const cats = await page.locator(".dp-product .bl-card-cat").allInnerTexts();
+  const tabs = page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link");
+  const labels = (await tabs.allInnerTexts()).map((t) => t.trim()).filter((t) => t !== "הכול");
+  expect(labels.length).toBeGreaterThan(0);
+  // Every tab leads to a category page that lists products.
+  for (const label of labels) {
+    await page.getByRole("navigation", { name: "קטגוריות" }).getByRole("link", { name: label, exact: true }).click();
+    await expect(page.locator(".dp-product").first()).toBeVisible();
+    await page.goto("/deals");
+  }
+  expect(cats.length).toBeGreaterThan(0);
+});

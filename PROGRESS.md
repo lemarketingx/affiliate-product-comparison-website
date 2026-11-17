@@ -379,3 +379,20 @@ typecheck OK · unit **120/120** · build OK · e2e **43/43** (run right after a
 - Mobile LCP: locally FCP = LCP; the local server is uncompressed HTTP/1.1, Production is HTTP/2 + brotli, so the numbers are not comparable. A Preview measurement is needed (LAUNCH-READINESS D12).
 - Names: re-ran the "מחיר אמת"-style query (exact phrase + "השוואת מחירים", extended) on each candidate. "תחתית" is also a product type on Zap and CHP; "שורלי" has a possible insurance-comparison mention. Lead candidate is now **סופית**, with no strong winner.
 - Brand rule: sister brands count once; promo words match whole words only.
+
+## 2026-11-17 (afternoon) · Business readiness for a trial launch
+Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`. Expansion data: `docs/CATALOG-EXPANSION.md`. Names: `docs/BRAND-NAMING.md` (round 4).
+
+- **Production data (owner-requested):**
+  - Product 1005009849771017 unpublished via `dp_set_unpublished` after verifying it is a multi-brand parts listing; event logged.
+  - All 46 affiliate links checked with the job's code and recorded as run 14: 46/46 ok, same product ID.
+  - An unintended test click (row 3) came from a stale-cache redirect; the cause is documented.
+- **Branch:**
+  - Empty categories hidden everywhere.
+  - Final-price note on the product page.
+  - Toocki brand and 12 model-level terms, chosen from provider data (`orders`, `commission_rate`, brand-run stores).
+  - Tests updated for the new behaviour: the empty-catalog test now expects no category tabs; the warm-up wait is longer for the no-DB path; the store test scans for a detail-checked product.
+- **Tests:** unit 121/121 · e2e 44/44 · typecheck and build OK.
+- **Blocked:**
+  - Preview performance: no Preview link yet.
+  - `.co.il` and trademarks: ISOC and TMview block automated access.

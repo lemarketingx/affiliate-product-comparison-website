@@ -26,6 +26,8 @@ export const BRANDS = [
   { slug: "ulanzi", name: "Ulanzi", aliases: ["ulanzi"], category: "tech" },
   { slug: "creality", name: "Creality", aliases: ["creality"], category: "tech" },
   { slug: "anycubic", name: "Anycubic", aliases: ["anycubic"], category: "tech" },
+  // Added 2026-11-17 from catalog data: 4 brand-run stores, 2 items >5,000 reported sales, 9% commission.
+  { slug: "toocki", name: "Toocki", aliases: ["toocki"], category: "tech" },
 ] as const;
 export type KnownBrand = (typeof BRANDS)[number];
 const tokens = (s: string) => s.toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(/\s+/);

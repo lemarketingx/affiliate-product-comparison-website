@@ -1,3 +1,4 @@
+import { liveCategorySlugs } from "../lib/dealpilot/categories";
 import Link from "next/link";
 import { ArrowUpLeft, ArrowLeft, BadgeCheck, ShieldCheck, Calculator, Search, Headphones, Camera, Home, PlugZap, Laptop, Sparkles } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
@@ -39,6 +40,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   const imagesFor = (slugs: readonly string[]) =>
     ranked.filter(p => {const b = brandOf(p); return b && slugs.includes(b.slug) && imageOf(p);})
       .slice(0, 3).map(p => p.image!).filter(Boolean);
+  const live = liveCategorySlugs(snapshot.items);
   const slides: PromoSlide[] = [];
   const now = Date.now();
   const elevenStart = Date.parse("2026-11-01T00:00:00+02:00");
@@ -55,8 +57,8 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
     slides.push({key: b.id, eyebrow: "קמפיין פעיל מממשק AliExpress", title: b.title, subtitle: b.description ?? "מוצר ממותג שמופיע בקמפיין של AliExpress.", notice: "תנאי המבצע והמשלוח נקבעים ב־AliExpress. ייחוס עמלה טרם אומת.", label: "למוצר בקמפיין", href: b.link, external: true, tone: "ruby", images: [b.image ?? product.image ?? ""].filter(Boolean)});
     if (slides.length >= 4) break;
   }
-  slides.push({key:"tech-brands",eyebrow:"מותגים שעושים את ההבדל",title:"טכנולוגיה עם שם מוכר.",subtitle:"מטענים, אביזרי מחשב ומוצרי סלולר של מותגים מזוהים מהקטלוג שלנו.",notice:"זהו אוסף מוצרים, לא מבצע עם הנחה מובטחת.",label:"גלו מותגי טכנולוגיה",href:"/categories/tech",external:false,tone:"midnight",images:imagesFor(["ugreen","baseus","anker","xiaomi"])});
-  slides.push({key:"smart-home",eyebrow:"חיים חכמים יותר",title:"מחדשים את הבית, חכם.",subtitle:"מוצרי בית חכם ומותגי ניקיון מוכרים, עם בדיקת עלות לפני הקנייה.",notice:"המחיר, המשלוח והזמינות הסופיים מוצגים בקופה.",label:"למותגים לבית",href:"/categories/home",external:false,tone:"emerald",images:imagesFor(["dreame","roborock","reolink","yeelight"])});
+  if (live.has("tech")) slides.push({key:"tech-brands",eyebrow:"מותגים שעושים את ההבדל",title:"טכנולוגיה עם שם מוכר.",subtitle:"מטענים, אביזרי מחשב ומוצרי סלולר של מותגים מזוהים מהקטלוג שלנו.",notice:"זהו אוסף מוצרים, לא מבצע עם הנחה מובטחת.",label:"גלו מותגי טכנולוגיה",href:"/categories/tech",external:false,tone:"midnight",images:imagesFor(["ugreen","baseus","anker","xiaomi"])});
+  if (live.has("home")) slides.push({key:"smart-home",eyebrow:"חיים חכמים יותר",title:"מחדשים את הבית, חכם.",subtitle:"מוצרי בית חכם ומותגי ניקיון מוכרים, עם בדיקת עלות לפני הקנייה.",notice:"המחיר, המשלוח והזמינות הסופיים מוצגים בקופה.",label:"למותגים לבית",href:"/categories/home",external:false,tone:"emerald",images:imagesFor(["dreame","roborock","reolink","yeelight"])});
 
   const total = snapshot.items.length;
   const fresh = snapshot.items.filter((p) => p.priceStatus === "current").length;
@@ -85,6 +87,8 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
       {groups.map((g)=>{
         const picks = ranked.filter(p => {const b=brandOf(p); return b && (g.brands as readonly string[]).includes(b.slug) && p.image;});
         if (!picks.length) return null;
+        const viaCategory = !(g.key === "audio" || g.key === "charging" || g.key === "vacuum");
+        if (viaCategory && !live.has(g.key)) return null;
         const product = picks[0];
         const Icon = g.icon;
         const href = g.key === "audio" || g.key === "charging" || g.key === "vacuum" ? "/deals?q="+encodeURIComponent(g.brands[0]) : "/categories/" + g.key;

@@ -125,11 +125,11 @@ test.describe("typed catalog products (isolated fixture server)", () => {
   // landed-cost widget that lived inside it) were deleted. The checks below cover
   // features that still exist on this page.
   test("typed product page: import-tax estimate, affiliate disclosure and tracked redirect", async ({ page, request }) => {
-    test.setTimeout(90000);
+    test.setTimeout(150000);
     await fixtureImage(page);
     // A cold catalog builds in the background (by design); wait for the product to be listed.
     await expect
-      .poll(async () => { await page.goto("/products/1005005550001"); return page.getByRole("heading", { level: 1 }).innerText(); }, { timeout: 30000, intervals: [1000, 2000] })
+      .poll(async () => { await page.goto("/products/1005005550001"); return page.getByRole("heading", { level: 1 }).innerText(); }, { timeout: 110000, intervals: [1000, 2000, 5000] }) // no-DB cold build
       .toContain("מצלמת דרך");
     await expect(page.getByRole("heading", { name: "מה כנראה לא בקופסה" })).toHaveCount(0);
     // Verified tax rules + (fixture) representative rate: 149.9 ₪ ≈ 47$ → exempt.

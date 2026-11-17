@@ -45,3 +45,10 @@ test("promo words match whole words only", () => {
   assert.equal(cleanListingTitle("UGREEN【Laptop Stand】מעמד למחשב נייד"), "UGREEN【Laptop Stand】מעמד למחשב נייד");
   assert.equal(cleanListingTitle("【Hot Sale】Baseus כבל USB-C 100W"), "Baseus כבל USB-C 100W");
 });
+
+test("live categories are the ones with at least one listed product", async () => {
+  const { liveCategorySlugs } = await import("../lib/dealpilot/categories.ts");
+  const live = liveCategorySlugs([{ categorySlug: "tech" }, { categorySlug: "sport" }, { categorySlug: "tech" }, { categorySlug: null }]);
+  assert.deepEqual([...live].sort(), ["sport", "tech"]);
+  assert.equal(liveCategorySlugs([]).size, 0);
+});

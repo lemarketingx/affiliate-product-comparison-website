@@ -116,6 +116,11 @@ export default async function Product({
                 <strong dir="ltr">{p.price ? formatMoney(p.price, p.currency) : "אין מחיר עדכני"}</strong>
               </div>
               {p.price && fresh && <p className="bl-receipt-fresh">{fresh}</p>}
+              {p.price && (
+                <p className="bl-receipt-note" role="note">
+                  המחיר הסופי נקבע בקופה של AliExpress. ייתכנו דמי משלוח, תוספת לדגם או לצבע אחר, ושינוי מחיר מאז הבדיקה.
+                </p>
+              )}
               <div className="bl-receipt-row">
                 <span>מיסוי ביבוא אישי</span>
                 <TaxBadge price={p.currency === "ILS" ? p.price : null} usdRate={usdRate} />

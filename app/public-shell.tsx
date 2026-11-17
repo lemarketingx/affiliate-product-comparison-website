@@ -110,11 +110,11 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
 
 const icons: Record<string, typeof House> = { home: House, tech: Headphones, car: Car, sport: Dumbbell };
 
-/** Category tiles, without the old airport "gate" codes. */
-export function CategoryLinks() {
+/** Category tiles for categories that hold verified products. */
+export function CategoryLinks({ live }: { live: Set<string> }) {
   return (
     <div className="bl-cats">
-      {categories.map((c) => {
+      {categories.filter((c) => live.has(c.slug)).map((c) => {
         const Icon = icons[c.slug] ?? House;
         return (
           <Link className="bl-cat" href={"/categories/" + c.slug} key={c.slug}>

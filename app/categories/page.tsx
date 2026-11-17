@@ -1,18 +1,21 @@
+import { PublicShell, CategoryLinks } from "../public-shell";
+import { getCatalog } from "../../lib/aliexpress/catalog";
+import { liveCategorySlugs } from "../../lib/dealpilot/categories";
+import { BRAND } from "../../lib/brand";
 export const metadata = {
-  title: "קטגוריות | DealPilot",
+  title: "קטגוריות | " + BRAND.name,
   alternates: { canonical: "/categories" },
 };
-import { PublicShell, CategoryLinks } from "../public-shell";
-export default function Categories() {
+export const dynamic = "force-dynamic";
+export default async function Categories() {
+  const catalog = await getCatalog();
+  const live = liveCategorySlugs(catalog.items);
   return (
     <PublicShell>
-      <main id="main" className="fp-wrap fp-section">
-        <span className="fp-kicker">שמונה שערים · יעד אחד</span>
-        <h1 className="fp-page-title">מאיזה שער ממריאים היום?</h1>
-        <p className="fp-lead">
-          כל קטגוריה היא שער. בחרו אחד, ותגיעו ללוח המוצרים שלו.
-        </p>
-        <CategoryLinks />
+      <main id="main" className="bl-page">
+        <h1 className="bl-page-title">קטגוריות</h1>
+        <p className="bl-page-lead">רק תחומים שיש בהם כרגע מוצרי מותגים שעברו את הבדיקות שלנו.</p>
+        {live.size ? <CategoryLinks live={live} /> : <p className="bl-empty-note">הקטלוג מתעדכן כרגע. נסו שוב בעוד כמה דקות.</p>}
       </main>
     </PublicShell>
   );

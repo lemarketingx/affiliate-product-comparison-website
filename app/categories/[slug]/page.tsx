@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { categories } from "../../../lib/dealpilot/categories";
+import { categories, liveCategorySlugs } from "../../../lib/dealpilot/categories";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { parseViewParams } from "../../../lib/aliexpress/catalog-view";
@@ -29,6 +29,8 @@ export default async function Category({
   const c = categories.find((c) => c.slug === slug);
   if (!c) notFound();
   const [catalog, usdRate] = await Promise.all([getCatalog(), getUsdRate()]);
+  // No verified products in this category: no page (it is also hidden from navigation).
+  if (catalog.available && !catalog.warming && !liveCategorySlugs(catalog.items).has(slug)) notFound();
   const view = parseViewParams(await searchParams, categories.map((x) => x.slug));
   return (
     <PublicShell>

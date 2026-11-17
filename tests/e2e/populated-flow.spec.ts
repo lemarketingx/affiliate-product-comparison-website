@@ -9,13 +9,13 @@ const ID = "1005001234567";
 const TITLE = /Baseus מטען מהיר 65W/;
 
 test("branded catalog → product receipt → tracked affiliate redirect", async ({ page, request }) => {
-  test.setTimeout(90000);
+  test.setTimeout(150000);
   await page.route("https://ae01.alicdn.com/**", (route) =>
     route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#e9f1ff"/><text x="200" y="210" text-anchor="middle" font-size="22">TEST FIXTURE</text></svg>' }),
   );
   // Cold catalog builds in the background by design: wait for it.
   await expect
-    .poll(async () => { await page.goto("/deals"); return page.locator(".dp-product").count(); }, { timeout: 30000, intervals: [1000, 2000] })
+    .poll(async () => { await page.goto("/deals"); return page.locator(".dp-product").count(); }, { timeout: 110000, intervals: [1000, 2000, 5000] }) // no-DB cold build: one paced provider call per term
     .toBe(1);
   const card = page.locator(".dp-product");
   await expect(card).toContainText(TITLE);

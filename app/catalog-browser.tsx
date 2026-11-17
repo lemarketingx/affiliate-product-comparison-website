@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, PackageSearch, ShieldCheck, Search, ArrowUpLeft } from "lucide-react";
 import type { CatalogSnapshot } from "../lib/aliexpress/catalog";
-import { categories } from "../lib/dealpilot/categories";
+import { categories, liveCategorySlugs } from "../lib/dealpilot/categories";
 import { CATALOG_POLICY } from "../lib/aliexpress/catalog-build";
 import { filterCatalog, pageWindow, SORTS, viewHref, type ViewParams } from "../lib/aliexpress/catalog-view";
 import { ProductCard } from "./product-card";
@@ -74,7 +74,7 @@ export default function CatalogBrowser({
             <Link href={viewHref(base, { q: params.q, sort: params.sort, tax: params.tax })} aria-current={!activeCat ? "page" : undefined}>
               הכול
             </Link>
-            {categories.map((c) => (
+            {categories.filter((c) => liveCategorySlugs(snapshot.items).has(c.slug)).map((c) => (
               <Link key={c.slug} href={viewHref(base, { q: params.q, sort: params.sort, cat: c.slug, tax: params.tax })} aria-current={activeCat === c.slug ? "page" : undefined}>
                 {c.label}
               </Link>

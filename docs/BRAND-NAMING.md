@@ -1,3 +1,47 @@
+# Name research, round 4 (2026-11-17): coined names
+
+**Status: proposal only. The owner asked that no final name be chosen yet.** The live name stays DealPilot (`lib/brand.ts`).
+
+## What was and was not verified
+| Check | Source | Status |
+|---|---|---|
+| Global domains (`.com`, `.app`, `.shop`) | Vercel registry lookup. Calibrated: a random `.com` shows as free, known names as taken | **Checked** |
+| `.co.il` | ISOC-IL WHOIS (`www.isoc.org.il`) | **NOT CHECKED.** A Cloudflare bot check blocks automated access, including a real browser. Not bypassed. The Vercel tool's `.co.il` answers are unreliable (round 3) |
+| Israeli trademarks | Israel Patent Office search; TMview (`www.tmdn.org`) | **NOT CHECKED.** The ILPO host does not resolve here; TMview rejects automated requests ("Request Rejected") |
+| Existing uses | Web search, extended mode, exact name in Hebrew and Latin plus category words (the query shape that found "מחיר אמת") | **Checked** (search coverage only; absence of results is not proof of absence) |
+
+## The five proposals
+| Name | Idea | Uses found | `.com` | `.app` | `.shop` | `.co.il` | Main risk |
+|---|---|---|---|---|---|---|---|
+| **שורית** (Shurit) | "a little line": the bottom line, which matches the design | None found as a brand, shop or app | ✅ free | ✅ free | – | NOT CHECKED | Could read as a given name; meaning needs a tagline |
+| **בדוקלי** (Bdukli) | "checked for me": the verification promise | None. Nearby: "Badooks / בדוק", an Israeli service-search site; "בדוקאי" is a police term | ✅ free | ✅ free | – | NOT CHECKED | Some sound overlap with Badooks |
+| **תגלי** (Tagli) | "you'll discover", with "tag" (price tag) inside | None as a brand; it is an ordinary verb form | ❌ | ❌ | ✅ free | NOT CHECKED | Main domains taken; a verb is weak as a mark |
+| **זולית** (Zolit) | "a cheap one" | None found | ❌ | ✅ free | – | NOT CHECKED | "Cheap" fits poorly with branded originals; may undercut trust |
+| **מחירלי** (Mechirli) | "the price for me" | A GitHub project "mehirli-app": a quotes marketplace for services (another category, in development) | ✅ free | ✅ free | – | NOT CHECKED | A same-sounding Israeli project exists |
+
+Checked and dropped this round:
+- **קנלי / Kneli:** "קנה לי" (`kneli.co.il`) is an Israeli shopping and price-comparison site, the same category.
+- **Pricli:** "Pricly – AI Price Finder" is a same-category app.
+- **נטולי / Netoli:** confusable with Netaly (gifts) and "נטלי" (a medical alert service).
+- **תכלי / Tachli:** too close to the rejected תכל'ס / tachlis.co.il.
+- **Shuraly / שורלי:** a possible insurance-comparison mention (round 3).
+
+## Suggested next step (owner)
+If one is preferred, check **שורית** and **בדוקלי** first: they have free `.com` and `.app` and no use was found.
+- Run the ISOC WHOIS for `.co.il` by hand.
+- Search ILPO in classes 35, 42 and 9.
+- Get an attorney's opinion.
+- Buy the domains before any public mention.
+
+Sources:
+- https://kneli.co.il/about/
+- https://apps.apple.com/us/app/pricly-ai-price-finder/id6757987802
+- https://github.com/amirok196888-cloud/mehirli-app
+- https://www.badooks.com/
+- https://netaly.co.il/
+
+---
+
 # Name research, round 3 (2026-11-17)
 
 **Status: proposal only.**

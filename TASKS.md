@@ -62,6 +62,19 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Store cache key ignores `DEALPILOT_CACHE_NAMESPACE` (caused the 'intermittent' store e2e failure) | done |
 | Mobile LCP of the new design on a Preview (local numbers not comparable) | blocked: Preview link |
 
+## Trial readiness (2026-11-17, see `docs/TRIAL-READINESS.md`)
+| Task | Status |
+|---|---|
+| Remove parts listing 1005009849771017 | done (Production, logged) |
+| Check all affiliate links | done: 46/46 ok, run 14 |
+| Hide empty categories | done (branch) |
+| Final-price note | done (branch) |
+| Data-backed expansion terms + Toocki | done (branch); yields unknown until merge |
+| Preview performance with real images | blocked: Preview link |
+| Name: 5 coined proposals | done; `.co.il` and trademarks NOT CHECKED |
+| Second daily price-refresh window | todo (proposal) |
+| Exclude test click rows 2–3 from reports | owner decision |
+
 ## Phase 3 — competitive edge
 Israel vs abroad comparison (needs permitted Israeli price sources), import-cost calculator with sourced, dated tax rules, deal detection from stored price history (needs ≥ 30 days of history). todo
 
