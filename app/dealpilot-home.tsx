@@ -64,15 +64,15 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   const fresh = snapshot.items.filter((p) => p.priceStatus === "current").length;
   return <PublicShell><main id="main" className="dpb-main bl-home">
     <section className="bl-wrap bl-hero" aria-labelledby="bl-hero-title">
-      <h1 id="bl-hero-title">מותגים מוכרים. <mark>המחיר האמיתי, בשורה התחתונה.</mark></h1>
-      <p className="bl-hero-lead">מוצרי מותגים מ־AliExpress עם מחיר שנבדק מחדש, אומדן מסי יבוא לישראל וקישור שנבדק שמוביל לאותו מוצר. בלי אחוזי הנחה מומצאים.</p>
+      <h1 id="bl-hero-title">מוצאים מותגים מוכרים ב־AliExpress. <mark>קונים עם יותר מידע.</mark></h1>
+      <p className="bl-hero-lead">מוצרים מזוהים של מותגים מוכרים, עם מחיר בשקלים וזמן בדיקה, נתוני מכירות ספק ואומדן מסי יבוא לישראל. רואים מה ידוע ומה צריך לבדוק לפני התשלום.</p>
       <div className="bl-hero-cta">
-        <Link className="bl-cta" href="/deals">לכל מוצרי המותגים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
+        <Link className="bl-cta" href="/deals">גלו את המוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
         <Link className="bl-cta is-ghost" href="/brands">לפי מותג</Link>
       </div>
       {total > 0 && <ul className="bl-hero-facts" aria-label="נתוני הקטלוג כרגע">
         <li><b>{total.toLocaleString("he-IL")}</b> מוצרים מ־<b>{available.length}</b> מותגים</li>
-        {snapshot.source === "store" && <li><b>{fresh.toLocaleString("he-IL")}</b> מחירים נבדקו ב־48 השעות האחרונות</li>}
+        {snapshot.source === "store" && <li><b>{fresh.toLocaleString("he-IL")}</b> מחירים עם זמן בדיקה עדכני</li>}
         <li>מחיר בשקלים · אומדן מע״מ ומכס לכל מוצר</li>
       </ul>}
     </section>
@@ -103,12 +103,12 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
       <h2 id="bl-how-title">איך מגיעים לשורה התחתונה</h2>
       <ol>
         <li><Search size={22} aria-hidden="true"/><strong>מוצאים מותג</strong><span>רק מוצרים שהמותג שלהם זוהה גם בשם וגם בחנות.</span></li>
-        <li><Calculator size={22} aria-hidden="true"/><strong>רואים מחיר אמיתי</strong><span>מחיר בשקלים עם זמן הבדיקה, ואומדן מע״מ ומכס לפי כללי רשות המסים.</span></li>
-        <li><BadgeCheck size={22} aria-hidden="true"/><strong>קונים ב־AliExpress</strong><span>הקישור נבדק ומוביל לאותו מוצר. המחיר הסופי נקבע בקופה.</span></li>
+        <li><Calculator size={22} aria-hidden="true"/><strong>רואים מחיר עם זמן בדיקה</strong><span>מחיר מדווח בשקלים עם זמן הבדיקה, ואומדן מסים לישראל. המחיר הסופי נקבע בקופה.</span></li>
+        <li><BadgeCheck size={22} aria-hidden="true"/><strong>קונים ב־AliExpress</strong><span>בודקים את המוכר, הדגם המדויק והמשלוח ב־AliExpress. המחיר הסופי נקבע בקופה.</span></li>
       </ol>
     </section>
     <section className="bl-wrap bl-featured" id="products" aria-labelledby="bl-featured-title">
-      <div className="bl-section-head"><div><h2 id="bl-featured-title">הכי נמכרים עכשיו</h2><p>לפי מכירות מדווחות של הספק. זה לא דירוג איכות.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
+      <div className="bl-section-head"><div><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
       {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
     </section>
     <section className="bl-wrap bl-trust"><ShieldCheck size={20} aria-hidden="true"/><p>{BRAND.name} הוא אתר שותפים עצמאי. זיהוי מותג אינו אימות מקוריות. בדקו את החנות, הביקורות, השילוח והמחיר בקופה לפני כל רכישה.</p><Link href="/disclosure">גילוי נאות <ArrowLeft size={15} aria-hidden="true"/></Link></section>
