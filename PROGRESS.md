@@ -396,3 +396,25 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
 - **Blocked:**
   - Preview performance: no Preview link yet.
   - `.co.il` and trademarks: ISOC and TMview block automated access.
+
+## 2026-11-17 (evening) · Owner report: site price ≠ AliExpress price
+**Diagnosis (read-only, live DB and Production):**
+- The site shows exactly what the database holds: 18/18 products match.
+- After the owner lowered the threshold to 500 (main 78aab2e), 315 of 360 products went live with a price from the previous day's search, about 26 h old, never re-checked.
+- Prices moved sharply in 24 h. Among the 45 checked products the average change was 4.9% and the maximum 9.3%. About half changed by about 9%, which looks like a promotion step rather than drift.
+- At the same moment, the search price and the product-ID price were identical (46/46 same SKU, 0% difference), so the cause is **age, not source**.
+- AliExpress product pages block automated access (bot check), so the AliExpress-side price was **not observed** here. Match: NOT VERIFIED.
+
+**Fix (branch, needs merge):**
+- Re-check minimum age 20 h → 2 h. Before, a price checked at 10:32 was skipped by the next day's run.
+- Display limit 48 h → 30 h.
+- Above 12 h, the card and product page say the price may have changed.
+- A 4-hourly GitHub Actions schedule runs the price and link jobs (needs secret `DEALPILOT_CRON_SECRET`).
+- Link checks per run 8 → 25 (315 links are unchecked).
+- Tests: unit 123/123; e2e 44/44 (link-count and 500-threshold expectations updated).
+
+**Owner actions:**
+1. Run the price check now from `/admin/catalog` (it covers all 360).
+2. Add the secret.
+3. Merge.
+4. Send one concrete example (product, both prices, app or web, variant).

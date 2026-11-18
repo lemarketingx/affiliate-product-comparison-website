@@ -29,7 +29,7 @@ test("branded catalog → product receipt → tracked affiliate redirect", async
   await expect(page.locator("body")).not.toContainText("מועמד ללא מחיר וקידום");
   await expect(page.locator("body")).not.toContainText("מחיר דולר שאסור להציג כשקלים");
   // Product image renders (fixture image, real <img>).
-  const img = card.locator("img");
+  const img = card.locator(".bl-card-media img"); // the product photo, not the brand logo
   await expect(img).toBeVisible();
   expect(await img.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
 

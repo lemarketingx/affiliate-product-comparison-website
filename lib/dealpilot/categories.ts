@@ -6,12 +6,14 @@ export const categories = [
     // Expansion 2026-11-17 (docs/CATALOG-EXPANSION.md): model-level terms for brands whose
     // official stores already pass the rules; the bare "Baseus" term returned unrelated items.
     terms: ["UGREEN", "UGREEN Nexode", "UGREEN USB C hub", "UGREEN earbuds", "Baseus charger", "Baseus power bank", "Baseus earbuds",
-      "QCY", "QCY earbuds", "Toocki", "Soundcore", "Edifier", "Anker charger", "Xiaomi", "Xiaomi Smart Band", "Xiaomi Mijia", "Xiaomi TV Box", "Redmi", "Redmi Buds", "Redmi Watch", "POCO", "POCO smartphone", "Ulanzi", "Creality", "Anycubic"],
+      "QCY", "QCY earbuds", "Toocki", "Vention", "Haylou", "SoundPEATS", "ESSAGER", "Moondrop", "1MORE", "Nothing Ear",
+      // Product-level terms: bare brand searches return mostly compatible accessories.
+      "Anker power bank", "Soundcore earbuds", "Amazfit smart watch", "Soundcore", "Edifier", "Anker charger", "Xiaomi", "Xiaomi Smart Band", "Xiaomi Mijia", "Xiaomi TV Box", "Redmi", "Redmi Buds", "Redmi Watch", "POCO", "POCO smartphone", "Ulanzi", "Creality", "Anycubic"],
     description: "מותגים מוכרים באביזרי טעינה, אודיו, סלולר וטכנולוגיה.",
   },
   {
     slug: "home", label: "מותגים לבית", term: "Dreame",
-    terms: ["Dreame", "Roborock", "Yeelight", "Reolink", "Xiaomi home", "Xiaomi Mijia sensor", "Xiaomi smart home hub"],
+    terms: ["Dreame", "Roborock", "Yeelight", "Reolink", "Xiaomi home", "Xiaomi Mijia sensor", "Xiaomi smart home hub", "Dreame robot vacuum", "Roborock robot vacuum", "Reolink camera", "Yeelight lamp"],
     description: "שואבים, תאורה ומוצרי בית חכם ממותגים מזוהים.",
   },
   {

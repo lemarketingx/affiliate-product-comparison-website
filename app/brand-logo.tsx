@@ -2,14 +2,35 @@
 
 import { useState, type CSSProperties } from "react";
 
-/** Use third-party logo assets when available; never invent an official mark.
- * If the asset is unavailable, show a clearly typographic monogram instead. */
-const marks: Record<string, string> = {
-  xiaomi: "xiaomi", redmi: "redmi", poco: "poco",
-  baseus: "baseus", ugreen: "ugreen", anker: "anker",
-  soundcore: "soundcore", qcy: "qcy", edifier: "edifier",
-  "70mai": "70mai", dreame: "dreame", roborock: "roborock",
-  amazfit: "amazfit", reolink: "reolink", yeelight: "yeelight",
+/** Real logo files, self-hosted under /public/brands, used only to identify the
+ * brand of a listed product (no affiliation implied). Sources and licences:
+ * docs/BRAND-ASSETS.md. "wordmark" logos contain the name and replace the text;
+ * "mark" logos are a symbol shown next to the name. Brands without a free logo
+ * file keep the typographic monogram: an official mark is never invented. */
+const logos: Record<string, { file: string; kind: "wordmark" | "mark" }> = {
+  // Free-licence files (Simple Icons CC0, Wikimedia Commons public domain)
+  xiaomi: { file: "/brands/xiaomi.svg", kind: "mark" },
+  anker: { file: "/brands/anker.svg", kind: "wordmark" },
+  creality: { file: "/brands/creality.svg", kind: "wordmark" },
+  anycubic: { file: "/brands/anycubic.svg", kind: "mark" },
+  // From each brand's official website, owner decision 2026-11-18 (identification only)
+  ugreen: { file: "/brands/ugreen.svg", kind: "wordmark" },
+  baseus: { file: "/brands/baseus.png", kind: "mark" },
+  rockbros: { file: "/brands/rockbros.png", kind: "wordmark" },
+  qcy: { file: "/brands/qcy.png", kind: "wordmark" },
+  edifier: { file: "/brands/edifier.png", kind: "wordmark" },
+  ddpai: { file: "/brands/ddpai.svg", kind: "wordmark" },
+  viofo: { file: "/brands/viofo.png", kind: "wordmark" },
+  dreame: { file: "/brands/dreame.svg", kind: "wordmark" },
+  roborock: { file: "/brands/roborock.svg", kind: "mark" },
+  reolink: { file: "/brands/reolink.svg", kind: "wordmark" },
+  naturehike: { file: "/brands/naturehike.png", kind: "wordmark" },
+  ulanzi: { file: "/brands/ulanzi.png", kind: "mark" },
+  vention: { file: "/brands/vention.png", kind: "wordmark" },
+  haylou: { file: "/brands/haylou.png", kind: "wordmark" },
+  soundpeats: { file: "/brands/soundpeats.png", kind: "wordmark" },
+  yeelight: { file: "/brands/yeelight.png", kind: "wordmark" },
+  moondrop: { file: "/brands/moondrop.svg", kind: "mark" },
 };
 
 const palettes: Record<string, { accent: string; tint: string }> = {
@@ -34,6 +55,13 @@ const palettes: Record<string, { accent: string; tint: string }> = {
   creality: { accent: "#166a99", tint: "#e9f5fd" },
   anycubic: { accent: "#7e4698", tint: "#f8edff" },
   toocki: { accent: "#0a756d", tint: "#e7f8f5" },
+  vention: { accent: "#1d4ed8", tint: "#eaf0ff" },
+  haylou: { accent: "#1f2937", tint: "#eef1f5" },
+  soundpeats: { accent: "#b45309", tint: "#fff3e3" },
+  essager: { accent: "#0f766e", tint: "#e6f6f4" },
+  moondrop: { accent: "#6d28d9", tint: "#f2ecff" },
+  "1more": { accent: "#b91c1c", tint: "#fdecec" },
+  nothing: { accent: "#111827", tint: "#eef0f3" },
 };
 
 export default function BrandLogo({ slug, name, compact = false }: {
@@ -42,29 +70,30 @@ export default function BrandLogo({ slug, name, compact = false }: {
   compact?: boolean;
 }) {
   const [broken, setBroken] = useState(false);
-  const icon = marks[slug];
+  const logo = broken ? null : logos[slug];
   const palette = palettes[slug] ?? { accent: "#334155", tint: "#edf2f7" };
   const style = {
     "--dp-brand-accent": palette.accent,
     "--dp-brand-tint": palette.tint,
   } as CSSProperties;
 
+  if (logo?.kind === "wordmark")
+    return (
+      <span className={"dpb-logo dp-brand-lockup is-wordmark" + (compact ? " is-compact" : "")} style={style} dir="ltr">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="dp-brand-wordmark" src={logo.file} alt={name} height={compact ? 14 : 30} decoding="async" onError={() => setBroken(true)} />
+      </span>
+    );
+
   return (
     <span className={"dpb-logo dp-brand-lockup" + (compact ? " is-compact" : "")} style={style} dir="ltr">
       <span className="dp-brand-mark" aria-hidden="true">
-        {icon && !broken ? (
+        {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={`https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/${icon}.svg`}
-            alt=""
-            width={30}
-            height={30}
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            onError={() => setBroken(true)}
-          />
-        ) : <span className="dp-brand-monogram">{name.slice(0, 1).toUpperCase()}</span>}
+          <img src={logo.file} alt="" width={30} height={30} decoding="async" onError={() => setBroken(true)} />
+        ) : (
+          <span className="dp-brand-monogram">{name.slice(0, 1).toUpperCase()}</span>
+        )}
       </span>
       <strong className="dp-brand-name">{name}</strong>
     </span>
