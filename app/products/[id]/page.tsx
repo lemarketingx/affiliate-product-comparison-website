@@ -14,6 +14,7 @@ import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { TaxBadge } from "../../tax-badge";
 import ProductCostCalculator from "../../product-cost-calculator";
 import { IMPORT_TAX } from "../../../lib/preflight/import-tax";
+import { estimateIsraelTotal } from "../../../lib/preflight/tax-estimate";
 import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../../../lib/catalog-store/price-view";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -74,6 +75,7 @@ export default async function Product({
           ? "לא התקבל מחיר תקין מ־AliExpress"
           : "מחיר ספק בשקלים";
   const fresh = freshnessLabel(p.priceObservedAt);
+  const total = estimateIsraelTotal(p.currency === "ILS" && p.price ? Number(p.price) : null, usdRate, IMPORT_TAX);
   const hasLink = validAffiliateUrl(p.affiliateUrl, p.productUrl);
   const cta = hasLink ? (
     <a className="bl-cta" href={"/go/" + p.id + "?source=catalog"} rel="sponsored noopener noreferrer" target="_blank">
@@ -135,13 +137,18 @@ export default async function Product({
                 <span className="bl-muted">מוצג בקופה של AliExpress</span>
               </div>
               <div className="bl-receipt-row bl-receipt-total">
-                <span>השורה התחתונה</span>
-                {p.currency === "ILS" && p.price ? (
-                  <a href="#cost-calculator">חשבו במחשבון למטה</a>
+                <span>השורה התחתונה: עלות משוערת לישראל</span>
+                {p.currency === "ILS" && p.price && total.totalIls !== null ? (
+                  <strong className="bl-total" dir="rtl">{total.label}</strong>
                 ) : (
-                  <span className="bl-muted">אין מחיר בשקלים לחישוב</span>
+                  <span className="bl-muted">{p.currency === "ILS" && p.price ? "לא חושבה (חסר שער דולר)" : "אין מחיר בשקלים לחישוב"}</span>
                 )}
               </div>
+              {p.currency === "ILS" && p.price && total.totalIls !== null && (
+                <p className="bl-total-note">
+                  {total.note} <a href="#cost-calculator">הוסיפו משלוח במחשבון</a>
+                </p>
+              )}
               {cta}
               <p className="bl-fine">
                 {hasLink

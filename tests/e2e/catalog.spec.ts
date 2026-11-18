@@ -206,3 +206,17 @@ test("category tabs list only categories that hold listed products", async ({ pa
   }
   expect(cats.length).toBeGreaterThan(0);
 });
+
+test("the bottom line: estimated cost to Israel is shown before shipping, as a lower bound above the exemption", async ({ page }) => {
+  await images(page);
+  await page.goto("/deals");
+  const card = page.locator(".dp-product").first();
+  await expect(card).toBeVisible();
+  // Fixture prices are ₪605.90 with a $3.7-ish rate: above $75, so VAT applies.
+  await expect(card.locator(".bl-card-total")).toContainText(/לפחות ₪[\d,]+ לפני משלוח/);
+  await card.getByRole("link", { name: /^פרטי / }).click();
+  const receipt = page.getByRole("region", { name: "מחיר וקנייה" });
+  await expect(receipt).toContainText("עלות משוערת לישראל");
+  await expect(receipt.locator(".bl-total")).toContainText(/^לפחות ₪[\d,]+ לפני משלוח · כולל מע"מ$/);
+  await expect(receipt.getByRole("link", { name: "הוסיפו משלוח במחשבון" })).toHaveAttribute("href", "#cost-calculator");
+});

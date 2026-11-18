@@ -5,6 +5,8 @@ import ProductImage from "./product-image";
 import BrandLogo from "./brand-logo";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
 import { TaxBadge } from "./tax-badge";
+import { IMPORT_TAX } from "../lib/preflight/import-tax";
+import { estimateIsraelTotal } from "../lib/preflight/tax-estimate";
 import { identifyListedBrand } from "../lib/dealpilot/brands";
 import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../lib/catalog-store/price-view";
 import type { UsdRate } from "../lib/preflight/tax-estimate";
@@ -15,6 +17,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
   const verified = evaluateEligibility(item).eligible;
   const brand = identifyListedBrand(item);
   const fresh = freshnessLabel(item.priceObservedAt);
+  const israel = estimateIsraelTotal(item.currency === "ILS" && item.price ? Number(item.price) : null, usdRate, IMPORT_TAX);
   return (
     <article className="dp-product bl-card">
       <div className="bl-card-media" aria-hidden="true">
@@ -60,6 +63,11 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
           </small>
         )}
         <TaxBadge price={item.currency === "ILS" ? item.price : null} usdRate={usdRate} />
+        {israel.totalIls !== null && israel.atLeast && (
+          <p className="bl-card-total">
+            לישראל: לפחות <strong dir="ltr">{"₪" + israel.totalIls.toLocaleString("he-IL")}</strong> לפני משלוח
+          </p>
+        )}
         <div className="bl-card-foot">
           <span className={"bl-chip " + (verified ? "is-go" : "is-wait")}>{verified ? "בדיקות איכות עברו" : "איכות ומקוריות טרם אומתו"}</span>
           <span>{item.affiliateUrl ? "כולל קישור שותפים" : "קישור שותפים אינו זמין"}</span>
