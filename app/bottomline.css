@@ -594,6 +594,8 @@ a.bl-card-brand:hover .dp-brand-name { color: var(--dp-brand-accent, #334155); }
   border-radius: 999px; background: #fff; color: #14161b; text-decoration: none; white-space: nowrap; }
 .bl-marquee-track a:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
 .bl-marquee-track .dpb-logo img.dp-brand-wordmark { height: 22px; max-width: 120px; }
+/* Fixed pill width: logos load after first paint and must not widen the row (layout shift). */
+.bl-marquee-row[data-row="brands"] a { width: 168px; justify-content: center; overflow: hidden; }
 .bl-marquee-row[data-row="sellers"] a { height: 72px; padding: 4px 14px 4px 4px; }
 .bl-marquee-row[data-row="sellers"] img { width: 64px; height: 64px; object-fit: contain; border-radius: 999px; background: #f6f3ec; }
 .bl-marquee-row[data-row="sellers"] span { font-size: 13px; color: #3b3f47; }
