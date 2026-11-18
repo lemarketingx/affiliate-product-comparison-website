@@ -26,6 +26,11 @@ const logos: Record<string, { file: string; kind: "wordmark" | "mark" }> = {
   reolink: { file: "/brands/reolink.svg", kind: "wordmark" },
   naturehike: { file: "/brands/naturehike.png", kind: "wordmark" },
   ulanzi: { file: "/brands/ulanzi.png", kind: "mark" },
+  vention: { file: "/brands/vention.png", kind: "wordmark" },
+  haylou: { file: "/brands/haylou.png", kind: "wordmark" },
+  soundpeats: { file: "/brands/soundpeats.png", kind: "wordmark" },
+  yeelight: { file: "/brands/yeelight.png", kind: "wordmark" },
+  moondrop: { file: "/brands/moondrop.svg", kind: "mark" },
 };
 
 const palettes: Record<string, { accent: string; tint: string }> = {

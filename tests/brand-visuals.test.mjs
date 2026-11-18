@@ -27,7 +27,7 @@ test("every self-hosted brand logo exists, is SVG, and has its source documented
   const component = await file("app/brand-logo.tsx");
   const doc = await file("docs/BRAND-ASSETS.md");
   const paths = [...component.matchAll(/file: "\/brands\/([a-z0-9-]+\.(?:svg|png))"/g)].map((m) => m[1]);
-  assert.ok(paths.length >= 16);
+  assert.ok(paths.length >= 21);
   for (const p of paths) {
     if (p.endsWith(".svg")) {
       const svg = await file("public/brands/" + p);

@@ -35,13 +35,20 @@ Edits made to the files:
 | Reolink | `reolink.svg` | wordmark | https://reolink.com/ header (`header-svg-white.svg`, recoloured) |
 | Naturehike | `naturehike.png` | wordmark | https://www.naturehike.com/ (`LOGO_….png`) |
 | Ulanzi | `ulanzi.png` | mark | https://www.ulanzi.com/ header |
+| Vention | `vention.png` | wordmark | https://ventiontech.com/ (`Vention_Logo_Blue.png`), 2026-11-18 |
+| Haylou | `haylou.png` | wordmark | https://haylou.com/ header (`logo-1500x360.png`), 2026-11-18 |
+| SoundPEATS | `soundpeats.png` | wordmark | https://soundpeats.com/ header (white, recoloured near-black), 2026-11-18 |
+| Yeelight | `yeelight.png` | wordmark | https://store.yeelight.com/ (`yeelight-logo-black.png`), 2026-11-18 |
+| Moondrop | `moondrop.svg` | mark (水月雨) | https://moondroplab.com/ header logo, 2026-11-18 |
 
 **Still without a logo:**
 - **Toocki:** no official website found, only an AliExpress store.
 - **Soundcore:** its site header shows the Anker logo.
 - **Amazfit:** the logo is loaded by script.
 - **70mai:** the header shows a product logo, not the brand.
-- **Yeelight:** the site redirects to a blocked host.
+- **1MORE:** the logo server reset the connection.
+- **ESSAGER:** the official site did not answer.
+- **Nothing:** no logo file was found in the page.
 - **Redmi, POCO:** not fetched.
 
 These brands keep the monogram (first letter and name).
