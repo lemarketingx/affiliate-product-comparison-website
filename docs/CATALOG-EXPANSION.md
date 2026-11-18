@@ -61,3 +61,31 @@ Findings:
 - **No new product was imported in this round.** The new terms reach the live job only after a merge; there are no AliExpress API credentials in this environment. How many new products they will yield is unknown. Expect some, not a target number.
 - Sales and commission figures are the provider's and were not verified independently. Commission paid depends on AliExpress program terms.
 - Israeli demand (search volume in Israel) was not measured: no keyword-tool access here.
+
+## 2026-11-18 · Owner: "brands are missing"
+**Why 7 registered brands do not show** (live database, read-only):
+- Redmi, Anker, Soundcore, Dreame, Roborock, Reolink and Amazfit have no listed product.
+- Their bare-name searches return mostly other stores' compatible accessories:
+  - Amazfit watch straps from "CRESTED Watchband Store" (49 of 49 results rejected for brand);
+  - Roborock and Dreame spare parts from parts stores;
+  - Redmi cables from "Stone's Store".
+- Reolink's best result had 38 sales.
+- The rules reject these correctly.
+
+**Changes (branch):**
+- **Product-level terms** to reach the brands' own listings: `Anker power bank`, `Soundcore earbuds`, `Amazfit smart watch`, `Dreame robot vacuum`, `Roborock robot vacuum`, `Reolink camera`, `Yeelight lamp`. `Redmi Buds` and `Redmi Watch` were already on main.
+- **7 new brands**, each with an official or flagship AliExpress store in our data and products above the 500-sales threshold with the brand in the title:
+
+  | Brand | Store | Candidates | Max sales |
+  |---|---|---|---|
+  | Vention | VEnTIOn Official/Flagship Store | 4 | 4,089 |
+  | Moondrop | MOONDROP Official Store | 4 | 2,506 |
+  | Haylou | Haylou Official/Flagship Store | 3 | 3,542 |
+  | SoundPEATS | SoundPEATS Official Store | 3 | 1,525 |
+  | ESSAGER | ESSAGER Flagship Store | 2 | 9,954 |
+  | 1MORE | 1MORE Flagship Store | 1 | 910 |
+  | Nothing | Nothing Flagship Store | 1 | 773 |
+
+- **Not added:** stores whose name is not a recognisable brand ("I LOVE LUO YOO Store", "Sanag", "QOOVI").
+
+**NOT VERIFIED:** how many products the new terms and brands will publish. They run on the next discovery after a merge (daily 02:17 UTC, or "discover" in `/admin/catalog`). Logos for the 7 new brands are not added yet; they show the monogram.

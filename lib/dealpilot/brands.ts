@@ -28,6 +28,15 @@ export const BRANDS = [
   { slug: "anycubic", name: "Anycubic", aliases: ["anycubic"], category: "tech" },
   // Added 2026-11-17 from catalog data: 4 brand-run stores, 2 items >5,000 reported sales, 9% commission.
   { slug: "toocki", name: "Toocki", aliases: ["toocki"], category: "tech" },
+  // Added 2026-11-18 from catalog data: official/flagship AliExpress stores with
+  // products above the 500-sales threshold and the brand in the title.
+  { slug: "vention", name: "Vention", aliases: ["vention"], category: "tech" },
+  { slug: "haylou", name: "Haylou", aliases: ["haylou"], category: "tech" },
+  { slug: "soundpeats", name: "SoundPEATS", aliases: ["soundpeats"], category: "tech" },
+  { slug: "essager", name: "ESSAGER", aliases: ["essager"], category: "tech" },
+  { slug: "moondrop", name: "Moondrop", aliases: ["moondrop"], category: "tech" },
+  { slug: "1more", name: "1MORE", aliases: ["1more"], category: "tech" },
+  { slug: "nothing", name: "Nothing", aliases: ["nothing"], category: "tech" },
 ] as const;
 export type KnownBrand = (typeof BRANDS)[number];
 const tokens = (s: string) => s.toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(/\s+/);

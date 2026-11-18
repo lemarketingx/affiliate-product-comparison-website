@@ -50,6 +50,13 @@ const palettes: Record<string, { accent: string; tint: string }> = {
   creality: { accent: "#166a99", tint: "#e9f5fd" },
   anycubic: { accent: "#7e4698", tint: "#f8edff" },
   toocki: { accent: "#0a756d", tint: "#e7f8f5" },
+  vention: { accent: "#1d4ed8", tint: "#eaf0ff" },
+  haylou: { accent: "#1f2937", tint: "#eef1f5" },
+  soundpeats: { accent: "#b45309", tint: "#fff3e3" },
+  essager: { accent: "#0f766e", tint: "#e6f6f4" },
+  moondrop: { accent: "#6d28d9", tint: "#f2ecff" },
+  "1more": { accent: "#b91c1c", tint: "#fdecec" },
+  nothing: { accent: "#111827", tint: "#eef0f3" },
 };
 
 export default function BrandLogo({ slug, name, compact = false }: {

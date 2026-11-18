@@ -66,3 +66,11 @@ test("Xiaomi-family searches exclude explicitly compatible third-party accessori
   assert.equal(identifyListedBrand({ title: "Xiaomi Smart Band 9", shopName: "Xiaomi Store" })?.slug, "xiaomi");
   assert.equal(identifyListedBrand({ title: "Redmi Buds 6 Pro", shopName: "Xiaomi Redmi Official Store" })?.slug, "redmi");
 });
+
+test("search terms are unique per category (term_key = category:term)", async () => {
+  const { categories } = await import("../lib/dealpilot/categories.ts");
+  for (const c of categories) {
+    const keys = c.terms.map((t) => t.toLowerCase());
+    assert.equal(new Set(keys).size, keys.length, c.slug + " has duplicate terms");
+  }
+});
