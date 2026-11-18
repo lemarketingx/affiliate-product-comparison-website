@@ -8,10 +8,24 @@ import { useState, type CSSProperties } from "react";
  * "mark" logos are a symbol shown next to the name. Brands without a free logo
  * file keep the typographic monogram: an official mark is never invented. */
 const logos: Record<string, { file: string; kind: "wordmark" | "mark" }> = {
+  // Free-licence files (Simple Icons CC0, Wikimedia Commons public domain)
   xiaomi: { file: "/brands/xiaomi.svg", kind: "mark" },
   anker: { file: "/brands/anker.svg", kind: "wordmark" },
   creality: { file: "/brands/creality.svg", kind: "wordmark" },
   anycubic: { file: "/brands/anycubic.svg", kind: "mark" },
+  // From each brand's official website, owner decision 2026-11-18 (identification only)
+  ugreen: { file: "/brands/ugreen.svg", kind: "wordmark" },
+  baseus: { file: "/brands/baseus.png", kind: "mark" },
+  rockbros: { file: "/brands/rockbros.png", kind: "wordmark" },
+  qcy: { file: "/brands/qcy.png", kind: "wordmark" },
+  edifier: { file: "/brands/edifier.png", kind: "wordmark" },
+  ddpai: { file: "/brands/ddpai.svg", kind: "wordmark" },
+  viofo: { file: "/brands/viofo.png", kind: "wordmark" },
+  dreame: { file: "/brands/dreame.svg", kind: "wordmark" },
+  roborock: { file: "/brands/roborock.svg", kind: "mark" },
+  reolink: { file: "/brands/reolink.svg", kind: "wordmark" },
+  naturehike: { file: "/brands/naturehike.png", kind: "wordmark" },
+  ulanzi: { file: "/brands/ulanzi.png", kind: "mark" },
 };
 
 const palettes: Record<string, { accent: string; tint: string }> = {

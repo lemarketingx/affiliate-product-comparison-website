@@ -26,12 +26,18 @@ test("every brand location shares the colored logo with visible brand name", asy
 test("every self-hosted brand logo exists, is SVG, and has its source documented", async () => {
   const component = await file("app/brand-logo.tsx");
   const doc = await file("docs/BRAND-ASSETS.md");
-  const paths = [...component.matchAll(/file: "\/brands\/([a-z0-9-]+\.svg)"/g)].map((m) => m[1]);
-  assert.ok(paths.length >= 4);
+  const paths = [...component.matchAll(/file: "\/brands\/([a-z0-9-]+\.(?:svg|png))"/g)].map((m) => m[1]);
+  assert.ok(paths.length >= 16);
   for (const p of paths) {
-    const svg = await file("public/brands/" + p);
-    assert.match(svg, /<svg[\s>]/, p + " is an SVG");
-    assert.doesNotMatch(svg, /<script/i, p + " has no script");
+    if (p.endsWith(".svg")) {
+      const svg = await file("public/brands/" + p);
+      assert.match(svg, /<svg[\s>]/, p + " is an SVG");
+      assert.doesNotMatch(svg, /<script|\son[a-z]+=|javascript:|<foreignObject/i, p + " has no script or handler");
+    } else {
+      const png = await readFile(new URL("../public/brands/" + p, import.meta.url));
+      assert.equal(png.subarray(1, 4).toString("latin1"), "PNG", p + " is a PNG");
+      assert.ok(png.length < 60_000, p + " stays small");
+    }
     assert.ok(doc.includes("`" + p + "`"), p + " is documented in BRAND-ASSETS.md");
   }
   // No runtime third-party logo CDN.
