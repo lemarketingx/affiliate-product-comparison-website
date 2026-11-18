@@ -418,3 +418,24 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
 2. Add the secret.
 3. Merge.
 4. Send one concrete example (product, both prices, app or web, variant).
+
+## 2026-11-18 · Merge #27 and live speed check (owner approved)
+- **Verified live first:**
+  - The price-fix work merged by ChatGPT (#23) runs: the 4-hourly workflow succeeds, so the secret is set.
+  - The oldest price was 4.4 h old, none older than 12 h.
+  - 520 products published after the nightly discovery.
+  - Links: 145 ok, 375 waiting, 0 bad.
+- **PR #27:** self-hosted logos for 21 brands, 7 data-backed brands, and product-level terms. CI was green and the PR merged cleanly at 09:12 UTC. Production now serves `/brands/*.svg|png`.
+- **Performance on the real deployments** (real images; Pixel 7 profile with 4× CPU slowdown, 1.6 Mbps and 150 ms RTT, plus desktop; median of 3 runs per page):
+
+| Page | Mobile LCP: Preview (logos) | Production before | Production after merge | Desktop LCP: Production after |
+|---|---|---|---|---|
+| Home | 1,844 ms | 1,696 | 1,680 | 792 |
+| Deals | 1,776 | 1,592 | 1,560 | 708 |
+| Category | 1,824 | 1,536 | 1,752 | 680 |
+| Search | 1,736 | 1,560 | 1,664 | 664 |
+| Product | 1,472 | 1,504 | 1,496 | 624 |
+
+  - Before and after on Production differ by −120 to +216 ms in both directions, which is measurement noise. The logos did not slow the site.
+  - On every page and run: axe WCAG 2.1 AA 0 violations, CLS ≤ 0.033, 0 broken images.
+  - Mobile LCP of about 1.5–1.8 s is bound by first paint (FCP = LCP) under the throttled profile. This closes the open "Preview performance" item.
