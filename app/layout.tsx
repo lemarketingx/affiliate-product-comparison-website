@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ConsentBasedAnalytics } from "./consent-based-analytics";
 import "./globals.css";
 import "./dealpilot.css";
 import "./welcoming.css";
@@ -36,7 +37,7 @@ export default function RootLayout({
         <link rel="preload" href="/fonts/storefront/ibm-plex-sans-hebrew-hebrew-700-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/storefront/ibm-plex-sans-hebrew-hebrew-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
-      <body>{children}</body>
+      <body>{children}<ConsentBasedAnalytics /></body>
     </html>
   );
 }
