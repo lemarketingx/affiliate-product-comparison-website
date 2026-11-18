@@ -475,4 +475,15 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
 **NOT VERIFIED**
 - A real seller video: no real `product_video_url` value has been seen. This will be known after the first price run on the merged code (stats `videos`).
 - Axe with the video player open was not run on real data (no real video).
-- Production before (main, live, same script): mobile home LCP 3.1 s, desktop 0.8 s, axe 0. The Preview comparison follows.
+
+**Speed: Production (before) vs branch Preview (after)**, live, same script, 2 runs:
+
+| Page | Production LCP | Preview LCP | Production CLS | Preview CLS | axe |
+|---|---|---|---|---|---|
+| Home, mobile | 3.14 s | 1.23–1.35 s | 0.026 | 0.027 | 0 |
+| Home, desktop | 0.81 s | 0.68–0.93 s | 0.033 | 0.011–0.036 | 0 |
+| Product, mobile | 1.52 s | 1.61–1.72 s | 0 | 0 | 0 |
+
+- No measurable cost; the differences are within run-to-run noise.
+- **Caught and fixed on Preview:** the first Preview build had home CLS 0.121. Brand logos loading after first paint widened the moving row. Fixed with a fixed pill width (commit 90022fe).
+- The remaining home shift is the hero reflow that Production already has.
