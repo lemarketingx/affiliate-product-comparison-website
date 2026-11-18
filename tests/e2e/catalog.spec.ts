@@ -220,3 +220,44 @@ test("the bottom line: estimated cost to Israel is shown before shipping, as a l
   await expect(receipt.locator(".bl-total")).toContainText(/^לפחות ₪[\d,]+ לפני משלוח · כולל מע"מ$/);
   await expect(receipt.getByRole("link", { name: "הוסיפו משלוח במחשבון" })).toHaveAttribute("href", "#cost-calculator");
 });
+
+// Owner request 2026-11-18: seller videos on the product page. TEST FIXTURE video host only.
+test("seller video loads only after a click, is labelled, and falls back to the image on error", async ({ page }) => {
+  await images(page);
+  const videoRequests: string[] = [];
+  page.on("request", (r) => { if (/video\.aliexpress-media\.com|untrusted\.example/.test(r.url())) videoRequests.push(r.url()); });
+  // Fixture rows ending in 4 carry an allowed video; rows ending in 5 a rejected host.
+  // The fixture video answer is held until the player has been checked, then fails (404).
+  let release = () => {};
+  const held = new Promise<void>((r) => { release = r; });
+  await page.route(/https:\/\/video\.aliexpress-media\.com\/.*/, async (route) => { await held; await route.fulfill({ status: 404, body: "" }); });
+  await page.goto("/deals");
+  await expect(page.locator(".dp-product")).toHaveCount(24);
+  const hrefs = await page.locator('.dp-product a[href^="/products/"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute("href") ?? ""))]);
+  const withVideo = hrefs.find((h) => h.endsWith("4"));
+  const rejected = hrefs.find((h) => h.endsWith("5"));
+  expect(withVideo, "a fixture product with a video is listed").toBeTruthy();
+
+  if (rejected) {
+    await page.goto(rejected);
+    await expect(page.getByRole("button", { name: "הפעלת סרטון המוכר" })).toHaveCount(0);
+  }
+
+  await page.goto(withVideo!);
+  const play = page.getByRole("button", { name: "הפעלת סרטון המוכר" });
+  await expect(play).toBeVisible();
+  // Nothing is fetched from the video host and no <video> exists before the click.
+  await expect(page.locator("video")).toHaveCount(0);
+  expect(videoRequests).toEqual([]);
+  await expect(page.getByRole("button", { name: "הצגת סרטון המוכר" })).toBeVisible();
+
+  await play.click();
+  await expect(page.locator(".fp-video figcaption")).toHaveText("סרטון של המוכר, מתוך AliExpress");
+  await expect(page.locator("video")).toHaveAttribute("src", /video\.aliexpress-media\.com/);
+  expect(videoRequests.length).toBeGreaterThan(0);
+  release();
+  // The fixture host answers 404: the gallery drops the video and shows the image again.
+  await expect(page.locator("video")).toHaveCount(0, { timeout: 10000 });
+  await expect(page.locator(".fp-gallery-main img")).toBeVisible();
+  await expect(play).toHaveCount(0);
+});

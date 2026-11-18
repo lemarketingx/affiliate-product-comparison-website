@@ -80,6 +80,32 @@ export function toIngestItem(
   };
 }
 
+/** Video diagnostics per job: rejected hosts tell us when the allowlist is wrong. */
+export type VideoStats = { seen: number; accepted: number; stored: number; writeFailed: number; rejectedHosts: Record<string, number> };
+const newVideoStats = (): VideoStats => ({ seen: 0, accepted: 0, stored: 0, writeFailed: 0, rejectedHosts: {} });
+
+/** Counts videos in provider rows and stores the accepted ones (never clears a stored video). */
+async function storeVideos(rpc: Rpc, products: AliProduct[], v: VideoStats) {
+  const items: { product_id: string; video_url: string }[] = [];
+  for (const p of products) {
+    if (p.video || p.videoRejectedHost) v.seen++;
+    if (p.video) {
+      v.accepted++;
+      items.push({ product_id: p.id, video_url: p.video });
+    } else if (p.videoRejectedHost && Object.keys(v.rejectedHosts).length < 20) {
+      v.rejectedHosts[p.videoRejectedHost] = (v.rejectedHosts[p.videoRejectedHost] ?? 0) + 1;
+    }
+  }
+  if (!items.length) return;
+  // Videos are optional extras: a failed write must never fail a price or discovery run.
+  try {
+    const res = (await rpc("dp_set_videos", { items })) as { updated?: number } | null;
+    v.stored += res?.updated ?? 0;
+  } catch {
+    v.writeFailed++;
+  }
+}
+
 export type DiscoverStats = {
   calls: number;
   pagesOk: number;
@@ -93,6 +119,7 @@ export type DiscoverStats = {
   updated: number;
   publishedNew: number;
   snapshots: number;
+  videos?: VideoStats;
   termsExhausted: number;
   quotaStopped: boolean;
   pageSize: number | null;
@@ -123,6 +150,7 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
     calls: 0, pagesOk: 0, pagesFailed: 0, rows: 0, uniqueInRun: 0, duplicatesInRun: 0, valid: 0,
     rejected: {}, inserted: 0, updated: 0, publishedNew: 0, snapshots: 0, termsExhausted: 0,
     quotaStopped: false, pageSize: null, dailyNewTarget: PIPELINE_POLICY.dailyNewTarget,
+    videos: newVideoStats(),
   };
   const errorCodes: Record<string, number> = {};
   const events: Event[] = [];
@@ -189,6 +217,7 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
       cursor += batch.length;
       const results = await Promise.all(batch.map(one));
       const items: ReturnType<typeof toIngestItem>[] = [];
+      const fresh: AliProduct[] = [];
       for (let i = 0; i < batch.length; i++) {
         const t = batch[i], r = results[i];
         if (!r.ok) {
@@ -215,6 +244,7 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
           if (reasons.length) for (const reason of reasons) stats.rejected[reason] = (stats.rejected[reason] ?? 0) + 1;
           else stats.valid++;
           items.push(toIngestItem(p, { slug: t.category_slug, label: t.category_label }, t.term, reasons));
+          fresh.push(p);
         }
       }
       if (items.length) {
@@ -225,6 +255,7 @@ export async function runDiscovery(o: DiscoverOptions): Promise<{ runId: number;
         stats.updated += res.updated;
         stats.publishedNew += res.published_new;
         stats.snapshots += res.snapshots;
+        await storeVideos(o.rpc, fresh, stats.videos!);
       }
     }
     stats.uniqueInRun = seen.size;
@@ -258,6 +289,7 @@ export type PriceStats = {
   failedBatches: number; suspectBatches: number; quotaStopped: boolean;
   /** Detail parameter profile the provider accepted in this run. */
   profile: string | null;
+  videos?: VideoStats;
 };
 
 export type DetailAnswer = {
@@ -294,6 +326,7 @@ export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: 
   const stats: PriceStats = {
     calls: 0, checked: 0, updated: 0, confirmed: 0, missing: 0, invalid: 0, unpublished: 0,
     failedBatches: 0, suspectBatches: 0, quotaStopped: false, profile: null,
+    videos: newVideoStats(),
   };
   const errorCodes: Record<string, number> = {};
   const events: Event[] = [];
@@ -362,6 +395,7 @@ export async function runPriceRefresh(o: PriceRefreshOptions): Promise<{ runId: 
       stats.missing += res.missing;
       stats.invalid += res.invalid;
       stats.unpublished += res.unpublished;
+      await storeVideos(o.rpc, answer.products.filter((p) => wanted.has(p.id)), stats.videos!);
     }
     const status = batches > 0 && stats.failedBatches === batches ? "failed" : stats.failedBatches > 0 ? "partial" : "succeeded";
     if (events.length) await o.rpc("dp_log_events", { run_id: runId, events });
