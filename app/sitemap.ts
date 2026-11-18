@@ -10,6 +10,7 @@ const ORIGIN = "https://affiliate-product-comparison-websit.vercel.app";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = new Set(["/", "/brands", "/deals", "/categories", "/guides", "/about", "/disclosure"]);
   // Only pages with live catalog products get their own URLs. Never expose
+  // AI TEAM smoke test: this comment is isolated to an unmerged draft PR.
   // admin, API, search queries, affiliate redirects or unlisted products.
   try {
     const catalog = await getCatalog({ waitMs: 0 });
