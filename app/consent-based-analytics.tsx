@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 
@@ -12,6 +12,10 @@ export function ConsentBasedAnalytics() {
   const pathname = usePathname();
   const [consent, setConsent] = useState<Consent>(null);
   const [initialized, setInitialized] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [scriptFailed, setScriptFailed] = useState(false);
+  const configured = useRef(false);
+  const lastSentPath = useRef<string | null>(null);
 
   useEffect(() => {
     try {
@@ -31,23 +35,43 @@ export function ConsentBasedAnalytics() {
       // Consent remains session-only when storage is blocked.
     }
     setConsent(value);
+    if (value !== "accepted") {
+      setScriptLoaded(false);
+      setScriptFailed(false);
+      configured.current = false;
+      lastSentPath.current = null;
+    }
   }
 
+  // Wait for the external GA4 library to load before initializing the tag.
+  // This avoids firing a page_view before the script is ready.
   useEffect(() => {
-    if (!initialized || consent !== "accepted") return;
-    const dataLayerWindow = window as Window & { dataLayer?: unknown[][] };
-    const dataLayer = (dataLayerWindow.dataLayer ??= []);
-    const gtag = (...args: unknown[]) => dataLayer.push(args);
+    if (!initialized || consent !== "accepted" || !scriptLoaded) return;
+    const analyticsWindow = window as Window & {
+      dataLayer?: unknown[][];
+      gtag?: (...args: unknown[]) => void;
+    };
+    analyticsWindow.dataLayer ??= [];
+    analyticsWindow.gtag ??= (...args: unknown[]) => {
+      analyticsWindow.dataLayer?.push(args);
+    };
 
-    // The browser history navigation is tracked manually. Avoid sending
-    // arbitrary query strings, which can contain search terms or personal data.
-    gtag("js", new Date());
-    gtag("config", MEASUREMENT_ID, { send_page_view: false });
-    gtag("event", "page_view", {
-      page_path: pathname,
-      page_location: window.location.origin + pathname,
-    });
-  }, [initialized, consent, pathname]);
+    if (!configured.current) {
+      analyticsWindow.gtag("js", new Date());
+      analyticsWindow.gtag("config", MEASUREMENT_ID, { send_page_view: false });
+      configured.current = true;
+    }
+
+    // Track route changes explicitly, without URL query strings or fragments.
+    if (pathname && lastSentPath.current !== pathname) {
+      lastSentPath.current = pathname;
+      analyticsWindow.gtag("event", "page_view", {
+        page_path: pathname,
+        page_location: window.location.origin + pathname,
+        page_title: document.title,
+      });
+    }
+  }, [initialized, consent, pathname, scriptLoaded]);
 
   if (!initialized) return null;
 
@@ -58,6 +82,9 @@ export function ConsentBasedAnalytics() {
           id="dealpilot-ga4-library"
           src={`https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`}
           strategy="afterInteractive"
+          onLoad={() => { setScriptLoaded(true); setScriptFailed(false); }}
+          onReady={() => { setScriptLoaded(true); setScriptFailed(false); }}
+          onError={() => { setScriptFailed(true); setScriptLoaded(false); }}
         />
       )}
       {consent === null && (
@@ -95,6 +122,11 @@ export function ConsentBasedAnalytics() {
             </button>
           </div>
         </section>
+      )}
+      {consent === "accepted" && scriptFailed && (
+        <p role="status" style={{ position: "fixed", bottom: 42, left: 8, zIndex: 9991, padding: 8, borderRadius: 6, background: "#202735", color: "#fff", fontSize: 11 }}>
+          מערכת המדידה נחסמה או לא נטענה. אפשר לגלוש באתר כרגיל.
+        </p>
       )}
       {consent !== null && (
         <button
