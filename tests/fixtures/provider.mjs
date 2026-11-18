@@ -187,6 +187,10 @@ globalThis.fetch = async function (input, init) {
         product_main_image_url: `https://ae01.alicdn.com/kf/dealpilot-fixture-${id}.jpg`,
         product_detail_url: `https://www.aliexpress.com/item/${id}.html`,
         promotion_link: kind === 1 ? undefined : `https://s.click.aliexpress.com/e/TEST_CATALOG_${id}`,
+        // TEST FIXTURE seller videos: kind 4 on an allowed host, kind 5 on a host that must be rejected.
+        product_video_url: kind === 4
+          ? `https://video.aliexpress-media.com/play/u/ae_sg_item/fixture/p/1/e/6/t/10301/${id}.mp4`
+          : kind === 5 ? `https://cdn.untrusted.example/${id}.mp4` : undefined,
       };
       if (kind === 2) {
         base.target_sale_price = undefined;

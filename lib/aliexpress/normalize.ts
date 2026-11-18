@@ -49,6 +49,10 @@ export type AliProduct = {
   /** Which provider field `price` came from. */
   priceField: "target_sale_price" | "sale_price" | null;
   priceFields: PriceFields;
+  /** Seller's product video from `product_video_url` (https, AliExpress video hosts only). */
+  video?: string | null;
+  /** Hostname of a `product_video_url` that was present but rejected (diagnostics only, never shown). */
+  videoRejectedHost?: string | null;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -64,7 +68,7 @@ function text(value: unknown): string | null {
 }
 export function safeUrl(
   value: unknown,
-  kind: "image" | "product" | "affiliate",
+  kind: "image" | "product" | "affiliate" | "video",
 ): string | null {
   const raw = text(value);
   if (!raw) return null;
@@ -73,6 +77,14 @@ export function safeUrl(
     if (u.protocol !== "https:" || u.username || u.password || u.port)
       return null;
     const hostname = u.hostname.toLowerCase();
+    if (kind === "video") {
+      // Exact video hosts only: a broad suffix match could admit any page on a big domain.
+      const ok =
+        hostname === "cloud.video.taobao.com" ||
+        ["alicdn.com", "aliexpress-media.com"].some((d) => hostname === d || hostname.endsWith("." + d)) ||
+        hostname === "video.aliexpress.com";
+      return ok ? u.toString() : null;
+    }
     const allowed =
       kind === "image"
         ? ["alicdn.com", "aliexpress-media.com", "aliexpress.com"]
@@ -154,7 +166,7 @@ export function normalizeProductResponse(payload: unknown, rootKey: string = PRO
   const rows = wrapper?.product;
   const items = Array.isArray(rows) ? rows : rows ? [rows] : [];
   return items
-    .map((row) => {
+    .map((row): AliProduct | null => {
       const p = record(row);
       if (!p) return null;
       const id = text(p.product_id);
@@ -185,6 +197,16 @@ export function normalizeProductResponse(payload: unknown, rootKey: string = PRO
           ].filter((url): url is string => Boolean(url)),
         ),
       ].slice(0, 8);
+      const rawVideo = text(p.product_video_url);
+      const video = safeUrl(rawVideo, "video");
+      let videoRejectedHost: string | null = null;
+      if (rawVideo && !video) {
+        try {
+          videoRejectedHost = new URL(rawVideo).hostname.toLowerCase().slice(0, 100);
+        } catch {
+          videoRejectedHost = "invalid-url";
+        }
+      }
       const rate = text(p.evaluate_rate);
       const parsedRate =
         rate && /^\d{1,3}(?:\.\d+)?%$/.test(rate)
@@ -223,6 +245,8 @@ export function normalizeProductResponse(payload: unknown, rootKey: string = PRO
         quality: unknownQuality(),
         priceField: price ? (useTarget ? ("target_sale_price" as const) : ("sale_price" as const)) : null,
         priceFields: priceFieldsOf(p),
+        video,
+        videoRejectedHost,
       };
     })
     .filter((p): p is AliProduct => p !== null);

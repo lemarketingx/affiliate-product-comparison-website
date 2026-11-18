@@ -563,3 +563,71 @@ a.bl-card-brand:hover .dp-brand-name { color: var(--dp-brand-accent, #334155); }
 .bl-total-note a { color: var(--bl-ink); text-decoration: underline; text-underline-offset: 3px; }
 .bl-card-total { margin: 4px 0 0; font-size: 12.5px; color: var(--bl-ink-2); }
 .bl-card-total strong { font: 700 13.5px/1 var(--bl-mono); color: var(--bl-ink); }
+
+/* Seller video in the product gallery (mounted only after a click). */
+.fp-gallery-main { position: relative; }
+.fp-play {
+  position: absolute; inset-inline-start: 12px; bottom: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px;
+  background: rgba(17, 17, 17, .86); color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+}
+.fp-play:focus-visible, .fp-thumb-video:focus-visible { outline: 3px solid var(--fp-signal, #2563eb); outline-offset: 2px; }
+.fp-video { margin: 0; width: 100%; height: 100%; display: grid; grid-template-rows: 1fr auto; }
+.fp-video video { width: 100%; height: 100%; min-height: 0; object-fit: contain; background: #000; }
+.fp-video figcaption { font-size: 13px; color: #444; padding: 6px 10px; text-align: center; background: #fff; }
+.fp-thumbs .fp-thumb-video { display: grid; place-items: center; font-size: 22px; color: #111; }
+
+/* ---------- Moving strip (home): brands and provider best sellers ---------- */
+.bl-marquee { position: relative; overflow: hidden; padding: 14px 0 46px; display: grid; gap: 10px; }
+/* Fade the row edges so items glide in and out (the pause button stays crisp). */
+.bl-marquee-row { overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.bl-marquee-belt { display: flex; width: max-content; animation: bl-marquee 48s linear infinite; will-change: transform; }
+.bl-marquee-row.is-reverse .bl-marquee-belt { animation-direction: reverse; animation-duration: 60s; }
+/* WCAG 2.2.2: hovering, focusing or the pause button stops the motion. */
+.bl-marquee:hover .bl-marquee-belt, .bl-marquee:focus-within .bl-marquee-belt, .bl-marquee.is-paused .bl-marquee-belt { animation-play-state: paused; }
+.bl-marquee-track { display: flex; gap: 12px; margin: 0; padding: 0 6px; list-style: none; }
+.bl-marquee-track li { flex: none; }
+.bl-marquee-track a { display: inline-flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; border: 1px solid #e3ddd0;
+  border-radius: 999px; background: #fff; color: #14161b; text-decoration: none; white-space: nowrap; }
+.bl-marquee-track a:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.bl-marquee-track .dpb-logo img.dp-brand-wordmark { height: 22px; max-width: 120px; }
+/* Fixed pill width: logos load after first paint and must not widen the row (layout shift). */
+.bl-marquee-row[data-row="brands"] a { width: 168px; justify-content: center; overflow: hidden; }
+.bl-marquee-row[data-row="sellers"] a { height: 72px; padding: 4px 14px 4px 4px; }
+.bl-marquee-row[data-row="sellers"] img { width: 64px; height: 64px; object-fit: contain; border-radius: 999px; background: #f6f3ec; }
+.bl-marquee-row[data-row="sellers"] span { font-size: 13px; color: #3b3f47; }
+.bl-marquee-pause { position: absolute; inset-inline-end: max(16px, calc((100vw - 1200px) / 2)); bottom: 6px; z-index: 1; display: grid; place-items: center;
+  width: 32px; height: 32px; border: 1px solid #d6cfbf; border-radius: 999px; background: #fff; color: #14161b; cursor: pointer; }
+.bl-marquee-pause:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+/* RTL: the copy sits to the left of the first track, so the belt moves right by half its width. */
+@keyframes bl-marquee { from { transform: translateX(0); } to { transform: translateX(50%); } }
+[dir="ltr"] .bl-marquee-belt { animation-name: bl-marquee-ltr; }
+@keyframes bl-marquee-ltr { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .bl-marquee { padding-bottom: 10px; }
+  .bl-marquee-row { -webkit-mask-image: none; mask-image: none; }
+  .bl-marquee-row { overflow-x: auto; }
+  .bl-marquee-belt { animation: none; }
+  .bl-marquee-track[aria-hidden="true"], .bl-marquee-track li[aria-hidden="true"], .bl-marquee-pause { display: none; }
+}
+
+/* ---------- Ken Burns: slow zoom on campaign images (finite: restarts per slide) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .dpb-stage-item img { animation: bl-kenburns 7s ease-out both; transform-origin: 50% 60%; }
+  .dpb-stage-item-1 img { animation-delay: .4s; }
+  .dpb-stage-item-2 img { animation-delay: .8s; }
+}
+@keyframes bl-kenburns { from { transform: scale(1); } to { transform: scale(1.08) translateY(-2%); } }
+
+/* ---------- Scroll reveal below the fold (progressive enhancement, transform only: no LCP cost) ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .bl-how li, .bl-featured .bl-card, .dpb-category, .bl-trust {
+      animation: bl-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 60%;
+    }
+  }
+}
+@keyframes bl-rise { from { transform: translateY(28px) scale(.98); } to { transform: none; } }

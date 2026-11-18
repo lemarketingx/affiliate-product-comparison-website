@@ -2,6 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { unknownQuality } from "../aliexpress/quality";
+import { safeUrl } from "../aliexpress/normalize";
 import { categories } from "../dealpilot/categories";
 import { identifyListedBrand } from "../dealpilot/brands";
 import { cleanListingTitle, resolveCategory } from "../dealpilot/listing-rules";
@@ -52,7 +53,7 @@ export const priceMaxAgeHours = () => intEnv("DEALPILOT_PRICE_MAX_AGE_HOURS", PR
 type Row = {
   product_id: string; title: string; title_language: "he" | "source"; brand: string | null;
   supplier_brand: string | null; shop_name: string | null; category_slug: string; category_label: string;
-  image: string; images: string[]; product_url: string; affiliate_url: string; orders: number | null;
+  image: string; images: string[]; video_url?: string | null; product_url: string; affiliate_url: string; orders: number | null;
   positive_feedback: number | null; commission_rate: string | null; price: number | null; currency: string | null;
   price_field: CatalogItem["priceField"]; price_method: "search" | "detail" | "confirmed" | null; sku_id: string | null;
   price_observed_at: string | null; first_published_at: string | null; last_seen_at: string;
@@ -76,6 +77,8 @@ export function rowToItem(r: Row, now = new Date()): CatalogItem {
     requestedCountry: "IL",
     titleLanguage: r.title_language,
     images: Array.isArray(r.images) ? r.images : [],
+    // Re-validated on read: only an https URL on an AliExpress video host reaches the page.
+    video: safeUrl(r.video_url, "video"),
     shopName: r.shop_name,
     supplierBrand: r.supplier_brand,
     positiveFeedbackPercent: r.positive_feedback === null ? null : Number(r.positive_feedback),

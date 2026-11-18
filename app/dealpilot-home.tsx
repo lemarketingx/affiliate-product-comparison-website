@@ -10,6 +10,8 @@ import { PublicShell } from "./public-shell";
 import BrandLogo from "./brand-logo";
 import CampaignCarousel, { type PromoSlide } from "./campaign-carousel";
 import { ProductCard } from "./product-card";
+import HomeMarquee, { type MarqueeItem } from "./home-marquee";
+import { thumbUrl } from "../lib/dealpilot/thumb";
 import { BRAND } from "../lib/brand";
 
 function imageOf(p: CatalogItem) { return p.image ?? null; }
@@ -60,6 +62,18 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   if (live.has("tech")) slides.push({key:"tech-brands",eyebrow:"מותגים שעושים את ההבדל",title:"טכנולוגיה עם שם מוכר.",subtitle:"מטענים, אביזרי מחשב ומוצרי סלולר של מותגים מזוהים מהקטלוג שלנו.",notice:"זהו אוסף מוצרים, לא מבצע עם הנחה מובטחת.",label:"גלו מותגי טכנולוגיה",href:"/categories/tech",external:false,tone:"midnight",images:imagesFor(["ugreen","baseus","anker","xiaomi"])});
   if (live.has("home")) slides.push({key:"smart-home",eyebrow:"חיים חכמים יותר",title:"מחדשים את הבית, חכם.",subtitle:"מוצרי בית חכם ומותגי ניקיון מוכרים, עם בדיקת עלות לפני הקנייה.",notice:"המחיר, המשלוח והזמינות הסופיים מוצגים בקופה.",label:"למותגים לבית",href:"/categories/home",external:false,tone:"emerald",images:imagesFor(["dreame","roborock","reolink","yeelight"])});
 
+  // Moving strip: only brands with listed products, and the provider's best sellers.
+  const logoItems: MarqueeItem[] = available.map((b) => ({
+    key: b.slug, href: "/brands/" + b.slug, label: b.name + " - " + brandCounts.get(b.slug) + " מוצרים",
+    node: <BrandLogo slug={b.slug} name={b.name} />,
+  }));
+  const sellerItems: MarqueeItem[] = ranked.filter((p) => p.image && (p.orders ?? 0) > 0).slice(0, 12).map((p) => ({
+    key: p.id, href: "/products/" + p.id,
+    label: p.title + " · " + (p.orders ?? 0).toLocaleString("he-IL") + " מכירות מדווחות לפי הספק",
+    // eslint-disable-next-line @next/next/no-img-element
+    node: <><img src={thumbUrl(p.image!)} alt="" width={64} height={64} loading="lazy" decoding="async" referrerPolicy="no-referrer" /><span><b>{(p.orders ?? 0).toLocaleString("he-IL")}</b> מכירות מדווחות</span></>,
+  }));
+
   const total = snapshot.items.length;
   const fresh = snapshot.items.filter((p) => p.priceStatus === "current").length;
   return <PublicShell><main id="main" className="dpb-main bl-home">
@@ -76,6 +90,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
         <li>מחיר בשקלים · אומדן מע״מ ומכס לכל מוצר</li>
       </ul>}
     </section>
+    <HomeMarquee label="מותגים ומוצרים נמכרים בקטלוג (נתוני מכירות של הספק)" rows={[{ key: "brands", items: logoItems }, { key: "sellers", items: sellerItems, reverse: true }]}/>
     <div className="bl-wrap dpb-hero-shell"><CampaignCarousel slides={slides}/></div>
     <section className="bl-wrap dpb-brands" aria-labelledby="dpb-brands-title">
       <div className="bl-section-head"><div><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">כל המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>

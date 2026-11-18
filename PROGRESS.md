@@ -448,3 +448,42 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
 - **Product page:** the "השורה התחתונה" row in the price box shows the number with a short explanation and a link to the calculator to add shipping.
 - **Card:** a "לישראל: לפחות ₪X לפני משלוח" line, only when VAT applies. Exempt products already show "פטור ממסים".
 - **Tests:** unit 131/131; e2e 45/45, including a new test for the card line and the receipt row.
+
+## 2026-11-18 · Motion: seller videos, moving strip, Ken Burns, scroll reveal (owner: "כן להכל")
+**Product page: seller videos**
+- Source: the provider field `product_video_url`, which the 2026-11-14 probe lists in both product.query and productdetail.get. No real value has been observed yet.
+- `normalize.ts` accepts https only, on AliExpress video hosts: `*.alicdn.com`, `*.aliexpress-media.com`, `video.aliexpress.com`, `cloud.video.taobao.com`. For a rejected URL, only its hostname is kept, for diagnostics.
+- Migration `20261118000000_product_video.sql` (additive): `dp_products.video_url`; `dp_set_videos` (service role only, https only, never clears a stored video); `dp_catalog` returns the column. `dp_ingest` and `dp_record_prices` are **not** replaced.
+  - **Applied to the live project** `kjkkuhqebtyfohhvwnfs` on 2026-11-18, before the merge. Before applying, the live `dp_catalog` matched the repository text.
+  - After applying: 520 published rows, `video_url` key present, `anon` cannot call either function.
+- Discovery and the 4-hourly price check both store videos. Job stats gain `videos: {seen, accepted, stored, writeFailed, rejectedHosts}`. **The first live run shows whether the host allowlist is right.**
+  - A failed video write never fails a job (tested).
+- Gallery: the `<video>` element is mounted only after a click, so there is no request on page load (e2e). It is labelled "סרטון של המוכר, מתוך AliExpress". On error the gallery drops it and shows the image.
+
+**Home page**
+- Moving strip: logos of brands with listed products, plus the 12 best sellers labelled "מכירות מדווחות לפי הספק".
+  - Pause button, plus a pause on hover or focus (WCAG 2.2.2).
+  - The loop copy and the repeated filler items are `aria-hidden`/`inert` and not focusable.
+  - Reduced motion: no motion, and the strip scrolls.
+  - Checked: no gap at 0–99% of the loop at 390 and 1920 px.
+- Ken Burns: a finite slow zoom on the carousel images, per slide.
+- Scroll reveal: transform only, below the fold, inside `@supports (animation-timeline: view())`.
+
+**Tests:** unit 136/136 · e2e 48/48 · typecheck and build OK.
+- Local real-data server, 10 page × mode runs: axe 0, CLS ≤ 0.04, no overflow, 0 broken images. The home LCP element is still the H1.
+
+**NOT VERIFIED**
+- A real seller video: no real `product_video_url` value has been seen. This will be known after the first price run on the merged code (stats `videos`).
+- Axe with the video player open was not run on real data (no real video).
+
+**Speed: Production (before) vs branch Preview (after)**, live, same script, 2 runs:
+
+| Page | Production LCP | Preview LCP | Production CLS | Preview CLS | axe |
+|---|---|---|---|---|---|
+| Home, mobile | 3.14 s | 1.23–1.35 s | 0.026 | 0.027 | 0 |
+| Home, desktop | 0.81 s | 0.68–0.93 s | 0.033 | 0.011–0.036 | 0 |
+| Product, mobile | 1.52 s | 1.61–1.72 s | 0 | 0 | 0 |
+
+- No measurable cost; the differences are within run-to-run noise.
+- **Caught and fixed on Preview:** the first Preview build had home CLS 0.121. Brand logos loading after first paint widened the moving row. Fixed with a fixed pill width (commit 90022fe).
+- The remaining home shift is the hero reflow that Production already has.
