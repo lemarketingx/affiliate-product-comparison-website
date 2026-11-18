@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 const ORIGIN = "https://affiliate-product-comparison-websit.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
   const paths = new Set(["/", "/brands", "/deals", "/categories", "/guides", "/about", "/disclosure"]);
   // Only pages with live catalog products get their own URLs. Never expose
   // admin, API, search queries, affiliate redirects or unlisted products.
@@ -26,7 +25,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   return [...paths].map(path => ({
     url: ORIGIN + path,
-    lastModified: now,
+    // Do not claim each URL was modified on every sitemap request.
+    // Add lastModified only when a verified per-item timestamp is available.
     changeFrequency: path === "/" || path === "/deals" ? "daily" as const : "weekly" as const,
   }));
 }
