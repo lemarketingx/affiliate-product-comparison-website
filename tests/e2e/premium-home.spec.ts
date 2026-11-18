@@ -28,3 +28,41 @@ test("premium brand home: no horizontal overflow on mobile", async ({ page }) =>
     expect(overflow, "horizontal overflow at " + width).toBe(false);
   }
 });
+
+// Owner request 2026-11-18: a moving strip of real brand logos and provider best sellers.
+test("moving strip: listed brands and best sellers, one focusable link each, pausable, still under reduced motion", async ({ page }) => {
+  await page.goto("/");
+  const strip = page.getByRole("region", { name: /מותגים ומוצרים נמכרים בקטלוג/ });
+  await expect(strip).toBeVisible();
+  // Only brands with listed products; every brand link goes to a brand page.
+  const brandLinks = strip.locator('[data-row="brands"] .bl-marquee-track:not([aria-hidden]) li:not([aria-hidden]) a');
+  expect(await brandLinks.count()).toBeGreaterThanOrEqual(4);
+  for (const href of await brandLinks.evaluateAll((as) => as.map((a) => a.getAttribute("href")))) expect(href).toMatch(/^\/brands\/[a-z0-9]+$/);
+  // Best sellers are labelled as the provider's reported sales, never as a rating.
+  const seller = strip.locator('[data-row="sellers"] .bl-marquee-track:not([aria-hidden]) li:not([aria-hidden]) a').first();
+  await expect(seller).toHaveAttribute("aria-label", /מכירות מדווחות לפי הספק$/);
+  await expect(seller).toHaveAttribute("href", /^\/products\/\d+$/);
+  // Copies that close the loop are hidden and not focusable.
+  for (const t of await strip.locator('a[tabindex="-1"]').evaluateAll((as) => as.map((a) => a.closest('[aria-hidden="true"]') !== null))) expect(t).toBe(true);
+  // It moves, and the pause button stops it (WCAG 2.2.2).
+  const belt = strip.locator(".bl-marquee-belt").first();
+  await expect(belt).toHaveCSS("animation-name", "bl-marquee");
+  await expect(belt).toHaveCSS("animation-play-state", "running");
+  await page.mouse.move(0, 0);
+  await strip.getByRole("button", { name: "עצירת התנועה" }).click();
+  await page.mouse.move(0, 0);
+  await expect(belt).toHaveCSS("animation-play-state", "paused");
+  await expect(strip.getByRole("button", { name: "הפעלת התנועה" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("moving strip and Ken Burns stop under reduced motion", async ({ browser }) => {
+  const context = await browser.newContext({ baseURL: "http://127.0.0.1:3104", reducedMotion: "reduce" });
+  const page = await context.newPage();
+  await page.goto("/");
+  await expect(page.locator(".bl-marquee")).toBeVisible();
+  await expect(page.locator(".bl-marquee-belt").first()).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".bl-marquee-pause")).toBeHidden();
+  const img = page.locator(".dpb-stage-item img").first();
+  if (await img.count()) await expect(img).toHaveCSS("animation-name", "none");
+  await context.close();
+});
