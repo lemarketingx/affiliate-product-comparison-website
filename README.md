@@ -49,3 +49,5 @@ Without AliExpress credentials the storefront presents a genuine unavailable sta
 See [implementation and configuration](docs/DEALPILOT-IMPLEMENTATION.md), [orders-provider research](docs/ALIEXPRESS-ORDERS.md), and [observed QA results](docs/DEALPILOT-QA.md).
 
 Mortgage source/migrations are retained but disconnected on this branch. The historical setup document is preserved in [legacy documentation](docs/LEGACY-MORTGAGE-README.md); it is not a DealPilot provisioning guide. The main branch has not been modified by this work.
+
+<!-- AI TEAM n8n existing-file edit smoke test: draft-only, 2026-11-18. -->
