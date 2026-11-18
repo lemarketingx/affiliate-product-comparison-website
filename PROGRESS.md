@@ -439,3 +439,12 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
   - Before and after on Production differ by −120 to +216 ms in both directions, which is measurement noise. The logos did not slow the site.
   - On every page and run: axe WCAG 2.1 AA 0 violations, CLS ≤ 0.033, 0 broken images.
   - Mobile LCP of about 1.5–1.8 s is bound by first paint (FCP = LCP) under the throttled profile. This closes the open "Preview performance" item.
+
+## 2026-11-18 · The bottom line: estimated cost to Israel (owner approved)
+- `estimateIsraelTotal()` in `lib/preflight/tax-estimate.ts` (pure, unit-tested) computes the supplier price plus the import VAT on the item, using the verified tax rules (`IMPORT_TAX`) and the Bank of Israel rate.
+  - It is always labelled "before shipping": the affiliate API returns no shipping cost.
+  - Above the $75 exemption it is a lower bound ("לפחות"), because VAT also applies to shipping and some products carry purchase tax.
+  - With no rate, no price or unverified tax rules, it returns no number.
+- **Product page:** the "השורה התחתונה" row in the price box shows the number with a short explanation and a link to the calculator to add shipping.
+- **Card:** a "לישראל: לפחות ₪X לפני משלוח" line, only when VAT applies. Exempt products already show "פטור ממסים".
+- **Tests:** unit 131/131; e2e 45/45, including a new test for the card line and the receipt row.

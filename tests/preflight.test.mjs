@@ -313,3 +313,20 @@ test("full import cost estimator: discounts, quantity, VAT freight, insurance, u
   assert.equal(high.estimatedTotalILS, null);
   assert.equal(calculateBasketCost(base, { ...IMPORT_TAX, verified: false }).estimatedTotalILS, null);
 });
+
+test("Israel total: exempt adds nothing, VAT adds 18% on the item as a lower bound, unknown never invents a number", async () => {
+  const { estimateIsraelTotal } = await import("../lib/preflight/tax-estimate.ts");
+  const rate = { rate: 3.7, date: "2026-11-18", source: "BOI" };
+  // ₪100 ≈ $27: exempt, total = price, not a lower bound.
+  const ex = estimateIsraelTotal(100, rate, IMPORT_TAX);
+  assert.equal(ex.totalIls, 100); assert.equal(ex.atLeast, false); assert.match(ex.label, /לפני משלוח/);
+  // ₪605.90 ≈ $164: above $75 → +18% on the item, "at least".
+  const vat = estimateIsraelTotal(605.9, rate, IMPORT_TAX);
+  assert.equal(vat.totalIls, Math.round(605.9 + Math.round(605.9 * 0.18)));
+  assert.equal(vat.atLeast, true); assert.match(vat.label, /^לפחות/); assert.match(vat.label, /לפני משלוח/);
+  // No rate or no price → no number.
+  assert.equal(estimateIsraelTotal(605.9, null, IMPORT_TAX).totalIls, null);
+  assert.equal(estimateIsraelTotal(null, rate, IMPORT_TAX).totalIls, null);
+  // Unverified tax rules → no number.
+  assert.equal(estimateIsraelTotal(605.9, rate, { ...IMPORT_TAX, verified: false }).totalIls, null);
+});
