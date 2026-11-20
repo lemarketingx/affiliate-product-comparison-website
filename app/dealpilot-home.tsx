@@ -114,6 +114,10 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
         </Link>;
       })}
     </section>
+    <section className="bl-wrap bl-featured" id="products" aria-labelledby="bl-featured-title">
+      <div className="bl-section-head"><div><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
+      {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
+    </section>
     <section className="bl-wrap bl-how" aria-labelledby="bl-how-title">
       <h2 id="bl-how-title">איך מגיעים לשורה התחתונה</h2>
       <ol>
@@ -121,10 +125,6 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
         <li><Calculator size={22} aria-hidden="true"/><strong>רואים מחיר עם זמן בדיקה</strong><span>מחיר מדווח בשקלים עם זמן הבדיקה, ואומדן מסים לישראל. המחיר הסופי נקבע בקופה.</span></li>
         <li><BadgeCheck size={22} aria-hidden="true"/><strong>קונים ב־AliExpress</strong><span>בודקים את המוכר, הדגם המדויק והמשלוח ב־AliExpress. המחיר הסופי נקבע בקופה.</span></li>
       </ol>
-    </section>
-    <section className="bl-wrap bl-featured" id="products" aria-labelledby="bl-featured-title">
-      <div className="bl-section-head"><div><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
-      {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
     </section>
     <section className="bl-wrap bl-trust"><ShieldCheck size={20} aria-hidden="true"/><p>{BRAND.name} הוא אתר שותפים עצמאי. זיהוי מותג אינו אימות מקוריות. בדקו את החנות, הביקורות, השילוח והמחיר בקופה לפני כל רכישה.</p><Link href="/disclosure">גילוי נאות <ArrowLeft size={15} aria-hidden="true"/></Link></section>
   </main></PublicShell>;
