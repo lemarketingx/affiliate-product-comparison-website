@@ -111,6 +111,82 @@ footer a{color:#e6e6eb}
 @media(max-width:540px){body{font-size:15px}.wrap{width:min(100% - 28px,1280px)}.head-main{gap:10px}.hero-main{min-height:360px;padding:30px 26px}.hero-main p{font-size:16px}.daily{min-height:330px}.daily .placeholder{height:145px}.categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.category{min-height:115px;padding:19px}.category strong{font-size:23px}.grid-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.prod-image{height:160px}.prod-body{padding:13px}.prod-body h3{font-size:14px;min-height:60px}.price{font-size:25px}.chip{font-size:10px;top:8px;right:8px}.save{font-size:11px;top:8px;left:8px;padding-inline:8px}.official{font-size:11px}.section{margin-top:58px}.info-panels{grid-template-columns:1fr}.subscribe{padding:28px}.search{max-width:none}.nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:10px}.pill{white-space:nowrap}.compare th,.compare td{font-size:12px;padding:10px}.gallery>.placeholder{height:270px}}
 
 .placeholder-brand{display:block;color:#676775;font:400 26px "Secular One";letter-spacing:-.03em;text-align:center}.placeholder-name{display:block;color:#898996;font:600 12px/1.2 Heebo;text-align:center;max-width:80%;margin:7px auto}.prod-image .placeholder{display:flex;flex-direction:column;justify-content:center;gap:5px}.prod-image .placeholder-name{font-size:12px}@media(max-width:540px){.placeholder-brand{font-size:20px}.placeholder-name{font-size:11px}}
+
+/* HOTAM V3: energetic marketplace layout, transparent sample data */
+:root{--bg:#F5F6F8;--card:#fff;--tile:#F3F5F8;--line:#E5E7EC;--footer:#1C2030;--cream:#202532;--muted:#4F5666;--soft:#697281;--orange:#FF4D24;--mint:#087B56;--lilac:#6657B9}
+body{background:var(--bg);color:#202532;font-family:Heebo,sans-serif;font-size:16px}
+.wrap{width:min(100% - 48px,1380px)}
+.header{background:#fff;border-bottom:1px solid #e5e6e8}
+.ticker{background:#FF4D24;color:white;font-size:13px;font-weight:800}
+.ticker span{padding:8px 0}
+.head-main{padding-block:14px;gap:23px}
+.seal{background:#FF4D24;border-color:#FF4D24;color:#fff}
+.logo-word{font-size:33px;color:#1f2430}
+.search{background:#fff;border:2px solid #FF4D24;max-width:none}
+.search input{font-size:16px}
+.search button{background:#FF4D24;color:#fff;padding-inline:28px;border-radius:0}
+.head-main>a.btn{background:#f3f4f7;border:0;color:#273044}
+.nav{border-top:1px solid #f0f1f3;padding-top:8px;padding-bottom:10px;gap:7px}
+.pill{color:#3a4252;border-radius:9px;padding:9px 18px;font-size:15px}
+.pill.active{background:#FF4D24;color:white}
+.btn{border-radius:10px}
+.orange{background:#FF4D24;color:white}
+.orange:hover{background:#e6411c}
+.outline{background:white;color:#313848;border-color:#e2e5ea}
+main{padding-top:20px}
+.notice{background:#FFF9E7;border-color:#F1D79D;color:#66522B;font-size:13px}
+.hero{grid-template-columns:minmax(0,1.7fr) minmax(300px,.85fr);gap:16px}
+.hero-main{background:#F8D9D0;border-radius:20px;min-height:385px;padding:clamp(26px,4vw,60px);position:relative;overflow:hidden}
+.hero-main:before{content:"";position:absolute;left:-60px;bottom:-95px;width:310px;height:310px;background:#FF6B43;border-radius:50%;opacity:.22}
+.hero-main:after{content:"";position:absolute;left:120px;bottom:-110px;width:190px;height:190px;background:#fff;border-radius:50%;opacity:.28}
+.hero-main h1{font-size:clamp(41px,5vw,67px);line-height:1.08;max-width:730px;position:relative}
+.hero-main h1 span{color:#EB3D1F}
+.hero-main p{color:#4A3F42;margin:16px 0 24px;font-size:19px}
+.daily{background:#292554;color:#fff;border-radius:20px;padding:24px;gap:7px;min-height:385px}
+.daily .tag{background:#fff;color:#D63B21;border-radius:8px;padding:5px 10px;font-size:13px;align-self:flex-start;letter-spacing:0}
+.daily .placeholder{height:135px;background:#4B447B;border-radius:14px}
+.daily h3{font-size:28px}
+.daily .btn{background:#FF4D24;color:#fff}
+.section{margin-top:47px}
+.section h2{font-size:clamp(28px,3vw,38px);margin-bottom:19px}
+.categories{grid-template-columns:repeat(4,1fr);gap:12px}
+.category{border:1px solid #e9eaf0;min-height:122px;border-radius:16px;padding:22px;background:#fff}
+.category:nth-child(1){background:#EAF4FF}.category:nth-child(2){background:#F2EAFE}.category:nth-child(3){background:#E5F5EF}.category:nth-child(4){background:#FFF0E6}
+.category strong{font-size:28px;color:#273044}
+.category span{color:#5F6674;font-size:14px}
+.grid-products{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.product{border:1px solid #E7E8EC;border-radius:15px;background:white;transition:transform .2s,border-color .2s}
+.product:hover{border-color:#FFAC94;transform:translateY(-4px)}
+.prod-image{height:215px;background:#F5F6F9}
+.prod-image .placeholder{background:#F5F6F9}
+.placeholder-brand{font-size:35px;color:#484A61}
+.placeholder-name{font-size:14px;color:#81879B}
+.chip{background:#FF4D24;color:#fff;font-size:12px;border-radius:7px}
+.save{border:1px solid #dddfe7;border-radius:8px;background:white;color:#313948}
+.save[aria-pressed=true]{background:#292554;color:white}
+.prod-body{padding:17px}
+.official{color:#087B56;font-size:13px}
+.prod-body h3{font-size:17px;margin:9px 0;min-height:47px}
+.small{font-size:12px;color:#777D8C}
+.price-line{margin-top:11px;gap:10px}
+.price{font-size:34px;color:#FF4D24}
+del{color:#8C929E;font-size:12px}
+.editor{background:#FFF0E5;color:#AC4418}
+.compare{border:1px solid #E8EAF0}
+.compare th{color:#273044}
+.subscribe{background:#292554;color:#fff;padding:36px;border-radius:20px}
+.subscribe .btn{background:#FF4D24;color:white}
+.sidebar,.panel,.brand,.guide{border:1px solid #e7e9ef;border-radius:17px}
+.pricing{border:1px solid #e7e9ef}
+.pricing .price{color:#FF4D24}
+.gallery>.placeholder,.thumbs button{background:#eef0f5}
+.savings{color:#087B56}
+footer{background:#202438}
+footer .seal{background:#FF4D24;border-color:#FF4D24}
+@media(max-width:1100px){.grid-products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:860px){.hero{grid-template-columns:1fr}.daily{min-height:300px}.daily .placeholder{height:150px}.grid-products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.wrap{width:min(100% - 22px,1380px)}.head-main{gap:9px}.hero-main{min-height:340px;padding:27px}.hero-main h1{font-size:42px}.hero-main p{font-size:16px}.daily{min-height:300px}.categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.category{min-height:100px;padding:15px}.category strong{font-size:22px}.grid-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.prod-image{height:145px}.prod-body{padding:11px}.prod-body h3{font-size:14px}.price{font-size:25px}.chip{font-size:10px}.placeholder-brand{font-size:21px}.section{margin-top:38px}.section h2{font-size:27px}.search button{padding-inline:13px}}
+
 </style>
 </head>
 <body>
@@ -148,7 +224,7 @@ function intro(){return '<div class="notice" role="note"><strong>תצוגת הד
 function nav(){const items=[["#/","הכל"],["#/cat/0","אודיו"],["#/cat/1","לבישים"],["#/cat/2","בית חכם"],["#/cat/3","רכב"],["#/brands","מותגים"],["#/guides","מדריכים"]],hash=location.hash||"#/";document.getElementById("nav").innerHTML=items.map(x=>'<a class="pill '+(hash===x[0]||(hash==="#/cat/all"&&x[0]==="#/")?"active":"")+'" href="'+x[0]+'">'+x[1]+'</a>').join("");document.getElementById("savedCount").textContent="נשמרו · "+saved.length}
 function card(p){return '<article class="product"><div class="prod-image"><a href="#/p/'+p.id+'" class="placeholder" aria-label="לפרטי '+esc(p.name)+'"><span class="placeholder-brand">'+esc(p.brand)+'</span><span class="placeholder-name">'+esc(p.name)+'</span></a><span class="chip">'+Math.round(p.discount*100)+'% חיסכון משוער</span><button class="save" aria-label="'+(saved.includes(p.id)?"הסר מהשמורים":"שמור מוצר")+'" aria-pressed="'+saved.includes(p.id)+'" data-save="'+p.id+'">'+(saved.includes(p.id)?"נשמר":"שמירה")+'</button></div><div class="prod-body"><span class="official">'+esc(p.brand)+' · חנות רשמית (דוגמה)</span><a href="#/p/'+p.id+'"><h3>'+esc(p.name)+'</h3></a><div class="small">דירוג לדוגמה '+p.rating+' · '+p.orders.toLocaleString("he-IL")+' הזמנות</div><div class="price-line"><span class="price">'+shekel(p.final)+'</span><del>בארץ '+shekel(p.il)+'</del></div><div class="small">מחיר סופי משוער, כולל משלוח ומע״מ לפי מודל הדגמה</div>'+(p.pick?'<span class="editor">בחירת העורך · הדגמה</span>':"")+'</div></article>'}
 function grid(arr){return arr.length?'<div class="grid-products">'+arr.map(card).join("")+'</div>':'<div class="empty"><h3>לא נמצאו מוצרים</h3><p>נסו לשנות את הסינון או החיפוש.</p><a href="#/cat/all" class="btn orange">לכל המוצרים</a></div>'}
-function home(){const best=[...data].sort((a,b)=>b.discount-a.discount)[0];return intro()+'<section class="hero"><div class="hero-main"><h1>מותגים מוכרים.<span>מחיר סופי בבית.</span></h1><p>פחות רעש, יותר נתונים. השוואה בין עלות רכישה מחו״ל למחיר בישראל, לאחר אימות הנתונים.</p><div class="hero-buttons"><a class="btn orange" href="#/cat/all">לכל המוצרים</a><a class="btn outline" href="#/brands">לפי מותג</a></div><span aria-hidden="true" class="orb"></span><span aria-hidden="true" class="orb two"></span></div><div class="daily"><span class="tag">הדיל של היום · הדגמה בלבד</span><div class="placeholder">מוצר נבחר</div><h3>'+esc(best.brand)+' '+esc(best.name)+'</h3><div class="price-line"><strong style="font:36px Secular One">'+shekel(best.final)+'</strong><span>'+Math.round(best.discount*100)+'% חיסכון משוער</span></div><a href="#/p/'+best.id+'" class="btn">לפרטי המוצר</a></div></section><section class="section"><div class="categories">'+cats.map((c,i)=>'<a class="category" href="#/cat/'+i+'"><strong>'+c+'</strong><span>'+data.filter(p=>p.cat===i).length+' מוצרים בדוגמה</span></a>').join("")+'</div></section><section class="section"><h2>ההנחות הגדולות · הדגמה</h2>'+grid([...data].sort((a,b)=>b.discount-a.discount).slice(0,8))+'</section><section class="section"><h2>במה זה שונה מאתר דילים רגיל</h2><table class="compare"><thead><tr><th>מה בודקים</th><th>אתר דילים רגיל</th><th>חותם: היעד</th></tr></thead><tbody><tr><td>מה מופיע</td><td>מגוון רחב של מבצעים</td><td>רק מותגים וחנויות לאחר אימות</td></tr><tr><td>המחיר שמוצג</td><td>לעיתים מחיר פריט בלבד</td><td>אומדן מחיר כולל רכישה ומשלוח</td></tr><tr><td>ההנחה</td><td>לפי מחיר ייחוס משתנה</td><td>מול מחיר ישראלי מתועד</td></tr><tr><td>איך בוחרים</td><td>לפי גודל הנחה</td><td>לפי איכות הנתונים והתאמה לצורך</td></tr></tbody></table></section><section class="section subscribe"><div><h2 style="margin-bottom:8px">ההנחות הגדולות, ישר אליכם</h2><p>ערוצי העדכון ייפתחו לאחר שיוגדרו קישורים ונהלי פרסום אמיתיים.</p></div><div class="actions"><button class="btn" disabled title="טרם הופעל">וואטסאפ · בקרוב</button><button class="btn" disabled title="טרם הופעל">טלגרם · בקרוב</button></div></section>'}
+function home(){const best=[...data].sort((a,b)=>b.discount-a.discount)[0];return intro()+'<section class="hero"><div class="hero-main"><h1>המותגים שאתם אוהבים.<span>מחירים שכדאי לבדוק.</span></h1><p>מגלים מוצרים של מותגים מוכרים, מסננים לפי מה שחשוב ומשווים את העלות המשוערת עד הבית.</p><div class="hero-buttons"><a class="btn orange" href="#/cat/all">לכל המוצרים</a><a class="btn outline" href="#/brands">לפי מותג</a></div><span aria-hidden="true" class="orb"></span><span aria-hidden="true" class="orb two"></span></div><div class="daily"><span class="tag">הדיל של היום · הדגמה בלבד</span><div class="placeholder">מוצר נבחר</div><h3>'+esc(best.brand)+' '+esc(best.name)+'</h3><div class="price-line"><strong style="font:36px Secular One">'+shekel(best.final)+'</strong><span>'+Math.round(best.discount*100)+'% חיסכון משוער</span></div><a href="#/p/'+best.id+'" class="btn">לפרטי המוצר</a></div></section><section class="section"><div class="categories">'+cats.map((c,i)=>'<a class="category" href="#/cat/'+i+'"><strong>'+c+'</strong><span>'+data.filter(p=>p.cat===i).length+' מוצרים בדוגמה</span></a>').join("")+'</div></section><section class="section"><h2>מבצעים ומוצרים שכדאי להכיר · הדגמה</h2>'+grid([...data].sort((a,b)=>b.discount-a.discount).slice(0,8))+'</section><section class="section"><h2>במה זה שונה מאתר דילים רגיל</h2><table class="compare"><thead><tr><th>מה בודקים</th><th>אתר דילים רגיל</th><th>חותם: היעד</th></tr></thead><tbody><tr><td>מה מופיע</td><td>מגוון רחב של מבצעים</td><td>רק מותגים וחנויות לאחר אימות</td></tr><tr><td>המחיר שמוצג</td><td>לעיתים מחיר פריט בלבד</td><td>אומדן מחיר כולל רכישה ומשלוח</td></tr><tr><td>ההנחה</td><td>לפי מחיר ייחוס משתנה</td><td>מול מחיר ישראלי מתועד</td></tr><tr><td>איך בוחרים</td><td>לפי גודל הנחה</td><td>לפי איכות הנתונים והתאמה לצורך</td></tr></tbody></table></section><section class="section subscribe"><div><h2 style="margin-bottom:8px">ההנחות הגדולות, ישר אליכם</h2><p>ערוצי העדכון ייפתחו לאחר שיוגדרו קישורים ונהלי פרסום אמיתיים.</p></div><div class="actions"><button class="btn" disabled title="טרם הופעל">וואטסאפ · בקרוב</button><button class="btn" disabled title="טרם הופעל">טלגרם · בקרוב</button></div></section>'}
 function catalog(cat){let list=data.filter(p=>cat==="all"||p.cat===Number(cat));if(state.query.trim()){const q=state.query.trim().toLowerCase();list=list.filter(p=>(p.name+" "+p.brand).toLowerCase().includes(q))}if(state.brands.length)list=list.filter(p=>state.brands.includes(p.brand));list=list.filter(p=>p.final<=state.max);list.sort(state.sort==="price"?(a,b)=>a.final-b.final:state.sort==="orders"?(a,b)=>b.orders-a.orders:(a,b)=>b.discount-a.discount);return intro()+'<div class="crumb"><a href="#/">בית</a> / '+(cat==="all"?"כל המוצרים":cats[Number(cat)])+'</div><h1>'+(state.query?"תוצאות חיפוש":cat==="all"?"כל המוצרים":cats[Number(cat)])+'</h1><p class="small" style="margin:12px 0 25px">'+list.length+' תוצאות · נתוני דוגמה</p><div class="layout"><aside class="sidebar" aria-label="סינון מוצרים"><div class="field"><label for="sort">מיון</label><select id="sort"><option value="discount">הנחה גדולה</option><option value="price">מחיר נמוך</option><option value="orders">הכי נמכרים</option></select></div><div class="field"><strong>מותגים</strong>'+brands.map(b=>'<label class="check"><input type="checkbox" data-brand="'+b+'" '+(state.brands.includes(b)?"checked":"")+'>'+b+' ('+data.filter(p=>p.brand===b&&(cat==="all"||p.cat===Number(cat))).length+')</label>').join("")+'</div><div class="field"><label for="maxPrice">מחיר סופי עד: <span id="maxVal">'+shekel(state.max)+'</span></label><input id="maxPrice" type="range" min="0" max="2500" step="50" value="'+state.max+'"></div><button class="btn outline" id="resetFilters">ניקוי סינון</button></aside><div id="productResults">'+grid(list)+'</div></div>'}
 function chart(p){const mn=Math.min(...p.hist)-10,mx=Math.max(...p.hist)+10;return '<svg viewBox="0 0 320 120" class="mini-chart" role="img" aria-label="היסטוריית מחיר לדוגמה בשש נקודות"><polyline points="'+p.hist.map((v,i)=>(12+i*59)+','+(110-(v-mn)/(mx-mn)*90)).join(" ")+'" fill="none" stroke="#3DF5B0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="small">נתוני דוגמה, לא היסטוריית מחירים אמיתית.</p>'}
 function product(id){const p=data.find(x=>x.id===Number(id));if(!p)return '<div class="empty"><h2>מוצר לא נמצא</h2><a class="btn orange" href="#/">לדף הבית</a></div>';return intro()+'<div class="crumb"><a href="#/">בית</a> / <a href="#/cat/'+p.cat+'">'+cats[p.cat]+'</a> / '+esc(p.name)+'</div><section class="product-detail"><div class="gallery"><div class="placeholder">תמונת מוצר '+(state.thumb+1)+'</div><div class="thumbs">'+[0,1,2,3].map(i=>'<button data-thumb="'+i+'" aria-label="תמונת מוצר '+(i+1)+'" aria-pressed="'+(state.thumb===i)+'">תמונה '+(i+1)+'</button>').join("")+'</div></div><div class="detail-info"><div class="official">'+esc(p.brand)+' · חנות רשמית (לא אומת)</div><h1>'+esc(p.name)+'</h1><p class="small">דירוג '+p.rating+' · '+p.orders.toLocaleString("he-IL")+' הזמנות · '+p.days+' ימים למשלוח (הכול לדוגמה)</p><div class="pricing"><div class="small">מחיר סופי בבית · הערכה להדגמה</div><div class="price">'+shekel(p.final)+'</div><p>מחיר בארץ <del>'+shekel(p.il)+'</del></p><div class="price-row"><span>מחיר מוצר</span><strong>'+shekel(p.price)+'</strong></div><div class="price-row"><span>משלוח</span><strong>'+shekel(p.ship)+'</strong></div><div class="price-row"><span>מע״מ משוער לפי 18%</span><strong>'+shekel(Math.round((p.price+p.ship)*.18))+'</strong></div><div class="price-row savings"><span>חוסכים מול הארץ · לפי הדוגמה</span><strong>'+shekel(p.saving)+'</strong></div></div><div class="actions"><button class="btn orange" disabled title="נתוני דוגמה, אין קישור שותפים מאומת">לקנות באלי אקספרס ← · לא פעיל בהדגמה</button><button class="btn outline" data-save="'+p.id+'">'+(saved.includes(p.id)?"הסר מהשמורים":"שמירה")+'</button></div><p class="note">מחיר בארץ: נתוני דוגמה בלבד, לא נבדק בפועל ב־20.11.2026. לאחר החיבור לנתונים אמיתיים, תועברו לאלי אקספרס להשלמת הרכישה. המחיר הסופי, לרבות מסים ועמלות אם יחולו, נקבע לפי פרטי ההזמנה והדין הרלוונטי.</p><form class="panel" id="alertForm" style="margin-top:22px"><h3>עדכנו אותי כשהמחיר יורד</h3><label for="alertEmail">כתובת אימייל</label><div class="field"><input id="alertEmail" type="email" placeholder="name@example.com" required autocomplete="email" disabled></div><label class="check"><input type="checkbox" required disabled>אני מסכים/ה לקבל מייל על שינוי מחיר במוצר זה. אפשר להסיר בכל עת.</label><button class="btn outline" type="button" disabled>התראות יופעלו לאחר חיבור שירות מאובטח</button><p class="small">הטופס אינו אוסף כתובות אימייל במצב הדגמה.</p></form></div></section><section class="section info-panels"><div class="panel"><h3>מה אנחנו חושבים</h3><div class="small">תוכן המחשה בלבד</div><strong>יתרונות</strong><ul>'+p.pros.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul><strong>חסרונות</strong><ul>'+p.cons.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div><div class="panel"><h3>מפרט</h3><table class="spec-table">'+p.specs.map(x=>'<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td></tr>').join("")+'</table></div><div class="panel"><h3>היסטוריית מחיר</h3>'+chart(p)+'</div></section><section class="section"><h2>עוד ב'+cats[p.cat]+'</h2>'+grid(data.filter(x=>x.cat===p.cat&&x.id!==p.id).slice(0,4))+'</section>'}
