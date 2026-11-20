@@ -149,27 +149,3 @@
 }
 @media(prefers-reduced-motion:reduce){.hotam-spotlight-cta{transition:none}}
 
-/* Product guidance: scannable, no fictional specifications. */
-.fp.bl-shell .hotam-card-explain{font-size:13px;line-height:1.55;color:#485264;margin:2px 0 4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.fp.bl-shell .hotam-product-intro{display:grid;gap:9px;background:#fff;border:1px solid #e7e9ef;border-radius:16px;padding:20px;width:100%}
-.fp.bl-shell .hotam-product-intro h2{font-size:23px;line-height:1.25;color:#222838;margin:0}
-.fp.bl-shell .hotam-product-intro p{font-size:15px;line-height:1.65;color:#3f4858;margin:0}
-.fp.bl-shell .hotam-product-intro strong{color:#222838}
-.fp.bl-shell .hotam-product-intro small{font-size:12px;line-height:1.55;color:#687181;border-top:1px solid #eef0f4;padding-top:9px;margin-top:2px}
-@media(max-width:690px){.fp.bl-shell .hotam-card-explain{font-size:12px;line-height:1.45}.fp.bl-shell .hotam-product-intro{padding:16px}.fp.bl-shell .hotam-product-intro h2{font-size:20px}}
-
-/* Long-form product decision guide */
-.fp.bl-shell .hotam-product-intro{padding:25px;gap:14px}
-.fp.bl-shell .hotam-intro-eyebrow{color:#d74723;font-size:12px;font-weight:800;letter-spacing:.025em}
-.fp.bl-shell .hotam-product-intro h2{font-size:clamp(23px,2.5vw,29px);margin:0}
-.fp.bl-shell .hotam-product-intro .hotam-intro-summary{font-size:16px;line-height:1.85;color:#343e4f}
-.fp.bl-shell .hotam-product-intro h3{font-size:17px;line-height:1.4;font-weight:800;margin:4px 0 0;color:#283141}
-.fp.bl-shell .hotam-product-intro .hotam-explain-group{display:grid;gap:8px}
-.fp.bl-shell .hotam-product-intro ul{margin:0;padding-inline-start:22px;display:grid;gap:7px}
-.fp.bl-shell .hotam-product-intro li{font-size:14px;line-height:1.65;color:#4e5665}
-.fp.bl-shell .hotam-product-intro li::marker{color:#e95832}
-.fp.bl-shell .hotam-claimed-facts{font-size:13px;background:#fff5ea;border-radius:10px;padding:12px;color:#6f4b2b}
-.fp.bl-shell .hotam-explain-verdict{display:grid;gap:4px;background:#e9f6ef;border-radius:12px;padding:15px}
-.fp.bl-shell .hotam-explain-verdict strong{color:#126442}
-.fp.bl-shell .hotam-explain-verdict p{color:#2e5b46;font-size:14px}
-@media(max-width:690px){.fp.bl-shell .hotam-product-intro{padding:18px;gap:12px}.fp.bl-shell .hotam-product-intro .hotam-intro-summary{font-size:15px;line-height:1.7}}
