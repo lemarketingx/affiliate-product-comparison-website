@@ -150,69 +150,100 @@
 @media(prefers-reduced-motion:reduce){.hotam-spotlight-cta{transition:none}}
 
 
-/* Scroll Story: sticky editorial theatre, ordinary accessible scrolling. */
-.fp.bl-shell .hotam-story{width:min(1350px,calc(100% - 40px));margin:65px auto 0;position:relative;isolation:isolate;color:#212637}
-.fp.bl-shell .hotam-story-heading{text-align:center;display:grid;justify-items:center;gap:11px;padding:0 15px 36px}
-.fp.bl-shell .hotam-story-kicker{display:inline-block;background:#fff0e9;color:#bd4424;padding:8px 16px;border-radius:40px;font-weight:800;font-size:13px}
-.fp.bl-shell .hotam-story-heading h2{font-size:clamp(34px,5vw,68px);line-height:1.1;letter-spacing:-.045em;font-weight:900}
-.fp.bl-shell .hotam-story-heading h2 span{color:#f6532d}
-.fp.bl-shell .hotam-story-heading p{font-size:17px;color:#687084}
-.fp.bl-shell .hotam-story-scroll-hint{display:flex;align-items:center;gap:7px;color:#8b6b64;font-size:13px;margin-top:12px}
-.fp.bl-shell .hotam-story-stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(26px,4.6vw,78px);align-items:start;direction:ltr}
-.fp.bl-shell .hotam-story-visual{position:sticky;top:94px;height:min(680px,calc(100svh - 114px));min-height:460px;border-radius:28px;background:radial-gradient(ellipse at 50% 40%,#fff8f3 0%,#ffe5dc 66%,#ffd4c6 100%);overflow:hidden;box-shadow:0 16px 55px #a5533012;direction:rtl;display:flex;align-items:center;justify-content:center}
-.fp.bl-shell .hotam-story-progress{position:absolute;z-index:2;top:20px;right:22px;left:22px;display:flex;gap:7px}
-.fp.bl-shell .hotam-story-progress>span{height:4px;border-radius:999px;background:#dbb8ac;flex:1;transition:background .3s}
-.fp.bl-shell .hotam-story-progress>span.is-active{background:#f6532d}
-.fp.bl-shell .hotam-story-product{position:absolute;inset:38px 20px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;opacity:0;visibility:hidden;transform:translateY(35px) scale(.96);transition:opacity .45s ease,transform .65s cubic-bezier(.2,.7,.15,1),visibility .45s;pointer-events:none}
-.fp.bl-shell .hotam-story-product.is-active{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto}
-.fp.bl-shell .hotam-story-brand{font-size:16px;font-weight:800;background:#fff;padding:8px 18px;border-radius:999px;box-shadow:0 4px 20px #a5533012}
-.fp.bl-shell .hotam-story-photo{display:grid;place-items:center;width:min(100%,420px);height:min(54%,350px);min-height:185px;border-radius:24px;background:#fff;box-shadow:0 20px 42px #a5533026;overflow:hidden;transform:rotate(-3deg);transition:transform .55s}
-.fp.bl-shell .hotam-story-product.is-active .hotam-story-photo{transform:rotate(0)}
-.fp.bl-shell .hotam-story-photo img{display:block;max-width:100%;width:100%;height:100%;object-fit:contain}
-.fp.bl-shell .hotam-story-product-title{font-size:clamp(14px,1.5vw,19px);font-weight:800;max-width:32ch;text-align:center;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.fp.bl-shell .hotam-story-open{display:flex;align-items:center;gap:7px;background:#272536;color:#fff!important;border-radius:999px;padding:11px 22px;font-weight:800;font-size:14px;min-height:44px}
-.fp.bl-shell .hotam-story-open:hover{background:#f6532d}
-.fp.bl-shell .hotam-story-index{position:absolute;bottom:18px;left:21px;color:#8b6260;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
-.fp.bl-shell .hotam-story-steps{direction:rtl;min-width:0}
-.fp.bl-shell .hotam-story-step{min-height:70svh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:18px;padding:28px 2px;opacity:.47;transition:opacity .3s}
-.fp.bl-shell .hotam-story-step.is-active{opacity:1}
-.fp.bl-shell .hotam-story-step>svg{color:#f6532d;width:48px;height:48px;background:#fff0e9;border-radius:15px;padding:10px}
-.fp.bl-shell .hotam-story-count{font-size:14px;font-weight:800;color:#df542e}
-.fp.bl-shell .hotam-story-step h3{font-size:clamp(31px,3.3vw,49px);line-height:1.18;letter-spacing:-.035em}
-.fp.bl-shell .hotam-story-step p{font-size:clamp(17px,1.6vw,21px);line-height:1.8;max-width:35ch;color:#4e5667}
-.fp.bl-shell .hotam-story-browse{display:inline-flex;align-items:center;gap:9px;background:#f6532d;color:#fff!important;padding:14px 23px;border-radius:12px;font-size:15px;font-weight:800;min-height:48px}
-.fp.bl-shell .hotam-story-browse:hover{background:#ce3c1e}
-.fp.bl-shell .hotam-story-fine{text-align:center;font-size:12px;color:#6c7482;line-height:1.6;margin:0 auto;padding:12px 20px;max-width:670px}
-@media(max-width:850px){
- .fp.bl-shell .hotam-story{width:min(100% - 26px,1350px);margin-top:46px}
- .fp.bl-shell .hotam-story-stage{grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:20px}
- .fp.bl-shell .hotam-story-visual{min-height:350px;height:min(490px,calc(100svh - 110px));top:90px;border-radius:19px}
- .fp.bl-shell .hotam-story-step{min-height:65svh}
- .fp.bl-shell .hotam-story-step h3{font-size:clamp(25px,4vw,36px)}
- .fp.bl-shell .hotam-story-step p{font-size:16px}
- .fp.bl-shell .hotam-story-photo{min-height:120px}
+
+/* Order Journey: purposeful cart → package → handoff sequence (8 seconds, once). */
+.fp.bl-shell .hotam-journey{width:min(1350px,calc(100% - 40px));margin:68px auto 34px;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);align-items:center;gap:clamp(18px,4vw,65px);min-width:0}
+.fp.bl-shell .hotam-journey-copy{display:flex;flex-direction:column;align-items:flex-start;gap:18px;padding:18px 0}
+.fp.bl-shell .hotam-journey-kicker{background:#fff0e9;color:#c84323;border-radius:999px;padding:7px 15px;font-weight:800;font-size:13px}
+.fp.bl-shell .hotam-journey-copy h2{font-size:clamp(35px,4.4vw,63px);line-height:1.1;letter-spacing:-.05em}
+.fp.bl-shell .hotam-journey-copy h2 em{font-style:normal;color:#f5532d}
+.fp.bl-shell .hotam-journey-copy>p{font-size:clamp(15px,1.5vw,19px);line-height:1.65;color:#596271;max-width:40ch}
+.fp.bl-shell .hotam-journey-copy>small{font-size:12px;line-height:1.6;color:#707788;max-width:56ch}
+.fp.bl-shell .hotam-journey-track{display:grid;gap:10px;width:100%;margin:7px 0 1px}
+.fp.bl-shell .hotam-journey-track>span{display:flex;gap:13px;align-items:center;color:#9195a1;font-size:15px;font-weight:700;transition:color .3s}
+.fp.bl-shell .hotam-journey-track>span b{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#e9eaf0;color:#8b90a0;font-size:12px;font-variant-numeric:tabular-nums}
+.fp.bl-shell .hotam-journey-track>span.is-current{color:#ef522b}
+.fp.bl-shell .hotam-journey-track>span.is-current b{background:#ff542b;color:white;box-shadow:0 4px 16px #ff542b45}
+.fp.bl-shell .hotam-journey-track>span.is-complete{color:#36785f}
+.fp.bl-shell .hotam-journey-track>span.is-complete b{background:#e1f4e9;color:#267550}
+.fp.bl-shell .hotam-journey-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.fp.bl-shell .hotam-journey-actions>*{min-height:44px;display:inline-flex;gap:8px;align-items:center;justify-content:center;border-radius:11px;padding:10px 17px;font-size:14px;font-weight:800}
+.fp.bl-shell .hotam-journey-replay{background:#fff;color:#2a3040;border:1px solid #dfe2ea}
+.fp.bl-shell .hotam-journey-replay:hover{background:#f1f2f7}
+.fp.bl-shell .hotam-journey-link{background:#ff542b;color:white!important}
+.fp.bl-shell .hotam-journey-link:hover{background:#df4520}
+.fp.bl-shell .hotam-journey-scene{position:relative;min-width:0;width:100%;aspect-ratio:1.18;border-radius:31px;background:radial-gradient(ellipse at 65% 22%,#fffaf7 0%,#ffebe5 40%,#ffcebd 100%);overflow:hidden;isolation:isolate;box-shadow:0 18px 50px #db7b541a}
+.fp.bl-shell .hotam-journey-glow{position:absolute;width:44%;height:44%;left:28%;top:16%;border-radius:50%;filter:blur(36px);background:#fff8db;opacity:.66}
+.fp.bl-shell .hotam-journey-orbit{position:absolute;pointer-events:none;border:2px dashed #d9a2944d;border-radius:50%;transform:rotate(-22deg)}
+.fp.bl-shell .hotam-journey-orbit.orbit-one{height:72%;width:112%;left:-7%;top:14%}
+.fp.bl-shell .hotam-journey-orbit.orbit-two{height:56%;width:92%;left:4%;top:21%;transform:rotate(24deg)}
+.fp.bl-shell .hotam-journey-cart{position:absolute;z-index:3;width:42%;left:9%;bottom:14%;filter:drop-shadow(0 16px 10px #a9746244)}
+.fp.bl-shell .hotam-journey-cart svg,.fp.bl-shell .hotam-journey-box svg,.fp.bl-shell .hotam-journey-hand svg{width:100%;height:auto;display:block}
+.fp.bl-shell .hotam-journey-product{position:absolute;z-index:4;width:29%;height:32%;right:13%;top:15%;filter:drop-shadow(0 17px 17px #986f6b3d)}
+.fp.bl-shell .hotam-journey-product-image{width:100%;height:100%;border:7px solid #fff;background:#fff;border-radius:22px;display:grid;place-items:center;overflow:hidden}
+.fp.bl-shell .hotam-journey-product-image img{width:100%;height:100%;object-fit:contain;display:block}
+.fp.bl-shell .hotam-journey-box{position:absolute;z-index:4;width:55%;left:23%;bottom:7%;opacity:0;transform:translateY(80px) scale(.5);filter:drop-shadow(0 20px 15px #a06a463c)}
+.fp.bl-shell .hotam-journey-box-flap{position:absolute;z-index:-1;width:55%;height:18%;left:23%;top:12%;background:#f8d2a2;border:3px solid #b77b45;transform:rotate(-12deg);border-radius:5px}
+.fp.bl-shell .hotam-journey-hand{position:absolute;z-index:3;width:65%;right:-43%;bottom:-4%;opacity:0;transform:translateX(22%)}
+.fp.bl-shell .hotam-journey-complete{position:absolute;z-index:7;top:14%;left:50%;transform:translate(-50%,30px);opacity:0;white-space:nowrap;background:#fff;color:#29364b;padding:12px 18px;border-radius:999px;display:flex;align-items:center;gap:10px;font-size:clamp(12px,1.4vw,17px);font-weight:900;box-shadow:0 10px 26px #98543225}
+.fp.bl-shell .hotam-journey-complete span{width:25px;height:25px;background:#15a276;color:white;display:grid;place-items:center;border-radius:50%}
+.fp.bl-shell .hotam-journey-stage-label{position:absolute;z-index:8;top:20px;right:22px;color:#b95436;background:#ffffffbd;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:800}
+.fp.bl-shell .hotam-journey-spark{position:absolute;color:#f75836;font-size:29px;opacity:.6}
+.fp.bl-shell .hotam-journey-spark.spark-a{left:20%;top:24%}
+.fp.bl-shell .hotam-journey-spark.spark-b{right:18%;bottom:21%;font-size:18px}
+.fp.bl-shell .hotam-journey-scene-footer{position:absolute;z-index:6;left:18px;bottom:16px;color:#8e6c6b;display:flex;align-items:center;gap:11px;opacity:.65}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-product{animation:hj-product 8s cubic-bezier(.55,.05,.38,1) both}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-cart{animation:hj-cart 8s ease-in-out both}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-box{animation:hj-box 8s cubic-bezier(.25,.8,.25,1) both}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-box-flap{animation:hj-flap 8s ease-in-out both}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-hand{animation:hj-hand 8s ease-in-out both}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-complete{animation:hj-finish 8s ease-out both}
+.fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-spark{animation:hj-spark 8s ease-in-out both}
+@keyframes hj-product{
+ 0%,5%{transform:translate(0,0) rotate(8deg) scale(1);opacity:1}
+ 25%{transform:translate(-72%,66%) rotate(-10deg) scale(.68);opacity:1}
+ 33%{transform:translate(-118%,105%) rotate(-13deg) scale(.32);opacity:0}
+ 100%{transform:translate(-118%,105%) rotate(-13deg) scale(.32);opacity:0}
 }
-@media(max-width:620px){
- .fp.bl-shell .hotam-story-heading{padding-bottom:22px}
- .fp.bl-shell .hotam-story-heading h2{font-size:clamp(31px,8vw,48px)}
- .fp.bl-shell .hotam-story-stage{grid-template-columns:1fr;direction:rtl;gap:0}
- .fp.bl-shell .hotam-story-visual{top:86px;height:275px;min-height:275px;border-radius:16px;z-index:1}
- .fp.bl-shell .hotam-story-product{inset:30px 14px 25px;gap:6px}
- .fp.bl-shell .hotam-story-brand{font-size:11px;padding:4px 11px}
- .fp.bl-shell .hotam-story-photo{height:140px;min-height:140px;width:180px;border-radius:14px}
- .fp.bl-shell .hotam-story-product-title{font-size:13px;max-width:35ch}
- .fp.bl-shell .hotam-story-open{padding:5px 13px;min-height:30px;font-size:11px}
- .fp.bl-shell .hotam-story-progress{top:10px;right:13px;left:13px}
- .fp.bl-shell .hotam-story-index{bottom:8px;left:12px;font-size:10px}
- .fp.bl-shell .hotam-story-steps{margin-top:0}
- .fp.bl-shell .hotam-story-step{min-height:56svh;justify-content:flex-end;padding:25px 6px 35px;gap:10px;opacity:1}
- .fp.bl-shell .hotam-story-step>svg{width:36px;height:36px;padding:7px}
- .fp.bl-shell .hotam-story-step h3{font-size:27px}
- .fp.bl-shell .hotam-story-step p{font-size:15px;line-height:1.6}
- .fp.bl-shell .hotam-story-fine{font-size:11px}
+@keyframes hj-cart{0%,27%{transform:translateX(0);opacity:1}40%{transform:translateX(-120%) rotate(-4deg);opacity:0}100%{transform:translateX(-120%);opacity:0}}
+@keyframes hj-box{
+ 0%,29%{opacity:0;transform:translateY(85px) scale(.4)}
+ 39%{opacity:1;transform:translateY(0) scale(1)}
+ 62%{opacity:1;transform:translateY(0) scale(1)}
+ 77%{opacity:1;transform:translate(22%,-12%) scale(.78) rotate(-8deg)}
+ 100%{opacity:1;transform:translate(20%,-10%) scale(.78) rotate(-8deg)}
+}
+@keyframes hj-flap{0%,39%{transform:rotate(-52deg) translateY(-42px);opacity:1}49%,100%{transform:rotate(0) translateY(0);opacity:0}}
+@keyframes hj-hand{0%,60%{opacity:0;transform:translateX(32%)}70%{opacity:1;transform:translateX(0)}100%{opacity:1;transform:translateX(0)}}
+@keyframes hj-finish{0%,78%{opacity:0;transform:translate(-50%,30px)}87%,100%{opacity:1;transform:translate(-50%,0)}}
+@keyframes hj-spark{0%,75%{opacity:.5;transform:scale(1)}82%{opacity:1;transform:scale(1.5) rotate(40deg)}100%{opacity:.55;transform:scale(1)}}
+@media(max-width:850px){
+ .fp.bl-shell .hotam-journey{grid-template-columns:1fr;gap:17px;margin-top:48px}
+ .fp.bl-shell .hotam-journey-copy{gap:13px;padding:0}
+ .fp.bl-shell .hotam-journey-copy h2{font-size:clamp(34px,7vw,52px)}
+ .fp.bl-shell .hotam-journey-track{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .fp.bl-shell .hotam-journey-track>span{font-size:12px;gap:7px}
+ .fp.bl-shell .hotam-journey-track>span b{width:24px;height:24px;font-size:10px}
+ .fp.bl-shell .hotam-journey-scene{max-width:700px;justify-self:center;aspect-ratio:1.45}
+}
+@media(max-width:530px){
+ .fp.bl-shell .hotam-journey{width:calc(100% - 26px);margin-top:36px}
+ .fp.bl-shell .hotam-journey-copy h2{font-size:36px}
+ .fp.bl-shell .hotam-journey-scene{aspect-ratio:1.08;border-radius:19px}
+ .fp.bl-shell .hotam-journey-product-image{border-width:4px;border-radius:12px}
+ .fp.bl-shell .hotam-journey-complete{padding:8px 9px;top:18%;gap:5px}
+ .fp.bl-shell .hotam-journey-stage-label{top:9px;right:10px;font-size:10px}
+ .fp.bl-shell .hotam-journey-track>span{font-size:10px;flex-wrap:wrap}
+ .fp.bl-shell .hotam-journey-track>span b{width:22px;height:22px}
 }
 @media(prefers-reduced-motion:reduce){
- .fp.bl-shell .hotam-story-product,.fp.bl-shell .hotam-story-photo,.fp.bl-shell .hotam-story-step,.fp.bl-shell .hotam-story-progress>span{transition:none}
- .fp.bl-shell .hotam-story-product{transform:none}
- .fp.bl-shell .hotam-story-step{opacity:1}
+ .fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-product,
+ .fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-cart,
+ .fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-box,
+ .fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-hand,
+ .fp.bl-shell .hotam-journey-scene.is-playing .hotam-journey-complete{animation:none}
+ .fp.bl-shell .hotam-journey-product{opacity:1;right:12%;top:12%;width:26%;height:28%}
+ .fp.bl-shell .hotam-journey-box{opacity:1;transform:none}
+ .fp.bl-shell .hotam-journey-hand{opacity:1;transform:none;right:-32%}
+ .fp.bl-shell .hotam-journey-complete{opacity:1;transform:translate(-50%,0)}
 }
