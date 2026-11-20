@@ -36,8 +36,7 @@ export default function OrderJourney({product}:{product:JourneyProduct|null}){
     setStage(0);
     const t1=window.setTimeout(()=>setStage(1),2700);
     const t2=window.setTimeout(()=>setStage(2),5300);
-    const t3=window.setTimeout(()=>setPlaying(false),8300);
-    return ()=>{window.clearTimeout(t1);window.clearTimeout(t2);window.clearTimeout(t3)};
+    return ()=>{window.clearTimeout(t1);window.clearTimeout(t2)};
   },[playing,run,reduced]);
   if(!product)return null;
   const restart=()=>{setStage(0);setRun(v=>v+1);setPlaying(true)};
