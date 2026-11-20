@@ -1,0 +1,105 @@
+/* Marketplace visual direction, scoped to the public storefront.
+   This file does not modify backend pricing, attribution, admin or catalog eligibility. */
+.fp.bl-shell {
+ --bl-ink:#222838;--bl-ink-2:#3e4657;--bl-muted:#596374;
+ --bl-paper:#f5f6f9;--bl-card:#fff;--bl-line:#e7e9ef;
+ --bl-hl:#ff542b;--bl-focus:0 0 0 3px #fff,0 0 0 5px #ff542b;
+ background:#f5f6f9;color:#222838;
+}
+.fp.bl-shell .bl-topline{background:#ff542b;color:#fff}
+.fp.bl-shell .bl-topline a{color:#fff}
+.fp.bl-shell .bl-header{background:#fff;border-color:#e7e9ef}
+.fp.bl-shell .bl-search{border:2px solid #ff542b;border-radius:13px;max-width:720px}
+.fp.bl-shell .bl-search button{background:#ff542b;color:#fff;min-width:90px}
+.fp.bl-shell .bl-search:focus-within{box-shadow:0 0 0 3px #ff542b33}
+.fp.bl-shell .bl-nav a{border-radius:9px}
+.fp.bl-shell .bl-nav a:hover{background:#fff0ea;color:#d33f17}
+.fp.bl-shell .bl-cta,.fp.bl-shell a.bl-cta{background:#ff542b;color:#fff;border-color:#ff542b;border-radius:11px}
+.fp.bl-shell .bl-cta.is-ghost,.fp.bl-shell a.bl-cta.is-ghost{background:#fff;color:#222838;border-color:#e5e7ed}
+.fp.bl-shell .bl-more{border-color:#e1e4ea;color:#2c3443;background:#fff}
+.fp.bl-shell .bl-more:hover{background:#fff0ea;color:#c93812}
+.fp.bl-shell .bl-footer{background:#202638}
+.fp.bl-shell .bl-footer-note{border-color:#ff542b}
+.dpb-main.bl-home{background:#f5f6f9;color:#222838;padding-bottom:36px}
+.bl-home>.bl-wrap,.bl-home>.dpb-hero-shell{width:min(1350px,calc(100% - 40px))}
+.bl-home>section,.bl-home>div{margin-top:22px}
+.bl-home .bl-hero{
+ position:relative;isolation:isolate;overflow:hidden;
+ border-radius:23px;background:#fee0d7;padding:clamp(26px,4vw,58px);
+ min-height:300px;display:flex;flex-direction:column;justify-content:center;
+ gap:15px;
+}
+.bl-home .bl-hero:before{content:"";position:absolute;z-index:-1;width:340px;height:340px;
+ border-radius:50%;left:-80px;bottom:-150px;background:#ff815c;opacity:.22}
+.bl-home .bl-hero h1{font-size:clamp(36px,5.3vw,66px);max-width:17ch;line-height:1.09}
+.bl-home .bl-hero mark{color:#e7431c;background:transparent;padding:0}
+.bl-home .bl-hero-lead{font-size:clamp(15px,1.5vw,18px);max-width:53ch;color:#52434a}
+.bl-home .bl-hero .bl-cta.is-ghost{background:#fff8f5}
+.bl-home .bl-hero-facts li{background:#ffffffaf;border-color:#f8c7b8}
+.bl-home .dpb-hero-shell{margin-top:17px}
+.bl-home .dpb-campaign,.bl-home .dpb-campaign-festival,
+.bl-home .dpb-campaign-midnight,.bl-home .dpb-campaign-emerald,
+.bl-home .dpb-campaign-ruby{border-radius:20px;min-height:280px;background:#292554}
+.bl-home .dpb-campaign-kicker{border-color:#ffa488;color:#ffb299}
+.bl-home .dpb-campaign-cta{background:#ff542b!important;color:#fff!important}
+.bl-home .dpb-campaign-graphic{height:280px}
+.bl-home .dpb-brands{padding:0}
+.bl-home .dpb-logo-grid{gap:10px}
+.bl-home .dpb-logo-tile{background:#fff;border-color:#e6e8ee;border-radius:13px;min-height:75px}
+.bl-home .dpb-logo-tile:hover{border-color:#ffb39d;transform:translateY(-3px)}
+.bl-home .dpb-categories{padding:0;gap:12px}
+.bl-home .dpb-category{border-radius:16px;border-color:#e8eaf0;min-height:150px;overflow:hidden}
+.bl-home .dpb-category:nth-child(6n+1){background:#e7f3ff}
+.bl-home .dpb-category:nth-child(6n+2){background:#e8f7ec}
+.bl-home .dpb-category:nth-child(6n+3){background:#fff0e5}
+.bl-home .dpb-category:nth-child(6n+4){background:#f0eafb}
+.bl-home .dpb-category:nth-child(6n+5){background:#e9f2ff}
+.bl-home .dpb-category:nth-child(6n){background:#fff0f0}
+.bl-home .dpb-category-copy>svg{color:#374054}
+.bl-home .dpb-category-copy small{color:#5e6879}
+.bl-home .dpb-category-button{background:#fff;color:#a83f22;border:1px solid #ffffff}
+.bl-home .dpb-category>img{background:#fff;border-radius:12px}
+.bl-home .bl-section-head{margin-bottom:18px;gap:15px}
+.bl-home .bl-section-head h2{font-size:clamp(24px,3vw,36px);letter-spacing:-.025em}
+.bl-home .bl-section-head p{font-size:14px}
+.bl-home .bl-featured{margin-top:38px}
+.bl-home .bl-featured .bl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.fp.bl-shell .bl-card{border:1px solid #e7e9ef;background:#fff;border-radius:16px;overflow:hidden}
+.fp.bl-shell .bl-card:hover{border-color:#ffaf99;transform:translateY(-3px);box-shadow:none}
+.fp.bl-shell .bl-card-media{background:#f5f6fa}
+.fp.bl-shell .bl-card-body{padding:15px;gap:9px}
+.fp.bl-shell .bl-card-brand{border-color:#e2f1e9;background:#e9f7ee;color:#136e49;font-weight:700;font-size:12px}
+.fp.bl-shell .bl-card-brand:hover{background:#d6f0e0;color:#136e49}
+.fp.bl-shell .bl-card h3{font-size:16px;font-weight:600}
+.fp.bl-shell .bl-card-orders{color:#616a7c}
+.fp.bl-shell .bl-card .dp-product-price{border-top:1px solid #edf0f4}
+.fp.bl-shell .bl-card .dp-product-price strong{font-size:clamp(21px,2.5vw,29px);color:#f04a21;font-family:var(--bl-mono)}
+.fp.bl-shell .bl-card-fresh{color:#0b7650}
+.fp.bl-shell .bl-chip.is-go{background:#e5f6e9}
+.fp.bl-shell .bl-chip.is-wait{background:#fff2d9}
+.fp.bl-shell .bl-how li{border-color:#e8eaf0;border-radius:16px}
+.fp.bl-shell .bl-how li::before{color:#ffb7a4}
+.fp.bl-shell .bl-trust{border-color:#e0e4eb}
+.fp.bl-shell .bl-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.fp.bl-shell .bl-page{background:#f5f6f9}
+.fp.bl-shell .bl-cta:focus-visible{box-shadow:var(--bl-focus)}
+@media(max-width:1050px){.bl-home .bl-featured .bl-grid,.fp.bl-shell .bl-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){
+ .bl-home>.bl-wrap,.bl-home>.dpb-hero-shell{width:min(100% - 26px,1350px)}
+ .bl-home .bl-featured .bl-grid,.fp.bl-shell .bl-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .bl-home .bl-hero{padding:25px;min-height:290px}
+ .bl-home .bl-hero h1{font-size:clamp(34px,8.7vw,48px)}
+ .bl-home .dpb-categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bl-home .dpb-category{min-height:133px}
+ .fp.bl-shell .bl-card-body{padding:11px}
+ .fp.bl-shell .bl-card h3{font-size:14px}
+ .fp.bl-shell .bl-card .dp-product-price strong{font-size:21px}
+ .bl-home .dpb-campaign-graphic{height:220px}
+}
+@media(max-width:390px){
+ .bl-home .dpb-category{min-height:121px}
+ .bl-home .bl-featured .bl-grid{gap:8px}
+ .fp.bl-shell .bl-card-body{padding:9px}
+ .fp.bl-shell .bl-search button{min-width:68px;padding-inline:10px}
+}
+@media(prefers-reduced-motion:reduce){.fp.bl-shell .bl-card,.fp.bl-shell .dpb-logo-tile{transition:none}}
