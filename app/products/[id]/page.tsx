@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { explainProduct } from "../../../lib/dealpilot/product-explanation";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
@@ -59,6 +60,7 @@ export default async function Product({
     .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
     .slice(0, 4);
   const verified = evaluateEligibility(p).eligible;
+  const explanation = explainProduct(p.title, p.category);
   const brand = identifyListedBrand(p);
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
   const fmt = (iso: string) =>
@@ -112,6 +114,13 @@ export default async function Product({
               {p.shopName ? <> · חנות: <span dir="auto">{p.shopName}</span></> : null}
             </p>
 
+            <section className="hotam-product-intro" aria-labelledby="hotam-product-intro-heading">
+              <h2 id="hotam-product-intro-heading">מה זה המוצר?</h2>
+              <p>{explanation.what}</p>
+              <p><strong>למי הוא מתאים?</strong> {explanation.forWhom}</p>
+              <p><strong>מה לבדוק לפני קנייה?</strong> {explanation.check}</p>
+              <small>הסבר כללי לפי {explanation.source === "title" ? "שם המוצר" : "קטגוריית המוצר"}, ולא מפרט יצרן מאומת. יש לבדוק את הדגם בדף המוכר.</small>
+            </section>
             <section className="bl-receipt" aria-label="מחיר וקנייה">
               <div className="bl-receipt-row bl-receipt-price">
                 <span>{priceLabel}</span>
