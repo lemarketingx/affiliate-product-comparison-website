@@ -148,3 +148,12 @@
  .bl-home .dpb-categories{gap:9px}
 }
 @media(prefers-reduced-motion:reduce){.hotam-spotlight-cta{transition:none}}
+
+/* Product guidance: scannable, no fictional specifications. */
+.fp.bl-shell .hotam-card-explain{font-size:13px;line-height:1.55;color:#485264;margin:2px 0 4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fp.bl-shell .hotam-product-intro{display:grid;gap:9px;background:#fff;border:1px solid #e7e9ef;border-radius:16px;padding:20px;width:100%}
+.fp.bl-shell .hotam-product-intro h2{font-size:23px;line-height:1.25;color:#222838;margin:0}
+.fp.bl-shell .hotam-product-intro p{font-size:15px;line-height:1.65;color:#3f4858;margin:0}
+.fp.bl-shell .hotam-product-intro strong{color:#222838}
+.fp.bl-shell .hotam-product-intro small{font-size:12px;line-height:1.55;color:#687181;border-top:1px solid #eef0f4;padding-top:9px;margin-top:2px}
+@media(max-width:690px){.fp.bl-shell .hotam-card-explain{font-size:12px;line-height:1.45}.fp.bl-shell .hotam-product-intro{padding:16px}.fp.bl-shell .hotam-product-intro h2{font-size:20px}}
