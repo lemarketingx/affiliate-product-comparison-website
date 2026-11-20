@@ -10,6 +10,8 @@ import { PublicShell } from "./public-shell";
 import BrandLogo from "./brand-logo";
 import CampaignCarousel, { type PromoSlide } from "./campaign-carousel";
 import { ProductCard } from "./product-card";
+import ProductImage from "./product-image";
+import { formatMoney } from "../lib/dealpilot/urls";
 import HomeMarquee, { type MarqueeItem } from "./home-marquee";
 import { thumbUrl } from "../lib/dealpilot/thumb";
 import { BRAND } from "../lib/brand";
@@ -39,6 +41,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   const available = BRANDS.filter(b => (brandCounts.get(b.slug) ?? 0) > 0);
   const ranked = [...snapshot.items].sort((a,b) => (b.orders ?? 0) - (a.orders ?? 0));
   const featured = ranked.slice(0, 8);
+  const spotlight = ranked.find(p => p.image && p.price && p.priceStatus === "current") ?? ranked.find(p => p.image) ?? null;
   const imagesFor = (slugs: readonly string[]) =>
     ranked.filter(p => {const b = brandOf(p); return b && slugs.includes(b.slug) && imageOf(p);})
       .slice(0, 3).map(p => p.image!).filter(Boolean);
@@ -77,26 +80,35 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   const total = snapshot.items.length;
   const fresh = snapshot.items.filter((p) => p.priceStatus === "current").length;
   return <PublicShell><main id="main" className="dpb-main bl-home">
-    <section className="bl-wrap bl-hero" aria-labelledby="bl-hero-title">
-      <h1 id="bl-hero-title">מוצאים מותגים מוכרים ב־AliExpress. <mark>קונים עם יותר מידע.</mark></h1>
-      <p className="bl-hero-lead">מוצרים מזוהים של מותגים מוכרים, עם מחיר בשקלים וזמן בדיקה, נתוני מכירות ספק ואומדן מסי יבוא לישראל. רואים מה ידוע ומה צריך לבדוק לפני התשלום.</p>
-      <div className="bl-hero-cta">
-        <Link className="bl-cta" href="/deals">גלו את המוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
-        <Link className="bl-cta is-ghost" href="/brands">לפי מותג</Link>
+    <section className="bl-wrap bl-hero-market" aria-label="מציאת מוצרים ומחירים">
+      <div className="bl-hero" aria-labelledby="bl-hero-title">
+        <span className="hotam-eyebrow">קנייה חכמה מתחילה בהשוואה</span>
+        <h1 id="bl-hero-title">מותגים שאתם מכירים. <mark>פחות סימני שאלה.</mark></h1>
+        <p className="bl-hero-lead">מגלים מוצרים של מותגים מזוהים, בודקים מתי המחיר עודכן ומה צריך לקחת בחשבון לפני הזמנה לישראל.</p>
+        <div className="bl-hero-cta">
+          <Link className="bl-cta" href="/deals">לכל המוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
+          <Link className="bl-cta is-ghost" href="/brands">בחירה לפי מותג</Link>
+        </div>
+        <ul className="bl-hero-facts" aria-label="נתוני קטלוג">
+          <li><ShieldCheck size={16} aria-hidden="true"/> מידע שקוף לפני קנייה</li>
+          {total > 0 && <li><b>{total.toLocaleString("he-IL")}</b> מוצרים בקטלוג</li>}
+          {snapshot.source === "store" && <li><b>{fresh.toLocaleString("he-IL")}</b> מחירים שנבדקו לאחרונה</li>}
+        </ul>
       </div>
-      {total > 0 && <ul className="bl-hero-facts" aria-label="נתוני הקטלוג כרגע">
-        <li><b>{total.toLocaleString("he-IL")}</b> מוצרים מ־<b>{available.length}</b> מותגים</li>
-        {snapshot.source === "store" && <li><b>{fresh.toLocaleString("he-IL")}</b> מחירים עם זמן בדיקה עדכני</li>}
-        <li>מחיר בשקלים · אומדן מע״מ ומכס לכל מוצר</li>
-      </ul>}
-    </section>
-    <HomeMarquee label="מותגים ומוצרים נמכרים בקטלוג (נתוני מכירות של הספק)" rows={[{ key: "brands", items: logoItems }, { key: "sellers", items: sellerItems, reverse: true }]}/>
-    <div className="bl-wrap dpb-hero-shell"><CampaignCarousel slides={slides}/></div>
-    <section className="bl-wrap dpb-brands" aria-labelledby="dpb-brands-title">
-      <div className="bl-section-head"><div><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">כל המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
-      {available.length ? <div className="dpb-logo-grid">{available.slice(0,12).map(b =>
-        <Link className="dpb-logo-tile" key={b.slug} href={"/brands/"+b.slug} aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}><BrandLogo slug={b.slug} name={b.name}/></Link>
-      )}</div> : <div className="bl-empty-note">הקטלוג הממותג מתרענן. נציג רק מוצרים שעברו סינון.</div>}
+      {spotlight && <div className="hotam-spotlight" aria-label="מוצר מתוך הקטלוג">
+        <div className="hotam-spotlight-heading"><span>מוצר מהקטלוג</span><span>לפי נתוני ספק</span></div>
+        <Link href={"/products/" + spotlight.id} className="hotam-spotlight-link" aria-label={"לפרטי " + spotlight.title}>
+          <div className="hotam-spotlight-image"><ProductImage src={spotlight.image} alt="" thumb lazy={false} label={brandOf(spotlight)?.name ?? null}/></div>
+          <strong className="hotam-spotlight-name" dir="auto">{spotlight.title}</strong>
+          <div className="hotam-spotlight-price">
+            {spotlight.price && spotlight.priceStatus === "current"
+              ? <><span>מחיר מוצר מדווח</span><b dir="ltr">{formatMoney(spotlight.price,spotlight.currency)}</b></>
+              : <span>מחיר עדכני אינו זמין</span>}
+          </div>
+          <span className="hotam-spotlight-cta">לפרטי המוצר <ArrowUpLeft size={16} aria-hidden="true"/></span>
+        </Link>
+        <p>מחיר סופי, משלוח ומסים נקבעים לפי תנאי ההזמנה בקופה.</p>
+      </div>}
     </section>
     <section className="bl-wrap dpb-categories" aria-label="מוצרים ממותגים לפי תחום">
       {groups.map((g)=>{
@@ -118,6 +130,13 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
       <div className="bl-section-head"><div><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
       {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
     </section>
+    <div className="bl-wrap dpb-hero-shell"><CampaignCarousel slides={slides}/></div>
+    <section className="bl-wrap dpb-brands" aria-labelledby="dpb-brands-title">
+      <div className="bl-section-head"><div><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">כל המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
+      {available.length ? <div className="dpb-logo-grid">{available.slice(0,12).map(b =>
+        <Link className="dpb-logo-tile" key={b.slug} href={"/brands/"+b.slug} aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}><BrandLogo slug={b.slug} name={b.name}/></Link>
+      )}</div> : <div className="bl-empty-note">הקטלוג הממותג מתרענן. נציג רק מוצרים שעברו סינון.</div>}
+    </section>
     <section className="bl-wrap bl-how" aria-labelledby="bl-how-title">
       <h2 id="bl-how-title">איך מגיעים לשורה התחתונה</h2>
       <ol>
@@ -126,6 +145,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
         <li><BadgeCheck size={22} aria-hidden="true"/><strong>קונים ב־AliExpress</strong><span>בודקים את המוכר, הדגם המדויק והמשלוח ב־AliExpress. המחיר הסופי נקבע בקופה.</span></li>
       </ol>
     </section>
+    <HomeMarquee label="מותגים ומוצרים נמכרים בקטלוג (נתוני מכירות של הספק)" rows={[{ key: "brands", items: logoItems }, { key: "sellers", items: sellerItems, reverse: true }]}/>
     <section className="bl-wrap bl-trust"><ShieldCheck size={20} aria-hidden="true"/><p>{BRAND.name} הוא אתר שותפים עצמאי. זיהוי מותג אינו אימות מקוריות. בדקו את החנות, הביקורות, השילוח והמחיר בקופה לפני כל רכישה.</p><Link href="/disclosure">גילוי נאות <ArrowLeft size={15} aria-hidden="true"/></Link></section>
   </main></PublicShell>;
 }
