@@ -41,7 +41,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
             {item.title}
           </Link>
         </h3>
-        <p className="hotam-card-explain">{explanation.what}</p>
+        <p className="hotam-card-explain">{explanation.summary}</p>
         <div className="dp-product-price">
           <span>מחיר מדווח מ־AliExpress</span>
           {item.price ? (
