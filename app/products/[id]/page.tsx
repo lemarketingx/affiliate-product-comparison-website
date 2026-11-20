@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { explainProduct } from "../../../lib/dealpilot/product-explanation";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
@@ -60,7 +59,6 @@ export default async function Product({
     .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
     .slice(0, 4);
   const verified = evaluateEligibility(p).eligible;
-  const explanation = explainProduct(p.title, p.category);
   const brand = identifyListedBrand(p);
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
   const fmt = (iso: string) =>
@@ -114,28 +112,6 @@ export default async function Product({
               {p.shopName ? <> · חנות: <span dir="auto">{p.shopName}</span></> : null}
             </p>
 
-            <section className="hotam-product-intro" aria-labelledby="hotam-product-intro-heading">
-              <span className="hotam-intro-eyebrow">מדריך קנייה למוצר</span>
-              <h2 id="hotam-product-intro-heading">מה חשוב לדעת על המוצר?</h2>
-              <p className="hotam-intro-summary">{explanation.summary}</p>
-              <h3>למי הוא יכול להתאים?</h3>
-              <p>{explanation.useCase}</p>
-              {explanation.strengths.length > 0 && <div className="hotam-explain-group">
-                <h3>מה היתרונות של סוג המוצר?</h3>
-                <ul>{explanation.strengths.map(x=><li key={x}>{x}</li>)}</ul>
-              </div>}
-              <div className="hotam-explain-group">
-                <h3>מה החסרונות או המגבלות?</h3>
-                <ul>{explanation.limitations.map(x=><li key={x}>{x}</li>)}</ul>
-              </div>
-              <div className="hotam-explain-group">
-                <h3>מה צריך לוודא בדגם הזה?</h3>
-                <ul>{explanation.checklist.map(x=><li key={x}>{x}</li>)}</ul>
-              </div>
-              {explanation.facts.length > 0 && <p className="hotam-claimed-facts">{explanation.facts.join(" ")}</p>}
-              <div className="hotam-explain-verdict"><strong>השורה התחתונה</strong><p>{explanation.verdict}</p></div>
-              <small>זהו מדריך בחירה לסוג המוצר, המבוסס על {explanation.source === "title" ? "שם המוצר" : "הקטגוריה"} בלבד. הוא אינו סקירה של הדגם הספציפי או אישור לתכונותיו. מפרט, ביצועים, אחריות ותכולת האריזה דורשים אימות מול היצרן והמוכר.</small>
-            </section>
             <section className="bl-receipt" aria-label="מחיר וקנייה">
               <div className="bl-receipt-row bl-receipt-price">
                 <span>{priceLabel}</span>
