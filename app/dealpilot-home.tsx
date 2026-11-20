@@ -11,7 +11,7 @@ import BrandLogo from "./brand-logo";
 import CampaignCarousel, { type PromoSlide } from "./campaign-carousel";
 import { ProductCard } from "./product-card";
 import ProductImage from "./product-image";
-import ScrollStory from "./scroll-story";
+import OrderJourney from "./order-journey";
 import { formatMoney } from "../lib/dealpilot/urls";
 import HomeMarquee, { type MarqueeItem } from "./home-marquee";
 import { thumbUrl } from "../lib/dealpilot/thumb";
@@ -131,7 +131,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
       <div className="bl-section-head"><div><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
       {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
     </section>
-    <ScrollStory products={ranked.filter(p=>p.image && brandOf(p)).slice(0,3).map(p=>({id:p.id,title:p.title,image:p.image!,brand:brandOf(p)!.name}))}/>
+    <OrderJourney product={ranked.find(p=>p.image && brandOf(p)) ? (()=>{const p=ranked.find(p=>p.image && brandOf(p))!; return {id:p.id,title:p.title,image:p.image!,brand:brandOf(p)!.name};})() : null}/>
     <div className="bl-wrap dpb-hero-shell"><CampaignCarousel slides={slides}/></div>
     <section className="bl-wrap dpb-brands" aria-labelledby="dpb-brands-title">
       <div className="bl-section-head"><div><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">כל המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
