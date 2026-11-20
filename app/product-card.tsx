@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { explainProduct } from "../lib/dealpilot/product-explanation";
 import type { CatalogItem } from "../lib/aliexpress/catalog";
 import { formatMoney } from "../lib/dealpilot/urls";
 import ProductImage from "./product-image";
@@ -15,6 +16,7 @@ import type { UsdRate } from "../lib/preflight/tax-estimate";
    that price was last checked. The whole card links to the product page. */
 export function ProductCard({ item, eager = false, usdRate = null }: { item: CatalogItem; eager?: boolean; usdRate?: UsdRate | null }) {
   const verified = evaluateEligibility(item).eligible;
+  const explanation = explainProduct(item.title, item.category);
   const brand = identifyListedBrand(item);
   const fresh = freshnessLabel(item.priceObservedAt);
   const israel = estimateIsraelTotal(item.currency === "ILS" && item.price ? Number(item.price) : null, usdRate, IMPORT_TAX);
@@ -39,6 +41,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
             {item.title}
           </Link>
         </h3>
+        <p className="hotam-card-explain">{explanation.what}</p>
         <div className="dp-product-price">
           <span>מחיר מדווח מ־AliExpress</span>
           {item.price ? (
