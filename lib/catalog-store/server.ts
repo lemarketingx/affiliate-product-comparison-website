@@ -109,12 +109,19 @@ export async function getStoredSnapshot(): Promise<CatalogSnapshot> {
   return { items, fetchedAt: seen[0] ?? null, available: true, partial: false, qualityFiltered: false, source: "store" };
 }
 
-export async function storedPriceHistory(productId: string) {
+type HistoryRow = { observed_at: string; method: "search" | "detail"; price: number; currency: string; price_field: string | null; sku_id: string | null };
+// Cached per product under the store tag (invalidated after every job), so page
+// views and crawlers do not each run a database query.
+const cachedHistory = unstable_cache(
+  async (productId: string) => (await rpc("dp_price_history", { product_id: productId, limit: 90 })) as HistoryRow[],
+  ["dp-price-history-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
+  { revalidate: 3600, tags: [STORE_TAG] },
+);
+
+export async function storedPriceHistory(productId: string): Promise<HistoryRow[]> {
   if (!storeConfigured() || !/^\d{4,24}$/.test(productId)) return [];
   try {
-    return (await rpc("dp_price_history", { product_id: productId, limit: 90 })) as {
-      observed_at: string; method: "search" | "detail"; price: number; currency: string; price_field: string | null; sku_id: string | null;
-    }[];
+    return await cachedHistory(productId);
   } catch {
     return [];
   }

@@ -507,3 +507,19 @@ Owner: keep the name DealPilot; find more terms; env vars are set; test clicks a
 - **Tests:** unit 141/141 · e2e 49/49 (local, preinstalled Chromium) · typecheck and build OK.
 
 **NOT VERIFIED:** how many products the new terms publish (next discovery after merge).
+
+## 2026-11-23 (2) · Merge #37, canonical fix, structured data, post drafts
+- **#37 merged** after the `verify` check passed. Live checks: `/og.png` 200, and product 1005005912594648 shows the chart with 14 checks. All 873 published products have at least 2 matching observations, so every one gets a chart.
+- **Traffic, not tracking:** one production test click (`/go/1005005912594648`, 307) wrote row 9 within a second. It is flagged `is_test`. So the 8 rows reflect real (low) traffic, not a recording failure.
+  - Vercel logs and pageviews were not reachable: the connector only exposes the team's `mortgai` project, which is off-limits.
+- **SEO bug, fixed:** every production canonical and `og:image` pointed at the deployment URL `…-13yelf8q1.vercel.app`, because `DEALPILOT_SITE_URL` is unset and the code fell back to `VERCEL_URL`.
+  - `lib/site-url.ts` is now the one public origin for metadata, robots and the sitemap. It is `DEALPILOT_SITE_URL` if set (https, no path), else the production alias.
+- **JSON-LD:**
+  - Product + BreadcrumbList on product pages. The Offer appears only for a current price in its own currency. No rating, review or availability.
+  - BreadcrumbList + ItemList on brand pages.
+- **Price history** is cached per product under the store tag (invalidated after every job).
+- **Channel post drafts** on `/admin/channels`: 5 products per channel, rotated daily, from the cached catalog.
+  - Each draft shows the price with its check time and "may have changed", the provider-sales label, the affiliate disclosure, and a product-page link with `utm_source`.
+  - Nothing is sent.
+- Screenshots: `docs/screenshots/price-history/history-1920.png`, `hero-fallback-{390,1440}.png`.
+- **Tests:** unit 148/148 · e2e 51/51 (local) · typecheck and build OK.
