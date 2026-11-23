@@ -18,7 +18,7 @@ const TYPES: { label: string; match: RegExp }[] = [
   { label: "מטען", match: /(?:מטען|charger|טעינה מהירה)/i },
   { label: "אוזניות", match: /(?:אוזניות|earphones?|earbuds?|headphones?|headset)/i },
   { label: "רכזת USB", match: /(?:רכזת|USB[\s-]*hub|docking station|תחנת עגינה)/i },
-  { label: "עכבר", match: /(?:עכבר|mouse)\b?/i },
+  { label: "עכבר", match: /(?:עכבר|\bmouse\b)/i },
   { label: "משאבת אוויר", match: /(?:משאבת אוויר|air[\s-]*inflator)/i },
   { label: "מעמד", match: /(?:מעמד|stand|holder)/i },
   { label: "כיסוי", match: /(?:כיסוי|phone case|protective case)/i },
