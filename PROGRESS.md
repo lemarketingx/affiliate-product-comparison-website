@@ -523,3 +523,14 @@ Owner: keep the name DealPilot; find more terms; env vars are set; test clicks a
   - Nothing is sent.
 - Screenshots: `docs/screenshots/price-history/history-1920.png`, `hero-fallback-{390,1440}.png`.
 - **Tests:** unit 148/148 · e2e 51/51 (local) · typecheck and build OK.
+
+## 2026-11-23 (3) · "Showroom" redesign (branch `design/dealpilot-showroom-20261123`)
+Owner request: a redesign of the public site. Keeps the approved tokens (ink, paper, highlighter yellow), the logo and every honesty rule; changes layout, hierarchy and the brand-first structure. One new layer, `app/showroom.css`, loaded last; admin (`dp-*`) untouched.
+- **Home:** dark full-bleed hero with a "brand wall" (the 9 brands with the most listed products, real counts), an in-hero search (desktop/tablet), popular-brand chips and a facts strip. New **brand shelves**: the top 4 brands by listed products, each with its 4 best sellers (provider sales order, labelled "not a quality ranking"), price with its check time. Brand directory tiles show product counts. Categories in a 3/2/1 grid. "How it works" is a dark band.
+- **Product card:** inset image well, 2-line title clamp, larger price, separators; 4/3/2 columns (was 5+3 at 1440).
+- **Brand page:** header band with the logo and catalog stats. Brands index: larger cards.
+- Copy constraints kept: h1 contains "מותגים מוכרים" and "קונים עם יותר מידע"; section heading "המותגים שאתם מכירים" kept.
+- **Checks:** typecheck and build OK · unit 148/148 · e2e 52/52 · no horizontal overflow at 320/375/768/1024/1440/1920 on home, brands, brand, deals · axe WCAG 2.1 AA 0 violations at 375 and 1440 (one 70mai contrast issue on the shelf header found and fixed).
+- Screenshots (fixture catalog, placeholder images): `docs/screenshots/showroom/`.
+
+**NOT VERIFIED:** real product images and live data (sandbox cannot reach AliExpress CDNs or the Vercel deployment). Mobile LCP not re-measured; the hero h1 is still the LCP candidate and no hero image was added.

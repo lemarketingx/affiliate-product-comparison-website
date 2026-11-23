@@ -6,6 +6,7 @@ import "./dealpilot.css";
 import "./welcoming.css";
 import "./storefront.css";
 import "./bottomline.css";
+import "./showroom.css";
 
 export const metadata: Metadata = {
   title: "DealPilot | מוצרי מותגים מ־AliExpress, עם מחיר שנבדק",
