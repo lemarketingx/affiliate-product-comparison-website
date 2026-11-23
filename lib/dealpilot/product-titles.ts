@@ -39,21 +39,33 @@ export function productDisplayTitle(rawTitle: string, brandName: string | null =
   // Without a recognized brand and type, do not invent an identification.
   if (!brand || !type) return safeShortTitle(original);
 
-  const category = type.label;
+  // An ambiguous seller translation that says "USB-C to USB" and "charger"
+  // does not prove whether this is a cable, adapter or charger.
+  const ambiguousUsb = type.label === "מטען" && /(?:usb[\s-]*c|סוג\s*c).{0,30}(?:\bto\b|עד|ל[-־]).{0,12}\bUSB\b/i.test(original);
+  const category = ambiguousUsb ? "אביזר טעינה" : type.label;
   const nameParts: string[] = [category, brand];
 
   // Keep only distinctive, clearly stated model names.
   const model = original.match(/\b(?:Nexode(?:\s+Air)?|UNO|Encok\s+[A-Z0-9/-]{2,12}|Bass\s+EP\d+[A-Z]*|Studio\s+Pro|Liberty\s+\d+\s*(?:NC|Pro)?)\b/i)?.[0];
   if (model && !nameParts.some((p) => p.toLowerCase() === model.toLowerCase())) nameParts.push(model);
 
-  const addSpecs = ["כבל", "מטען", "מטען לרכב", "סוללה ניידת", "רכזת USB", "מארז לכונן SSD", "אוזניות", "עכבר"].includes(category);
+  const addSpecs = ["כבל", "מטען", "מטען לרכב", "אביזר טעינה", "סוללה ניידת", "רכזת USB", "מארז לכונן SSD", "אוזניות", "עכבר"].includes(category);
   if (addSpecs) {
-    if (/(?:\bUSB[\s-]*C\b|\bType[\s-]*C\b|סוג\s*C\b)/i.test(original) && category !== "רכזת USB") nameParts.push("USB-C");
+    const usbC = /(?:\bUSB[\s-]*C\b|\bType[\s-]*C\b|סוג\s*C\b)/i.test(original);
+    const pairText = original.replace(/\b(?:USB[\s-]*C|Type[\s-]*C)\b/gi, "USBC");
+    const twoUsbC = /USBC.{0,18}(?:\bto\b|ל[-־ ]?|עד)\s*USBC/i.test(pairText);
+    if (category === "כבל" && twoUsbC) nameParts.push("USB-C ל־USB-C");
+    else if (usbC && category !== "רכזת USB") nameParts.push("USB-C");
     const wattages = [...original.matchAll(/(?:^|[^\d])(\d{1,3})\s*W\b/gi)].map((m) => Number(m[1]));
     const uniqueWattages = [...new Set(wattages)].filter((w) => w > 0 && w <= 300);
-    if (uniqueWattages.length === 1 && ["כבל", "מטען", "מטען לרכב", "סוללה ניידת"].includes(category)) nameParts.push(uniqueWattages[0] + "W");
+    if (uniqueWattages.length === 1 && ["כבל", "מטען", "מטען לרכב", "אביזר טעינה", "סוללה ניידת"].includes(category)) nameParts.push(uniqueWattages[0] + "W");
     const capacity = original.match(/\b(\d{4,6})\s*mAh\b/i);
     if (category === "סוללה ניידת" && capacity) nameParts.push(Number(capacity[1]).toLocaleString("en-US") + "mAh");
+    if (["עכבר", "אוזניות"].includes(category) && /(?:אלחוטי|אלחוטיות|wireless)/i.test(original)) nameParts.push("אלחוטי");
+    if (category === "עכבר") {
+      const dpi = original.match(/\b(\d{3,5})\s*DPI\b/i);
+      if (dpi) nameParts.push(Number(dpi[1]).toLocaleString("en-US") + "DPI");
+    }
     if (category === "אוזניות" && /\bANC\b/i.test(original)) nameParts.push("ANC");
   }
 
