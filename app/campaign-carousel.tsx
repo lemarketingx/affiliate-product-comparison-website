@@ -38,7 +38,7 @@ export default function CampaignCarousel({ slides }: { slides: PromoSlide[] }) {
             {slide.images.slice(0, 3).map((src, index) => (
               <span className={"dpb-stage-item dpb-stage-item-" + index} key={src + index}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" />
+                <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               </span>
             ))}
             {!slide.images.length && <span className="dpb-stage-monogram">DP</span>}
