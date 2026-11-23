@@ -9,13 +9,13 @@ import "./bottomline.css";
 import "./showroom.css";
 
 export const metadata: Metadata = {
-  title: "DealPilot | מוצרי מותגים מ־AliExpress, עם מחיר שנבדק",
+  title: "DealPilot | מותגים מוכרים ומחירים שנבדקו ב־AliExpress",
   description:
-    "מגלים מוצרי מותגים מ־AliExpress: מחירים בשקלים עם זמן בדיקה, נתוני מכירות ספק ואומדן מסי יבוא לישראל. המחיר הסופי נקבע בקופה.",
+    "מוצרי מותגים ב־AliExpress עם מחיר בשקלים, בדיקות מחיר לאורך זמן והערכת מסי יבוא לישראל. משווים נתונים לפני שקונים. המחיר הסופי נקבע בקופה.",
   metadataBase: new URL(siteOrigin()),
   openGraph: {
-    title: "DealPilot | מגלים מותגים מוכרים",
-    description: "מותגים מוכרים ומוצרים מזוהים ב־AliExpress במקום אחד, עם כלים לקנייה חכמה לישראל.",
+    title: "DealPilot | בודקים מחיר לפני שקונים",
+    description: "מחירים בשקלים, בדיקות לאורך זמן והערכת מסי יבוא למוצרי מותגים מ־AliExpress. בדקו את הפרטים לפני קנייה.",
     locale: "he_IL",
     type: "website",
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "DealPilot: מותגים שאתם מכירים. בודקים לפני שקונים." }],
