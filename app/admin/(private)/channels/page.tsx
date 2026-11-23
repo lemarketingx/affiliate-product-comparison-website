@@ -12,7 +12,7 @@ const channels = [
   ["TikTok", Video, "הרשאת Content Posting API ובדיקת אפליקציה"],
   ["YouTube Shorts", Play, "הרשאת ערוץ דרך API רשמי ושירות וידאו"],
 ] as const;
-const DRAFT_CHANNELS: [Channel, string][] = [["telegram", "Telegram / WhatsApp"], ["facebook", "Facebook"], ["instagram", "Instagram"]];
+const DRAFT_CHANNELS: [Channel, string][] = [["telegram", "Telegram (גם ל־WhatsApp; נספר כ־Telegram)"], ["facebook", "Facebook"], ["instagram", "Instagram"]];
 export default async function ChannelsPage() {
   await requireAdmin();
   // Cached catalog only: no provider call. Drafts are text to copy; nothing is sent.
@@ -47,7 +47,7 @@ export default async function ChannelsPage() {
         <h2 id="dp-drafts">טיוטות פוסטים להיום</h2>
         <p className="dp-muted">
           5 מוצרים ממותגים עם מחיר עדכני, מתחלפים כל יום. העתיקו והדביקו בערוץ. המחיר מוצג עם זמן הבדיקה שלו, כי פוסט נשאר
-          בערוץ אחרי שהמחיר משתנה. הקישור מוביל לעמוד המוצר באתר, עם תיוג ערוץ לסטטיסטיקה.
+          בערוץ אחרי שהמחיר משתנה. הקישור מוביל לעמוד המוצר באתר. קליק לרכישה שמגיע מהפוסט נרשם תחת הערוץ (בדוח הקליקים, לפי מקור).
         </p>
         {drafts.map((d) => (
           <div key={d.channel}>

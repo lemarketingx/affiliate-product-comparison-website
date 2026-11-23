@@ -57,6 +57,13 @@ test("product JSON-LD offers a price only when it is current; canonical uses the
   expect(stale.find((x: { "@type": string }) => x["@type"] === "Product").offers).toBeUndefined();
 });
 
+test("a visitor from a channel post is credited to that channel on the affiliate click", async ({ page }) => {
+  await page.goto(BASE + "/products/1005000000888?utm_source=telegram&utm_medium=social");
+  await expect(page.getByRole("region", { name: "מחיר וקנייה" }).getByRole("link", { name: /לבדיקת המוצר/ })).toHaveAttribute("href", "/go/1005000000888?source=telegram");
+  await page.goto(BASE + "/products/1005000000888?utm_source=evil%22");
+  await expect(page.getByRole("region", { name: "מחיר וקנייה" }).getByRole("link", { name: /לבדיקת המוצר/ })).toHaveAttribute("href", "/go/1005000000888?source=catalog");
+});
+
 test("admin channels page drafts posts with check time and disclosure; nothing is sent", async ({ page, context }) => {
   await asAdmin(context);
   await page.goto(BASE + "/admin/channels");
