@@ -86,7 +86,7 @@ export const GUIDES: Guide[] = [
       {
         heading: "מע\"מ ותקרת פטור",
         claims: [
-          { text: `ביבוא אישי עד ${IMPORT_TAX.exemptionUsd}$ אין מע"מ, מכס ומס קנייה. מעל התקרה משלמים מע"מ ${Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%.`, source: calc },
+          { text: `ביבוא אישי עד ${IMPORT_TAX.exemptionUsd}$ אין מע"מ, מכס ומס קנייה. מעל התקרה עשוי לחול מע"מ ${Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%, ובמוצרים מסוימים חלים חיובים נוספים.`, source: calc },
           { text: "מבחן הפטור נעשה לפי ערך המוצרים בלי משלוח וביטוח. מעל התקרה, המע\"מ מחושב על המוצרים, המשלוח והביטוח.", source: knesset },
           { text: `עד ${IMPORT_TAX.customsFreeUpToUsd}$ יש פטור ממכס. מעל זה ייתכנו מכס ומס קנייה, לפי סוג המוצר.`, source: knesset },
           { text: `משלוחים מאותו ספק שמגיעים בתוך ${IMPORT_TAX.combineWindowHours} שעות מאוחדים לחישוב המס, ולכן פיצול הזמנה לא בהכרח עוקף את התקרה.`, source: knesset },
@@ -122,7 +122,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "dont-order",
     code: "GDE-05",
-    title: "טיסות שעדיף לבטל: מה לא כדאי להזמין מחו\"ל",
+    title: "רכישות שעדיף לוותר עליהן: מה לא כדאי להזמין מחו\"ל",
     summary: "לא כל דבר זול יותר שווה את הסיכון. רשימה כנה.",
     updatedAt: "2026-11-15",
     sections: [
