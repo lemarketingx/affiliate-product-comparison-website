@@ -134,7 +134,7 @@ test.describe("typed catalog products (isolated fixture server)", () => {
     await expect(page.getByRole("heading", { name: "מה כנראה לא בקופסה" })).toHaveCount(0);
     // Verified tax rules + (fixture) representative rate: 149.9 ₪ ≈ 47$ → exempt.
     await expect(page.locator(".fp-tax-box")).toContainText("פטור ממסים (עד 75$)");
-    await expect(page.getByText("קישור שותפים: ייתכן שנקבל עמלה")).toBeVisible();
+    await expect(page.getByText(/קישור שותפים: רכישה לאחר מעבר דרך הקישור עשויה לזכות אותנו בעמלה/)).toBeVisible();
     // Legacy (no-database) path: /go may answer 503 + Retry-After while its catalog warms.
     let go = await request.get("/go/1005005550001", { maxRedirects: 0, timeout: 20000 });
     for (let i = 0; i < 10 && go.status() === 503; i++) {
