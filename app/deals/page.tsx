@@ -7,7 +7,8 @@ import { parseViewParams } from "../../lib/aliexpress/catalog-view";
 import { PublicShell } from "../public-shell";
 import CatalogBrowser from "../catalog-browser";
 export const metadata: Metadata = {
-  title: "גלו מוצרים | DealPilot",
+  title: "מוצרי מותגים ב־AliExpress | השוואת מחירים | DealPilot",
+  description: "מחפשים מוצרים של מותגים מוכרים, רואים מחירים בשקלים, בדיקות מחיר קודמות כשיש והערכת מסי יבוא לפני רכישה.",
   alternates: { canonical: "/deals" },
 };
 export const dynamic = "force-dynamic";

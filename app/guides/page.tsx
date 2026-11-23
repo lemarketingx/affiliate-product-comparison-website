@@ -1,5 +1,6 @@
 export const metadata = {
-  title: "מדריך קנייה | DealPilot",
+  title: "מדריכי קנייה חכמה מחו״ל | DealPilot",
+  description: "מדריכי קנייה ב־AliExpress: התאמה לישראל, משלוח, מיסוי, אחריות ומוצרים שמומלץ לבדוק היטב לפני הזמנה.",
   alternates: { canonical: "/guides" },
 };
 import Link from "next/link";
@@ -14,7 +15,7 @@ export default function Guides() {
     <PublicShell>
       <main id="main" className="fp-wrap">
         <article className="fp-prose">
-          <span className="fp-kicker">מדריך טרום המראה</span>
+          <span className="fp-kicker">מדריך לפני שקונים</span>
           <h1>
             קנייה טובה מתחילה
             <br />

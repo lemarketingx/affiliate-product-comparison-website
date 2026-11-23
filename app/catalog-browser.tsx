@@ -10,6 +10,7 @@ import { IMPORT_TAX } from "../lib/preflight/import-tax";
 import { estimateImportTax, type UsdRate } from "../lib/preflight/tax-estimate";
 import { BRANDS, identifyListedBrand } from "../lib/dealpilot/brands";
 import BrandLogo from "./brand-logo";
+import { productsCount } from "../lib/dealpilot/copy";
 
 const fmt = (n: number) => n.toLocaleString("he-IL");
 
@@ -63,10 +64,10 @@ export default function CatalogBrowser({
       {!hideHead && <><div className="fp-section-head">
         <div>
           <span className="fp-kicker">קטלוג מותגים מוכרים</span>
-          <h1 className="fp-catalog-title">{title ?? "גלו מוצרים של מותגים מוכרים."}</h1>
+          <h1 className="fp-catalog-title">{title ?? "מוצרי מותגים. מידע שמקל לבחור."}</h1>
           <p>
             {snapshot.available
-              ? "גלו מוצרי מותגים לפי תחום, מחיר ומכירות מדווחות. המחירים כוללים זמן בדיקה ואומדן מסי יבוא לישראל. מקוריות ומוכר מורשה טרם אומתו."
+              ? "מחפשים לפי מותג, סוג מוצר או מחיר, רואים מתי המחיר נבדק ומקבלים הערכה למסי היבוא. לפני התשלום מאמתים את המוכר והמשלוח ב־AliExpress."
               : "הקטלוג אינו זמין כרגע. נסו שוב מאוחר יותר."}
           </p>
         </div>
@@ -137,7 +138,7 @@ export default function CatalogBrowser({
           "הקטלוג מתעדכן ברקע"
         ) : snapshot.available ? (
           <>
-            <strong>{fmt(view.total)}</strong> {filtered ? "מוצרים עברו את הסינון" : "מוצרים בקטלוג"}
+            <strong>{productsCount(view.total)}</strong> {filtered ? (view.total === 1 ? "עבר את הסינון" : "עברו את הסינון") : "בקטלוג"}
             {filtered && <> מתוך {fmt(published)} שפורסמו</>}
             {view.total > 0 && (
               <> · מוצגים {fmt(view.start + 1)}–{fmt(view.start + view.items.length)} · עמוד {fmt(view.page)} מתוך {fmt(view.pages)}</>
@@ -180,7 +181,7 @@ export default function CatalogBrowser({
               ? "אין כרגע נתוני מוצרים להצגה. בינתיים אפשר לעיין במדריך הקנייה."
               : snapshot.available && lockedCategory && !params.q && !exemptOnly
                 ? "אנחנו מפרסמים רק מוצרים שהמותג שלהם אומת מול נתוני החנות, עם מחיר שנבדק. מוצרים חדשים נבדקים כל יום."
-                : "נסו שם אחר או בחרו קטגוריה נוספת."}
+                : "נסו מונח חיפוש אחר או הסירו אחד מהמסננים."}
           </p>
           {snapshot.available && lockedCategory && !params.q && !exemptOnly && (
             <Link className="fp-link" href="/deals">לכל מוצרי המותגים <ArrowUpLeft size={17} /></Link>
@@ -225,7 +226,7 @@ export default function CatalogBrowser({
       <p className="fp-tax-note">
         {usdRate ? (
           <>
-            מיסוי ביבוא אישי: עד {IMPORT_TAX.exemptionUsd}$ פטור, מעל זה מע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%. לכל מוצר מסומן אם הוא צפוי
+            הערכת מיסוי ביבוא אישי: תקרת הפטור הכללית היא {IMPORT_TAX.exemptionUsd}$ ושיעור המע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%. ייתכנו חריגים, מס קנייה וחיובים נוספים לפי סוג המוצר. לכל מוצר מסומן אם הוא צפוי
             להיות פטור, לפי השער היציג ({usdRate.rate} ₪, {new Date(usdRate.date).toLocaleDateString("he-IL")}). כמה פריטים מאותו מוכר נספרים יחד.{" "}
             <a href={IMPORT_TAX.sources[0].url} target="_blank" rel="noopener noreferrer">מקור: רשות המסים</a>
           </>

@@ -24,6 +24,7 @@ import { safeSource } from "../../../lib/dealpilot/tracking";
 import BrandLogo from "../../brand-logo";
 import { BrandCompare, brandCompareRows } from "../../brand-compare";
 import { ArrowUpLeft, ShieldCheck, Receipt, Clock } from "lucide-react";
+import { productDisplayTitle } from "../../../lib/dealpilot/product-titles";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -32,8 +33,10 @@ export async function generateMetadata({
 }) {
   const { id } = await params;
   const p = (await getCatalog()).items.find((p) => p.id === id);
+  const title = p ? productDisplayTitle(p.title, identifyListedBrand(p)?.name ?? null) : null;
   return {
-    title: p ? p.title + " | " + BRAND.name : "המוצר אינו זמין | " + BRAND.name,
+    title: title ? title + " | מחיר והיסטוריית בדיקות | " + BRAND.name : "המוצר אינו זמין | " + BRAND.name,
+    description: title ? `בדקו את ${title}: מחיר מדווח מ־AliExpress, מועד בדיקה, היסטוריית מחירים אם זמינה והערכת עלויות יבוא לישראל. המחיר הסופי נקבע בקופה.` : "המוצר אינו מופיע כרגע בקטלוג.",
     alternates: { canonical: "/products/" + id },
   };
 }
@@ -90,6 +93,7 @@ export default async function Product({
       : null;
   const verified = evaluateEligibility(p).eligible;
   const brand = identifyListedBrand(p);
+  const displayTitle = productDisplayTitle(p.title, brand?.name ?? null);
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
   const fmt = (iso: string) =>
     new Intl.DateTimeFormat("he-IL", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jerusalem" }).format(new Date(iso));
@@ -109,7 +113,7 @@ export default async function Product({
   const hasLink = validAffiliateUrl(p.affiliateUrl, p.productUrl);
   const cta = hasLink ? (
     <a className="bl-cta" href={"/go/" + p.id + "?source=" + clickSource} rel="sponsored noopener noreferrer" target="_blank">
-      לבדיקת המוצר ב־AliExpress <ExternalLink size={18} aria-hidden="true" />
+      לבדיקת מחיר ומשלוח ב־AliExpress <ExternalLink size={18} aria-hidden="true" />
     </a>
   ) : p.productUrl ? (
     <a className="bl-cta is-ghost" href={p.productUrl} rel="noopener noreferrer" target="_blank">
@@ -125,11 +129,11 @@ export default async function Product({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: jsonLdString([
-              productJsonLd(p, siteOrigin(), brand?.name ?? null),
+              productJsonLd({ ...p, title: displayTitle }, siteOrigin(), brand?.name ?? null),
               breadcrumbJsonLd(siteOrigin(), [
                 { name: "בית", path: "/" },
                 { name: p.category, path: "/categories/" + p.categorySlug },
-                { name: p.title, path: "/products/" + p.id },
+                { name: displayTitle, path: "/products/" + p.id },
               ]),
             ]),
           }}
@@ -141,7 +145,7 @@ export default async function Product({
         </nav>
         <div className="bl-product-grid">
           <div className="bl-product-media">
-            <ProductGallery images={images} title={p.title} label={brand?.name ?? null} video={p.video ?? null} />
+            <ProductGallery images={images} title={displayTitle} label={brand?.name ?? null} video={p.video ?? null} />
           </div>
           <div className="bl-product-side">
             {brand && (
@@ -149,7 +153,7 @@ export default async function Product({
                 <BrandLogo slug={brand.slug} name={brand.name} compact />
               </Link>
             )}
-            <h1 dir="auto">{p.title}</h1>
+            <h1 dir="auto">{displayTitle}</h1>
             <p className="bl-product-meta">
               {p.orders !== null ? p.orders.toLocaleString("he-IL") + " מכירות מדווחות לפי הספק" : "נתוני מכירות אינם זמינים"}
               {p.shopName ? <> · חנות: <span dir="auto">{p.shopName}</span></> : null}
@@ -223,7 +227,7 @@ export default async function Product({
             <div className="fp-tax-box bl-tax-note" aria-label="מיסוי ביבוא אישי">
               <TaxBadge price={p.price} usdRate={usdRate} detail />
               <small>
-                לפי רשות המסים: עד {IMPORT_TAX.exemptionUsd}$ פטור, מעל זה מע&quot;מ {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}% (כולל על המשלוח).
+                ההערכה מבוססת על תקרת הפטור הכללית של {IMPORT_TAX.exemptionUsd}$ ושיעור מע&quot;מ של {Math.round((IMPORT_TAX.vatRate ?? 0) * 100)}%. ייתכנו מס קנייה, חריגים וחיובים נוספים בהתאם למוצר.
                 {usdRate ? ` שער יציג ${usdRate.rate} ₪ (${new Date(usdRate.date).toLocaleDateString("he-IL")}).` : ""} ההערכה מתייחסת לפריט אחד
                 במחיר המוצג; גרסה אחרת, כמות או פריטים נוספים מאותו מוכר בתוך {IMPORT_TAX.combineWindowHours} שעות משנים את החישוב.{" "}
                 <a href={IMPORT_TAX.sources[0].url} target="_blank" rel="noopener noreferrer">מחשבון רשות המסים</a>
@@ -284,7 +288,7 @@ export default async function Product({
               <small>{p.price ? "מחיר מדווח · סופי בקופה" : "בדקו את המחיר ב־AliExpress"}</small>
             </span>
             <a className="bl-cta" href={"/go/" + p.id + "?source=" + clickSource} rel="sponsored noopener noreferrer" target="_blank" tabIndex={-1}>
-              ל־AliExpress
+              בדיקת מחיר ב־AliExpress
             </a>
           </div>
         )}

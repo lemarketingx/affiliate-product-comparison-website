@@ -11,6 +11,7 @@ import BrandLogo from "../../brand-logo";
 import { ShieldAlert } from "lucide-react";
 import { breadcrumbJsonLd, itemListJsonLd, jsonLdString } from "../../../lib/seo/structured-data";
 import { siteOrigin } from "../../../lib/site-url";
+import { productsCount } from "../../../lib/dealpilot/copy";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -34,7 +35,7 @@ export default async function BrandPage({ params, searchParams }: { params: Prom
     <span className="fp-kicker">מותג מזוהה · נתוני ספק מוצלבים</span>
     <h1 className="fp-catalog-title dp-brand-heading"><BrandLogo slug={brand.slug} name={brand.name}/></h1>
     {items.length > 0 && <ul className="sr-brand-stats" aria-label={"נתוני " + brand.name + " בקטלוג"}>
-      <li><b>{items.length.toLocaleString("he-IL")}</b> מוצרים בקטלוג</li>
+      <li><b>{productsCount(items.length)}</b> בקטלוג</li>
       <li>מחיר בשקלים עם זמן בדיקה</li>
       <li>אומדן מסי יבוא לכל מוצר</li>
     </ul>}

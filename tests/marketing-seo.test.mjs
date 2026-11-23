@@ -26,6 +26,9 @@ test("marketing copy avoids promising exact checkout price or universally verifi
     source("app/dealpilot-home.tsx"), source("app/products/[id]/page.tsx"), source("app/public-shell.tsx"),
   ]);
   assert.match(home, /קונים עם יותר מידע/);
+  assert.match(home, /מחירים שנבדקו/);
+  assert.match(product, /בדיקת מחיר ומשלוח ב־AliExpress/);
+  assert.match(product, /productDisplayTitle/);
   assert.match(home, /המחיר הסופי נקבע בקופה/);
   assert.doesNotMatch(home, /המחיר האמיתי/);
   assert.doesNotMatch(home, /הקישור נבדק ומוביל לאותו מוצר/);

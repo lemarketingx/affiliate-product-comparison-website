@@ -4,7 +4,8 @@ import { getCatalog } from "../../lib/aliexpress/catalog";
 import { liveCategorySlugs } from "../../lib/dealpilot/categories";
 import { BRAND } from "../../lib/brand";
 export const metadata = {
-  title: "קטגוריות | " + BRAND.name,
+  title: "קטגוריות מוצרים ומותגים | " + BRAND.name,
+  description: "מגלים מוצרי מותגים לפי תחום, עם מחירים בשקלים ומידע לקנייה חכמה ב־AliExpress.",
   alternates: { canonical: "/categories" },
 };
 export const dynamic = "force-dynamic";
