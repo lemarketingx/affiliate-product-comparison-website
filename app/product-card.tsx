@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CatalogItem } from "../lib/aliexpress/catalog";
-import { formatMoney } from "../lib/dealpilot/urls";
+import { formatMoney, formatShekels } from "../lib/dealpilot/urls";
 import ProductImage from "./product-image";
 import BrandLogo from "./brand-logo";
 import { evaluateEligibility } from "../lib/aliexpress/quality";
@@ -67,7 +67,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
         <TaxBadge price={item.currency === "ILS" ? item.price : null} usdRate={usdRate} />
         {israel.totalIls !== null && israel.atLeast && (
           <p className="bl-card-total">
-            לישראל: לפחות <strong dir="ltr">{"₪" + israel.totalIls.toLocaleString("he-IL")}</strong> לפני משלוח
+            לישראל: לפחות <strong dir="ltr">{formatShekels(israel.totalIls)}</strong> לפני משלוח
           </p>
         )}
         <div className="bl-card-foot">
