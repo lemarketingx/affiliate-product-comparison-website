@@ -187,6 +187,11 @@ test("view params: sanitised; page window; hrefs keep filters", () => {
   assert.deepEqual(parseViewParams({ q: ["a", "b"], cat: "tech", sort: "orders", page: "4" }, ["tech"]), { q: "a", cat: "tech", sort: "orders", page: 4, tax: "" });
   assert.equal(parseViewParams({ tax: "exempt" }, []).tax, "exempt");
   assert.equal(parseViewParams({ tax: "yes" }, []).tax, "");
+  // Brand filter: only a known slug passes; it survives in hrefs.
+  assert.equal(parseViewParams({ brand: "ugreen" }, [], ["ugreen", "anker"]).brand, "ugreen");
+  assert.equal(parseViewParams({ brand: "evil" }, [], ["ugreen"]).brand, undefined);
+  assert.equal(parseViewParams({ brand: "ugreen" }, []).brand, undefined);
+  assert.equal(viewHref("/deals", { brand: "ugreen", sort: "orders", page: 2 }), "/deals?brand=ugreen&sort=orders&page=2");
   assert.equal(viewHref("/deals", { tax: "exempt", page: 2 }), "/deals?tax=exempt&page=2");
   assert.deepEqual(pageWindow(6, 20), [1, "gap", 4, 5, 6, 7, 8, "gap", 20]);
   assert.deepEqual(pageWindow(1, 3), [1, 2, 3]);

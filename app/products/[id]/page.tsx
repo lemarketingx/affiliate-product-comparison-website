@@ -21,6 +21,9 @@ import { PriceHistoryChart } from "../../price-history";
 import { breadcrumbJsonLd, jsonLdString, productJsonLd } from "../../../lib/seo/structured-data";
 import { siteOrigin } from "../../../lib/site-url";
 import { safeSource } from "../../../lib/dealpilot/tracking";
+import BrandLogo from "../../brand-logo";
+import { BrandCompare, brandCompareRows } from "../../brand-compare";
+import { ArrowUpLeft, ShieldCheck, Receipt, Clock } from "lucide-react";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -67,8 +70,18 @@ export default async function Product({
       </PublicShell>
     );
   }
+  const brandSlugOf = (x: typeof p) => identifyListedBrand(x)?.slug ?? null;
+  const compareRows = brandCompareRows(p, snapshot.items, brandSlugOf);
+  const shown = new Set(compareRows.map((x) => x.id));
+  const pBrand = brandSlugOf(p);
+  // More from the same brand in other categories (the comparison table covers this one).
+  const moreFromBrand = pBrand
+    ? snapshot.items.filter((x) => x.id !== id && !shown.has(x.id) && brandSlugOf(x) === pBrand && x.categorySlug !== p.categorySlug)
+        .sort((a, b) => (b.orders ?? 0) - (a.orders ?? 0)).slice(0, 4)
+    : [];
+  moreFromBrand.forEach((x) => shown.add(x.id));
   const similar = snapshot.items
-    .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
+    .filter((x) => x.id !== id && !shown.has(x.id) && x.categorySlug === p.categorySlug)
     .slice(0, 4);
   // Only for a price shown as current: a withheld price gets no chart either.
   const history =
@@ -132,8 +145,8 @@ export default async function Product({
           </div>
           <div className="bl-product-side">
             {brand && (
-              <Link className="bl-card-brand" href={"/brands/" + brand.slug} dir="ltr" aria-label={"לכל מוצרי המותג " + brand.name}>
-                {brand.name}
+              <Link className="bl-card-brand sr-product-brand" href={"/brands/" + brand.slug} dir="ltr" aria-label={"לכל מוצרי המותג " + brand.name}>
+                <BrandLogo slug={brand.slug} name={brand.name} compact />
               </Link>
             )}
             <h1 dir="auto">{p.title}</h1>
@@ -180,6 +193,11 @@ export default async function Product({
                 </p>
               )}
               {cta}
+              <ul className="sr-assure" aria-label="מה חשוב לדעת">
+                <li><Clock size={15} aria-hidden="true" />{p.price && fresh ? fresh : "זמן בדיקת המחיר מוצג כשידוע"}</li>
+                <li><Receipt size={15} aria-hidden="true" />אומדן מסי יבוא לישראל</li>
+                <li><ShieldCheck size={15} aria-hidden="true" />התשלום מתבצע ב־AliExpress</li>
+              </ul>
               <p className="bl-fine">
                 {hasLink
                   ? "קישור שותפים: ייתכן שנקבל עמלה, בלי עלות נוספת לכם. בדקו ב־AliExpress את הדגם, המוכר והמחיר בקופה."
@@ -195,6 +213,9 @@ export default async function Product({
         </div>
 
         {history && <PriceHistoryChart history={history} />}
+
+        {brand && <BrandCompare rows={compareRows} currentId={p.id} brandName={brand.name} brandSlug={brand.slug} />}
+
 
         {p.currency === "ILS" && p.price && Number(p.price) > 0 ? (
           <div className="bl-section">
@@ -227,6 +248,23 @@ export default async function Product({
           </p>
         </section>
 
+        {brand && moreFromBrand.length > 0 && (
+          <section className="bl-section" aria-labelledby="sr-more-brand">
+            <div className="sr-compare-head">
+              <div>
+                <h2 id="sr-more-brand">עוד מ־<span dir="ltr">{brand.name}</span></h2>
+                <p className="bl-fine">מוצרים נוספים של המותג בקטגוריות אחרות, לפי מכירות מדווחות של הספק.</p>
+              </div>
+              <Link className="bl-more" href={"/brands/" + brand.slug}>כל מוצרי <span dir="ltr">{brand.name}</span> <ArrowUpLeft size={16} aria-hidden="true" /></Link>
+            </div>
+            <div className="bl-grid">
+              {moreFromBrand.map((item) => (
+                <ProductCard key={item.id} item={item} usdRate={usdRate} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {similar.length > 0 && (
           <section className="bl-section" aria-labelledby="bl-similar">
             <h2 id="bl-similar">חלופות מאותה קטגוריה</h2>
@@ -241,7 +279,10 @@ export default async function Product({
 
         {hasLink && (
           <div className="bl-buybar" aria-hidden="true">
-            <strong dir="ltr">{p.price ? formatMoney(p.price, p.currency) : "אין מחיר עדכני"}</strong>
+            <span className="sr-buybar-price">
+              <strong dir="ltr">{p.price ? formatMoney(p.price, p.currency) : "אין מחיר עדכני"}</strong>
+              <small>{p.price ? "מחיר מדווח · סופי בקופה" : "בדקו את המחיר ב־AliExpress"}</small>
+            </span>
             <a className="bl-cta" href={"/go/" + p.id + "?source=" + clickSource} rel="sponsored noopener noreferrer" target="_blank" tabIndex={-1}>
               ל־AliExpress
             </a>

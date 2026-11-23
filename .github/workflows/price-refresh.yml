@@ -1,12 +1,15 @@
 name: Price and link refresh
 # Vercel Hobby crons run at most daily. AliExpress prices moved up to ~9% in a day
-# (Nov 2026), so prices are re-checked every 4 hours from here. Calls the same
+# (Nov 2026), so prices are re-checked from here. GitHub delays and drops scheduled
+# runs (observed 2026-11-20..23: runs 8-12 h apart instead of 4 h), so the schedule
+# asks for every 2 hours and each run makes two price passes (oldest prices first,
+# up to ~500 each), which covers the whole published catalog in one run. Calls the same
 # protected endpoint as the Vercel cron. Requires the repository secret
 # DEALPILOT_CRON_SECRET (the same value as CRON_SECRET in Vercel). Without it the
 # job is skipped. Scheduled workflows run from the default branch only.
 on:
   schedule:
-    - cron: "13 */4 * * *"
+    - cron: "13 */2 * * *"
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +34,13 @@ jobs:
             -H "Authorization: Bearer $CRON_SECRET" "$SITE/api/cron/catalog?job=prices")
           echo "HTTP $code"; head -c 600 out.json; echo
           # 409 = another job holds the lock; the next run catches up.
+          [ "$code" = "200" ] || [ "$code" = "409" ]
+      - name: Second price pass (the next-oldest prices)
+        if: ${{ env.CRON_SECRET != '' }}
+        run: |
+          code=$(curl -sS -o out.json -w '%{http_code}' --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" "$SITE/api/cron/catalog?job=prices")
+          echo "HTTP $code"; head -c 600 out.json; echo
           [ "$code" = "200" ] || [ "$code" = "409" ]
       - name: Affiliate link check (40 per run)
         if: ${{ env.CRON_SECRET != '' }}

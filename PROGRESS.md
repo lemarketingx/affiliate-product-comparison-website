@@ -523,3 +523,40 @@ Owner: keep the name DealPilot; find more terms; env vars are set; test clicks a
   - Nothing is sent.
 - Screenshots: `docs/screenshots/price-history/history-1920.png`, `hero-fallback-{390,1440}.png`.
 - **Tests:** unit 148/148 · e2e 51/51 (local) · typecheck and build OK.
+
+## 2026-11-23 (3) · "Showroom" redesign (branch `design/dealpilot-showroom-20261123`)
+Owner request: a redesign of the public site. Keeps the approved tokens (ink, paper, highlighter yellow), the logo and every honesty rule; changes layout, hierarchy and the brand-first structure. One new layer, `app/showroom.css`, loaded last; admin (`dp-*`) untouched.
+- **Home:** dark full-bleed hero with a "brand wall" (the 9 brands with the most listed products, real counts), an in-hero search (desktop/tablet), popular-brand chips and a facts strip. New **brand shelves**: the top 4 brands by listed products, each with its 4 best sellers (provider sales order, labelled "not a quality ranking"), price with its check time. Brand directory tiles show product counts. Categories in a 3/2/1 grid. "How it works" is a dark band.
+- **Product card:** inset image well, 2-line title clamp, larger price, separators; 4/3/2 columns (was 5+3 at 1440).
+- **Brand page:** header band with the logo and catalog stats. Brands index: larger cards.
+- Copy constraints kept: h1 contains "מותגים מוכרים" and "קונים עם יותר מידע"; section heading "המותגים שאתם מכירים" kept.
+- **Checks:** typecheck and build OK · unit 148/148 · e2e 52/52 · no horizontal overflow at 320/375/768/1024/1440/1920 on home, brands, brand, deals · axe WCAG 2.1 AA 0 violations at 375 and 1440 (one 70mai contrast issue on the shelf header found and fixed).
+- Screenshots (fixture catalog, placeholder images): `docs/screenshots/showroom/`.
+
+**NOT VERIFIED:** real product images and live data (sandbox cannot reach AliExpress CDNs or the Vercel deployment). Mobile LCP not re-measured; the hero h1 is still the LCP candidate and no hero image was added.
+
+## 2026-11-23 (4) · Showroom round 2 (owner approved all six improvements)
+- **Product page:** brand logo chip; larger receipt and CTA; three short assurance lines under the CTA (price check time, import-tax estimate, payment on AliExpress); sticky gallery on desktop; mobile buy bar with price, "reported · final at checkout" and a yellow CTA. Still exactly one "לבדיקת המוצר" link (the buy bar stays `aria-hidden`, `tabindex=-1`).
+- **Same-brand comparison:** "דגמים של X באותה קטגוריה" table (current product first, then up to 5 peers by ILS price). Shows only the provider price with its check time and reported sales; no ranking. Cards on phones. Pure helper `lib/dealpilot/brand-compare.ts` + `tests/brand-compare.test.mjs`.
+- **More from the brand:** up to 4 products of the same brand in other categories; "similar in category" no longer repeats them.
+- **Brand page:** uses `CatalogBrowser` (`lockedBrand`, `hideHead`): 24 per page, category tabs limited to the brand, search, sort, tax filter, pager.
+- **Brand filter on /deals and /search:** row of brand logo chips with counts, `?brand=slug` (only known slugs pass `parseViewParams`; kept by every tab, sort and page link). Compact on phones so the first product still starts in the first screen at 320×568 (owner rule 2026-11-17).
+- **Polish:** current section marked in the header (`aria-current`); categories page shows product counts and brands per category; 404/error as cards (also fixed an invisible "חיפוש" label on the 404 page, `button { color: inherit }` from globals.css); loading skeleton matches the cards.
+- **Checks:** typecheck and build OK · unit 150/150 · e2e 52/52 · no overflow at 320–1920 · axe WCAG 2.1 AA 0 violations on 9 pages at 375 and 1440 (two brand-accent contrast issues found and fixed).
+- Screenshots: `docs/screenshots/showroom/r2-*`.
+
+**NOT VERIFIED:** real images and data on a Vercel Preview (see below).
+
+## 2026-11-23 (5) · Owner feedback on the Preview
+- Hero facts strip removed (owner: unnecessary; it also showed "0 מחירים עם בדיקה עדכנית" while prices awaited a refresh).
+- Brand tiles (home directory and hero wall) made even: fixed tile height, a fixed logo box, mark-type logos in a row (mark + name) so they match wordmark height, counts on one line; an incomplete last row is centred. Hero wall no longer staggered.
+- Checks: unit 150/150 · e2e 52/52 · axe 0 on home at 375/1440 · no overflow.
+
+## 2026-11-23 (6) · Missing prices
+Owner: some products show no price. Findings (live DB `kjkkuhqebtyfohhvwnfs`, read-only queries):
+- All 873 published rows had a stored price observed within 30 h, but the Preview counted **0** prices as current. A first guess (a low `DEALPILOT_PRICE_MAX_AGE_HOURS`) was wrong: the owner confirmed the variable does not exist.
+- Live check after the manual refresh (13:10 UTC): **Production `/deals` shows a price on every card** ("המחיר נבדק בשעה האחרונה"). **Preview `/deals` shows none** ("אין מחיר עדכני" on every card, provider data "מ־16.11.2026"). Same code path, same database, so the gap is the Preview deployment's data, most likely its Supabase variables not being enabled for the Preview environment and an old cached catalog being served. NOT VERIFIED: Vercel env scopes are not readable from the session. Production is not affected.
+- The "every 4 h" refresh actually ran 8–12 h apart (GitHub delays scheduled runs), ~400–500 products per run.
+- Done now: two manual runs of the refresh workflow (workflow_dispatch, normal budgeted job): 872 of 873 published prices observed within the last hour.
+- Workflow change (takes effect after merge, schedules run from `main`): every 2 h, two price passes per run (covers the whole catalog).
+- The price policy is unchanged: a price older than the limit is still withheld, never shown as current.

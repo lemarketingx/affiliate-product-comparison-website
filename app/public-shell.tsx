@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ArrowUpLeft, Search, Menu, House, Headphones, Car, Dumbbell } from "lucide-react";
 import { categories } from "../lib/dealpilot/categories";
 import { BRAND } from "../lib/brand";
+import NavLinks from "./nav-links";
+import BrandLogo from "./brand-logo";
 
 /** The symbol: a price tag with a check, over the "bottom line" bar. Name-neutral. */
 export function BrandSymbol({ size = 34, inverted = false }: { size?: number; inverted?: boolean }) {
@@ -53,20 +55,14 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
             </button>
           </form>
           <nav className="bl-nav" aria-label="ניווט ראשי">
-            <Link href="/brands">מותגים</Link>
-            <Link href="/deals">מוצרי מותגים</Link>
-            <Link href="/categories">קטגוריות</Link>
-            <Link href="/guides">מדריכים</Link>
+            <NavLinks />
           </nav>
           <details className="dp-mobile-menu bl-menu">
             <summary aria-label="פתיחת תפריט">
               <Menu aria-hidden="true" />
             </summary>
             <nav aria-label="ניווט נייד">
-              <Link href="/brands">מותגים</Link>
-              <Link href="/deals">מוצרי מותגים</Link>
-              <Link href="/categories">כל הקטגוריות</Link>
-              <Link href="/guides">מדריכים</Link>
+              <NavLinks mobile />
             </nav>
           </details>
         </div>
@@ -111,7 +107,8 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
 const icons: Record<string, typeof House> = { home: House, tech: Headphones, car: Car, sport: Dumbbell };
 
 /** Category tiles for categories that hold verified products. */
-export function CategoryLinks({ live }: { live: Set<string> }) {
+export type CategoryInfo = { count: number; brands: { slug: string; name: string }[] };
+export function CategoryLinks({ live, info }: { live: Set<string>; info?: Map<string, CategoryInfo> }) {
   return (
     <div className="bl-cats">
       {categories.filter((c) => live.has(c.slug)).map((c) => {
@@ -121,6 +118,14 @@ export function CategoryLinks({ live }: { live: Set<string> }) {
             <Icon size={24} strokeWidth={1.7} aria-hidden="true" />
             <strong>{c.label}</strong>
             <p>{c.description}</p>
+            {info?.get(c.slug) && (
+              <span className="sr-cat-meta">
+                <span className="sr-cat-count">{info.get(c.slug)!.count.toLocaleString("he-IL")} מוצרים</span>
+                <span className="sr-cat-brands">
+                  {info.get(c.slug)!.brands.slice(0, 4).map((b) => <BrandLogo key={b.slug} slug={b.slug} name={b.name} compact />)}
+                </span>
+              </span>
+            )}
             <span className="bl-cat-go">
               למוצרים <ArrowUpLeft size={15} aria-hidden="true" />
             </span>

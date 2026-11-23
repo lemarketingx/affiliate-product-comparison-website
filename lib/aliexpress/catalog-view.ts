@@ -8,21 +8,24 @@ export const SORTS: { key: SortKey; label: string }[] = [
   { key: "price-asc", label: "מחיר: מהנמוך לגבוה" },
   { key: "price-desc", label: "מחיר: מהגבוה לנמוך" },
 ];
-export type ViewParams = { q: string; cat: string; sort: SortKey; page: number; tax?: "" | "exempt" };
+export type ViewParams = { q: string; cat: string; sort: SortKey; page: number; tax?: "" | "exempt"; brand?: string };
 type Item = { title: string; categorySlug: string; orders: number | null; price: string | null; shopName?: string | null };
 
 const one = (v: unknown) => (Array.isArray(v) ? v[0] : v);
-export function parseViewParams(raw: Record<string, unknown>, validCats: readonly string[]): ViewParams {
+export function parseViewParams(raw: Record<string, unknown>, validCats: readonly string[], validBrands: readonly string[] = []): ViewParams {
   const q = String(one(raw.q) ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
   const catRaw = String(one(raw.cat) ?? "");
   const sortRaw = String(one(raw.sort) ?? "");
   const pageRaw = Number(one(raw.page));
+  const brandRaw = String(one(raw.brand) ?? "");
   return {
     q,
     cat: validCats.includes(catRaw) ? catRaw : "",
     sort: (SORTS.some((s) => s.key === sortRaw) ? sortRaw : "popular") as SortKey,
     page: Number.isSafeInteger(pageRaw) && pageRaw >= 1 && pageRaw <= 10000 ? pageRaw : 1,
     tax: one(raw.tax) === "exempt" ? "exempt" : "",
+    // Present only when valid, so callers without brands see the original shape.
+    ...(validBrands.includes(brandRaw) ? { brand: brandRaw } : {}),
   };
 }
 
@@ -60,6 +63,7 @@ export function pageWindow(page: number, pages: number, radius = 2): (number | "
 export function viewHref(base: string, p: Partial<ViewParams>, lockedCat = false): string {
   const sp = new URLSearchParams();
   if (p.q) sp.set("q", p.q);
+  if (p.brand) sp.set("brand", p.brand);
   if (p.cat && !lockedCat) sp.set("cat", p.cat);
   if (p.sort && p.sort !== "popular") sp.set("sort", p.sort);
   if (p.tax === "exempt") sp.set("tax", "exempt");

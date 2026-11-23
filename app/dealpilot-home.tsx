@@ -13,6 +13,9 @@ import { ProductCard } from "./product-card";
 import HomeMarquee, { type MarqueeItem } from "./home-marquee";
 import { thumbUrl } from "../lib/dealpilot/thumb";
 import { BRAND } from "../lib/brand";
+import ProductImage from "./product-image";
+import { formatMoney } from "../lib/dealpilot/urls";
+import { freshnessLabel } from "../lib/catalog-store/price-view";
 
 function imageOf(p: CatalogItem) { return p.image ?? null; }
 function brandOf(p: CatalogItem) { return identifyListedBrand(p); }
@@ -77,31 +80,72 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
     node: <><img src={thumbUrl(p.image!)} alt="" width={64} height={64} loading="lazy" decoding="async" referrerPolicy="no-referrer" /><span><b>{(p.orders ?? 0).toLocaleString("he-IL")}</b> מכירות מדווחות</span></>,
   }));
 
-  const total = snapshot.items.length;
-  const fresh = snapshot.items.filter((p) => p.priceStatus === "current").length;
-  return <PublicShell><main id="main" className="dpb-main bl-home">
-    <section className="bl-wrap bl-hero" aria-labelledby="bl-hero-title">
-      <h1 id="bl-hero-title">מוצאים מותגים מוכרים ב־AliExpress. <mark>קונים עם יותר מידע.</mark></h1>
-      <p className="bl-hero-lead">מוצרים מזוהים של מותגים מוכרים, עם מחיר בשקלים וזמן בדיקה, נתוני מכירות ספק ואומדן מסי יבוא לישראל. רואים מה ידוע ומה צריך לבדוק לפני התשלום.</p>
-      <div className="bl-hero-cta">
-        <Link className="bl-cta" href="/deals">גלו את המוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
-        <Link className="bl-cta is-ghost" href="/brands">לפי מותג</Link>
+  // Brand wall (hero) and brand shelves: brands ordered by how many products they have listed.
+  const byCount = [...available].sort((a, b) => (brandCounts.get(b.slug) ?? 0) - (brandCounts.get(a.slug) ?? 0));
+  const wall = byCount.slice(0, 9);
+  const shelves = byCount
+    .map((b) => ({ brand: b, items: ranked.filter((p) => brandOf(p)?.slug === b.slug).slice(0, 4) }))
+    .filter((s) => s.items.length >= 2)
+    .slice(0, 4);
+  const quick = byCount.slice(0, 5);
+  return <PublicShell><main id="main" className="dpb-main bl-home sr-home">
+    <section className="sr-hero" aria-labelledby="bl-hero-title">
+      <div className="bl-wrap sr-hero-grid">
+        <div className="sr-hero-copy">
+          <p className="sr-eyebrow">קטלוג מותגים בעברית, לקונים בישראל</p>
+          <h1 id="bl-hero-title">מותגים מוכרים מ־AliExpress. <mark>קונים עם יותר מידע.</mark></h1>
+          <p className="sr-hero-lead">מוצרים מזוהים של מותגים מוכרים, עם מחיר בשקלים וזמן הבדיקה שלו, נתוני מכירות של הספק ואומדן מסי יבוא לישראל. המחיר הסופי נקבע בקופה.</p>
+          <form action="/search" className="sr-hero-search" role="search" aria-label="חיפוש בקטלוג">
+            <Search size={20} aria-hidden="true"/>
+            <input name="q" maxLength={80} placeholder="איזה מותג או מוצר מחפשים?" aria-label="חיפוש מותג או מוצר בקטלוג"/>
+            <button type="submit">חיפוש</button>
+          </form>
+          {quick.length > 0 && <div className="sr-quick" aria-label="מותגים מבוקשים">
+            <span>מבוקשים:</span>
+            {quick.map((b) => <Link key={b.slug} href={"/brands/" + b.slug} dir="ltr">{b.name}</Link>)}
+          </div>}
+          <div className="bl-hero-cta">
+            <Link className="bl-cta" href="/deals">לכל המוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
+            <Link className="bl-cta is-ghost" href="/brands">בחירה לפי מותג</Link>
+          </div>
+        </div>
+        {wall.length > 0 && <nav className="sr-wall" aria-label="המותגים עם הכי הרבה מוצרים בקטלוג">
+          {wall.map((b) => <Link key={b.slug} href={"/brands/" + b.slug} className="sr-wall-tile" aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}>
+            <BrandLogo slug={b.slug} name={b.name}/>
+            <small>{(brandCounts.get(b.slug) ?? 0).toLocaleString("he-IL")} מוצרים</small>
+          </Link>)}
+        </nav>}
       </div>
-      {total > 0 && <ul className="bl-hero-facts" aria-label="נתוני הקטלוג כרגע">
-        <li><b>{total.toLocaleString("he-IL")}</b> מוצרים מ־<b>{available.length}</b> מותגים</li>
-        {snapshot.source === "store" && <li><b>{fresh.toLocaleString("he-IL")}</b> מחירים עם זמן בדיקה עדכני</li>}
-        <li>מחיר בשקלים · אומדן מע״מ ומכס לכל מוצר</li>
-      </ul>}
     </section>
     <HomeMarquee label="מותגים ומוצרים נמכרים בקטלוג (נתוני מכירות של הספק)" rows={[{ key: "brands", items: logoItems }, { key: "sellers", items: sellerItems, reverse: true }]}/>
+    {shelves.length > 0 && <section className="bl-wrap sr-shelves" aria-labelledby="sr-shelves-title">
+      <div className="bl-section-head"><div><p className="sr-eyebrow">קונים לפי מותג</p><h2 id="sr-shelves-title">המדפים של המותגים</h2><p>המוצרים הנמכרים ביותר של כל מותג, לפי נתוני הספק. זה לא דירוג איכות.</p></div><Link href="/brands" className="bl-more">כל המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
+      <div className="sr-shelf-list">{shelves.map(({ brand, items }) => <article className="sr-shelf" key={brand.slug} aria-label={"מוצרי " + brand.name}>
+        <header className="sr-shelf-head">
+          <span className="sr-shelf-logo"><BrandLogo slug={brand.slug} name={brand.name}/></span>
+          <span className="sr-shelf-count">{(brandCounts.get(brand.slug) ?? 0).toLocaleString("he-IL")} מוצרים בקטלוג</span>
+          <Link className="sr-shelf-all" href={"/brands/" + brand.slug}>לכל מוצרי <span dir="ltr">{brand.name}</span> <ArrowUpLeft size={15} aria-hidden="true"/></Link>
+        </header>
+        <ul className="sr-shelf-items">{items.map((p) => <li key={p.id}>
+          <Link href={"/products/" + p.id} className="sr-mini">
+            <span className="sr-mini-media"><ProductImage src={p.image} alt="" thumb lazy label={brand.name}/></span>
+            <span className="sr-mini-title" dir="auto">{p.title}</span>
+            {p.price ? <strong dir="ltr">{formatMoney(p.price, p.currency)}</strong> : <strong className="is-none">אין מחיר עדכני</strong>}
+            {p.price && <small className={freshnessLabel(p.priceObservedAt) ? undefined : "is-unknown"}>{freshnessLabel(p.priceObservedAt) ?? "זמן הבדיקה אינו ידוע"} · סופי בקופה</small>}
+          </Link>
+        </li>)}</ul>
+      </article>)}</div>
+    </section>}
     <div className="bl-wrap dpb-hero-shell"><CampaignCarousel slides={slides}/></div>
     <section className="bl-wrap dpb-brands" aria-labelledby="dpb-brands-title">
-      <div className="bl-section-head"><div><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">כל המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
+      <div className="bl-section-head"><div><p className="sr-eyebrow">מדריך המותגים</p><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">לעמוד המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
       {available.length ? <div className="dpb-logo-grid">{available.slice(0,12).map(b =>
-        <Link className="dpb-logo-tile" key={b.slug} href={"/brands/"+b.slug} aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}><BrandLogo slug={b.slug} name={b.name}/></Link>
+        <Link className="dpb-logo-tile" key={b.slug} href={"/brands/"+b.slug} aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}><BrandLogo slug={b.slug} name={b.name}/><small aria-hidden="true">{brandCounts.get(b.slug)} מוצרים</small></Link>
       )}</div> : <div className="bl-empty-note">הקטלוג הממותג מתרענן. נציג רק מוצרים שעברו סינון.</div>}
     </section>
-    <section className="bl-wrap dpb-categories" aria-label="מוצרים ממותגים לפי תחום">
+    <section className="bl-wrap sr-cats-wrap" aria-labelledby="sr-cats-title">
+      <div className="bl-section-head"><div><p className="sr-eyebrow">לפי תחום</p><h2 id="sr-cats-title">מה מחפשים היום?</h2></div></div>
+      <div className="dpb-categories" role="list">
       {groups.map((g)=>{
         const picks = ranked.filter(p => {const b=brandOf(p); return b && (g.brands as readonly string[]).includes(b.slug) && p.image;});
         if (!picks.length) return null;
@@ -110,24 +154,27 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
         const product = picks[0];
         const Icon = g.icon;
         const href = g.key === "audio" || g.key === "charging" || g.key === "vacuum" ? "/deals?q="+encodeURIComponent(g.brands[0]) : "/categories/" + g.key;
-        return <Link className="dpb-category" href={href} key={g.key}>
+        return <Link className="dpb-category" href={href} key={g.key} role="listitem">
           <span className="dpb-category-copy"><Icon size={19} aria-hidden="true"/><strong>{g.label}</strong><small>{g.sub}</small><span className="dpb-category-button">למוצרים <ArrowUpLeft size={15} aria-hidden="true"/></span></span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={product.image ?? undefined} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"/>
         </Link>;
       })}
-    </section>
-    <section className="bl-wrap bl-how" aria-labelledby="bl-how-title">
-      <h2 id="bl-how-title">איך מגיעים לשורה התחתונה</h2>
-      <ol>
-        <li><Search size={22} aria-hidden="true"/><strong>מוצאים מותג</strong><span>רק מוצרים שהמותג שלהם זוהה גם בשם וגם בחנות.</span></li>
-        <li><Calculator size={22} aria-hidden="true"/><strong>רואים מחיר עם זמן בדיקה</strong><span>מחיר מדווח בשקלים עם זמן הבדיקה, ואומדן מסים לישראל. המחיר הסופי נקבע בקופה.</span></li>
-        <li><BadgeCheck size={22} aria-hidden="true"/><strong>קונים ב־AliExpress</strong><span>בודקים את המוכר, הדגם המדויק והמשלוח ב־AliExpress. המחיר הסופי נקבע בקופה.</span></li>
-      </ol>
+      </div>
     </section>
     <section className="bl-wrap bl-featured" id="products" aria-labelledby="bl-featured-title">
-      <div className="bl-section-head"><div><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
+      <div className="bl-section-head"><div><p className="sr-eyebrow">הנמכרים ביותר</p><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
       {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
+    </section>
+    <section className="sr-how-band" aria-labelledby="bl-how-title">
+      <div className="bl-wrap bl-how">
+        <h2 id="bl-how-title">איך מגיעים לשורה התחתונה</h2>
+        <ol>
+          <li><Search size={22} aria-hidden="true"/><strong>מוצאים מותג</strong><span>רק מוצרים שהמותג שלהם זוהה גם בשם וגם בחנות.</span></li>
+          <li><Calculator size={22} aria-hidden="true"/><strong>רואים מחיר עם זמן בדיקה</strong><span>מחיר מדווח בשקלים עם זמן הבדיקה, ואומדן מסים לישראל.</span></li>
+          <li><BadgeCheck size={22} aria-hidden="true"/><strong>קונים ב־AliExpress</strong><span>בודקים את המוכר, הדגם המדויק והמשלוח. המחיר הסופי נקבע בקופה.</span></li>
+        </ol>
+      </div>
     </section>
     <section className="bl-wrap bl-trust"><ShieldCheck size={20} aria-hidden="true"/><p>{BRAND.name} הוא אתר שותפים עצמאי. זיהוי מותג אינו אימות מקוריות. בדקו את החנות, הביקורות, השילוח והמחיר בקופה לפני כל רכישה.</p><Link href="/disclosure">גילוי נאות <ArrowLeft size={15} aria-hidden="true"/></Link></section>
   </main></PublicShell>;
