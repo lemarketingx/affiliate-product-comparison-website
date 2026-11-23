@@ -166,7 +166,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
     </section>
     <section className="bl-wrap bl-featured" id="products" aria-labelledby="bl-featured-title">
       <div className="bl-section-head"><div><p className="sr-eyebrow">הנמכרים ביותר</p><h2 id="bl-featured-title">פופולריים לפי נתוני הספק</h2><p>מוצרים שסודרו לפי מספר מכירות מדווח. זה לא דירוג איכות או המלצה אישית.</p></div><Link href="/deals" className="bl-more">לכל המוצרים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
-      {featured.length ? <div className="bl-grid">{featured.map((p, i)=><ProductCard key={p.id} item={p} eager={i < 4} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
+      {featured.length ? <div className="bl-grid">{featured.map((p)=><ProductCard key={p.id} item={p} usdRate={usdRate}/>)}</div> : <div className="bl-empty-note">ממתינים למוצרים ממותגים שעברו בדיקה.</div>}
     </section>
     <section className="sr-how-band" aria-labelledby="bl-how-title">
       <div className="bl-wrap bl-how">
