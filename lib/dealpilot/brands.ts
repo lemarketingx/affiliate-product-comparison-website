@@ -23,7 +23,7 @@ export const BRANDS = [
   { slug: "amazfit", name: "Amazfit", aliases: ["amazfit", "אמזפיט"], category: "sport" },
   { slug: "naturehike", name: "Naturehike", aliases: ["naturehike"], category: "sport" },
   { slug: "rockbros", name: "ROCKBROS", aliases: ["rockbros"], category: "sport" },
-  { slug: "ulanzi", name: "Ulanzi", aliases: ["ulanzi"], category: "tech" },
+  { slug: "ulanzi", name: "Ulanzi", aliases: ["ulanzi", "אולנזי"], category: "tech" },
   { slug: "creality", name: "Creality", aliases: ["creality"], category: "tech" },
   { slug: "anycubic", name: "Anycubic", aliases: ["anycubic"], category: "tech" },
   // Added 2026-11-17 from catalog data: 4 brand-run stores, 2 items >5,000 reported sales, 9% commission.
@@ -36,7 +36,13 @@ export const BRANDS = [
   { slug: "essager", name: "ESSAGER", aliases: ["essager"], category: "tech" },
   { slug: "moondrop", name: "Moondrop", aliases: ["moondrop"], category: "tech" },
   { slug: "1more", name: "1MORE", aliases: ["1more"], category: "tech" },
-  { slug: "nothing", name: "Nothing", aliases: ["nothing"], category: "tech" },
+  // "cmf" (CMF by Nothing) added 2026-11-23: 10 products above 500 sales from
+  // "Nothing Online Store" / "Nothing Flagship Store" titled "CMF Buds/Watch".
+  { slug: "nothing", name: "Nothing", aliases: ["nothing", "cmf"], category: "tech" },
+  // Added 2026-11-23 from catalog data: each has an "Official Store" whose products
+  // above 500 sales carry the brand in the title (docs/CATALOG-EXPANSION.md).
+  { slug: "hagibis", name: "Hagibis", aliases: ["hagibis"], category: "tech" },
+  { slug: "rocoren", name: "Rocoren", aliases: ["rocoren"], category: "tech" },
 ] as const;
 export type KnownBrand = (typeof BRANDS)[number];
 const tokens = (s: string) => s.toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(/\s+/);
