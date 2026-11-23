@@ -551,3 +551,11 @@ Owner request: a redesign of the public site. Keeps the approved tokens (ink, pa
 - Hero facts strip removed (owner: unnecessary; it also showed "0 מחירים עם בדיקה עדכנית" while prices awaited a refresh).
 - Brand tiles (home directory and hero wall) made even: fixed tile height, a fixed logo box, mark-type logos in a row (mark + name) so they match wordmark height, counts on one line; an incomplete last row is centred. Hero wall no longer staggered.
 - Checks: unit 150/150 · e2e 52/52 · axe 0 on home at 375/1440 · no overflow.
+
+## 2026-11-23 (6) · Missing prices
+Owner: some products show no price. Findings (live DB `kjkkuhqebtyfohhvwnfs`, read-only queries):
+- All 873 published rows had a stored price observed within 30 h, but the Preview counted **0** prices as current. With the code default (30 h) that is impossible, so `DEALPILOT_PRICE_MAX_AGE_HOURS` on Vercel is almost certainly set below ~8 h. NOT VERIFIED: the Vercel connector cannot read this project's env vars. Owner to check it in Vercel (Production and Preview) and set 30, or remove it.
+- The "every 4 h" refresh actually ran 8–12 h apart (GitHub delays scheduled runs), ~400–500 products per run.
+- Done now: two manual runs of the refresh workflow (workflow_dispatch, normal budgeted job): 872 of 873 published prices observed within the last hour.
+- Workflow change (takes effect after merge, schedules run from `main`): every 2 h, two price passes per run (covers the whole catalog).
+- The price policy is unchanged: a price older than the limit is still withheld, never shown as current.
