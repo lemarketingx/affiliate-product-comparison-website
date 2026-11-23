@@ -1,5 +1,6 @@
 export const metadata = {
-  title: "אודות | DealPilot",
+  title: "איך DealPilot עוזר לקנות עם יותר מידע | אודות",
+  description: "על DealPilot: אתר עצמאי שמרכז מוצרי מותגים מ־AliExpress, בדיקות מחיר והערכת עלויות יבוא לישראל.",
   alternates: { canonical: "/about" },
 };
 import { PublicShell } from "../public-shell";
@@ -8,7 +9,7 @@ export default function About() {
     <PublicShell>
       <main id="main" className="fp-wrap">
         <article className="fp-prose">
-          <span className="fp-kicker">CURIOUS BY DESIGN</span>
+          <span className="fp-kicker">קונים עם יותר מידע</span>
           <h1>לגלות מוצרים. לבדוק לפני שקונים.</h1>
           <p>
             DealPilot הוא אתר שותפים עצמאי בעברית, שמרכז מוצרים מזוהים של מותגים מ־AliExpress ועוזר לבדוק מחיר בשקלים, נתוני ספק ואומדן עלויות יבוא לישראל.
