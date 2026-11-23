@@ -91,3 +91,41 @@ export function freshnessLabel(observedAt: string | null | undefined, now: Date 
   const days = Math.round(hours / 24);
   return days === 1 ? "המחיר נבדק אתמול" : `המחיר נבדק לפני ${days} ימים`;
 }
+
+export type HistoryRow = { observed_at: string; price: number | string; currency: string; sku_id: string | null };
+export type PriceHistory = {
+  points: { at: string; price: number }[];
+  currency: string;
+  first: string;
+  last: string;
+  min: number;
+  max: number;
+  /** Number of provider observations behind the series. */
+  checks: number;
+};
+
+/**
+ * The price series a product page may chart: only provider observations, in the
+ * currency shown, for the same variant (sku) as the shown price. Mixing variants
+ * or currencies would draw price changes that never happened. Null when fewer
+ * than two observations remain (nothing honest to chart).
+ */
+export function priceHistorySeries(rows: readonly HistoryRow[], current: { currency: string | null; skuId?: string | null }): PriceHistory | null {
+  if (!current.currency) return null;
+  const pts = rows
+    .filter((r) => r.currency === current.currency && (!current.skuId || r.sku_id === current.skuId))
+    .map((r) => ({ at: r.observed_at, t: Date.parse(r.observed_at), price: Number(r.price) }))
+    .filter((r) => Number.isFinite(r.t) && Number.isFinite(r.price) && r.price > 0)
+    .sort((a, b) => a.t - b.t);
+  if (pts.length < 2) return null;
+  const prices = pts.map((p) => p.price);
+  return {
+    points: pts.map(({ at, price }) => ({ at, price })),
+    currency: current.currency,
+    first: pts[0].at,
+    last: pts[pts.length - 1].at,
+    min: Math.min(...prices),
+    max: Math.max(...prices),
+    checks: pts.length,
+  };
+}

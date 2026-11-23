@@ -32,7 +32,7 @@ jobs:
           echo "HTTP $code"; head -c 600 out.json; echo
           # 409 = another job holds the lock; the next run catches up.
           [ "$code" = "200" ] || [ "$code" = "409" ]
-      - name: Affiliate link check (25 per run)
+      - name: Affiliate link check (40 per run)
         if: ${{ env.CRON_SECRET != '' }}
         run: |
           code=$(curl -sS -o out.json -w '%{http_code}' --max-time 120 \

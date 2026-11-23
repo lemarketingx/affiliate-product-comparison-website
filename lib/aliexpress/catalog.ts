@@ -62,10 +62,17 @@ const fetchPlanPage = (item: PlanItem, pageSize: number) =>
 
 let learnedPageSize: number | null = null;
 
+/** The legacy (no-database) build searches live inside a request, paced at ≥ 1.1 s per call,
+ * so it uses only the first terms of each category. The persistent store's discovery job
+ * searches every term on its own schedule. Without this cap the 2026-11-23 term expansion
+ * made the cold build outlast the /go wait. */
+export const LEGACY_TERMS_PER_CATEGORY = 12;
+const legacyCategories = categories.map((c) => ({ ...c, terms: c.terms.slice(0, LEGACY_TERMS_PER_CATEGORY) }));
+
 async function assemble(): Promise<CatalogSnapshot> {
   const timestamps: string[] = [];
   const { items, report, acceptedPageSize } = await buildCatalog({
-    categories,
+    categories: legacyCategories,
     knownPageSize: learnedPageSize,
     fetchPage: async (item, size) => {
       const page = await fetchPlanPage(item, size);

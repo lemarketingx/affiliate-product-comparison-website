@@ -30,6 +30,23 @@ await db.exec(`insert into dp_products (product_id, title, title_language, brand
   now() - interval '6 days', now() - interval '6 days', now() - interval '5 days',
   77.70, 'ILS', 'target_sale_price', 'search', now() - interval '5 days', null)`);
 
+// One published product with a current ILS price and stored observations: the product page
+// charts only the same currency and variant (the USD row and the other SKU are not drawn).
+await db.exec(`insert into dp_products (product_id, title, title_language, brand, shop_name, category_slug, category_label,
+  image, images, product_url, affiliate_url, orders, status, first_seen_at, first_published_at, last_seen_at,
+  price, currency, price_field, price_method, sku_id, price_observed_at, price_check_at)
+  values ('1005000000888', 'TEST FIXTURE — Baseus מטען עם היסטוריית מחיר', 'he', 'Baseus', 'Baseus Store', 'tech', 'טכנולוגיה וטעינה',
+  'https://ae01.alicdn.com/kf/dealpilot-fixture-history.jpg', '["https://ae01.alicdn.com/kf/dealpilot-fixture-history.jpg"]',
+  'https://www.aliexpress.com/item/1005000000888.html', 'https://s.click.aliexpress.com/e/TEST_HISTORY_888', 600, 'published',
+  now() - interval '6 days', now() - interval '6 days', now() - interval '1 hour',
+  48.90, 'ILS', 'target_sale_price', 'search', 'sku-a', now() - interval '1 hour', null);
+insert into dp_price_snapshots (product_id, observed_at, method, sku_id, price_field, price, currency) values
+  ('1005000000888', now() - interval '5 days', 'search', 'sku-a', 'target_sale_price', 52.40, 'ILS'),
+  ('1005000000888', now() - interval '3 days', 'detail', 'sku-a', 'target_sale_price', 45.10, 'ILS'),
+  ('1005000000888', now() - interval '2 days', 'detail', 'sku-a', 'sale_price', 12.30, 'USD'),
+  ('1005000000888', now() - interval '2 days', 'detail', 'sku-b', 'target_sale_price', 99.00, 'ILS'),
+  ('1005000000888', now() - interval '1 hour', 'detail', 'sku-a', 'target_sale_price', 48.90, 'ILS')`);
+
 const previous = globalThis.fetch;
 globalThis.fetch = async function (input, init) {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;

@@ -61,6 +61,9 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   }
   if (live.has("tech")) slides.push({key:"tech-brands",eyebrow:"מותגים שעושים את ההבדל",title:"טכנולוגיה עם שם מוכר.",subtitle:"מטענים, אביזרי מחשב ומוצרי סלולר של מותגים מזוהים מהקטלוג שלנו.",notice:"זהו אוסף מוצרים, לא מבצע עם הנחה מובטחת.",label:"גלו מותגי טכנולוגיה",href:"/categories/tech",external:false,tone:"midnight",images:imagesFor(["ugreen","baseus","anker","xiaomi"])});
   if (live.has("home")) slides.push({key:"smart-home",eyebrow:"חיים חכמים יותר",title:"מחדשים את הבית, חכם.",subtitle:"מוצרי בית חכם ומותגי ניקיון מוכרים, עם בדיקת עלות לפני הקנייה.",notice:"המחיר, המשלוח והזמינות הסופיים מוצגים בקופה.",label:"למותגים לבית",href:"/categories/home",external:false,tone:"emerald",images:imagesFor(["dreame","roborock","reolink","yeelight"])});
+  // Evergreen slide so the hero never renders empty (the dated 11.11 slide ended 2026-11-19
+  // and left a blank hero whenever no category was live). Makes no offer or price claim.
+  if (!slides.length) slides.push({key:"catalog",eyebrow:"קטלוג מותגים מ־AliExpress",title:"מותגים שאתם מכירים. בודקים לפני שקונים.",subtitle:"מוצרים ממותגים מוכרים, עם מחיר מהספק, זמן הבדיקה שלו והערכת מס יבוא לישראל.",notice:"זהו אוסף מוצרים, לא מבצע. המחיר והמשלוח הסופיים מוצגים בקופה של AliExpress.",label:"לכל המוצרים",href:"/deals",external:false,tone:"midnight",images:imagesFor(["ugreen","baseus","anker","xiaomi"])});
 
   // Moving strip: only brands with listed products, and the provider's best sellers.
   const logoItems: MarqueeItem[] = available.map((b) => ({

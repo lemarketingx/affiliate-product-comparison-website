@@ -15,7 +15,9 @@ import { TaxBadge } from "../../tax-badge";
 import ProductCostCalculator from "../../product-cost-calculator";
 import { IMPORT_TAX } from "../../../lib/preflight/import-tax";
 import { estimateIsraelTotal } from "../../../lib/preflight/tax-estimate";
-import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../../../lib/catalog-store/price-view";
+import { freshnessLabel, priceAgeHours, priceHistorySeries, PRICE_WARN_AGE_HOURS } from "../../../lib/catalog-store/price-view";
+import { storedPriceHistory } from "../../../lib/catalog-store/server";
+import { PriceHistoryChart } from "../../price-history";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -58,6 +60,11 @@ export default async function Product({
   const similar = snapshot.items
     .filter((x) => x.id !== id && x.categorySlug === p.categorySlug)
     .slice(0, 4);
+  // Only for a price shown as current: a withheld price gets no chart either.
+  const history =
+    snapshot.source === "store" && p.price && p.priceStatus === "current"
+      ? priceHistorySeries(await storedPriceHistory(p.id), { currency: p.currency, skuId: p.priceFields?.skuId ?? null })
+      : null;
   const verified = evaluateEligibility(p).eligible;
   const brand = identifyListedBrand(p);
   const images = p.images?.length ? p.images : p.image ? [p.image] : [];
@@ -163,6 +170,8 @@ export default async function Product({
             </div>
           </div>
         </div>
+
+        {history && <PriceHistoryChart history={history} />}
 
         {p.currency === "ILS" && p.price && Number(p.price) > 0 ? (
           <div className="bl-section">

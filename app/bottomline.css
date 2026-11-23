@@ -631,3 +631,27 @@ a.bl-card-brand:hover .dp-brand-name { color: var(--dp-brand-accent, #334155); }
   }
 }
 @keyframes bl-rise { from { transform: translateY(28px) scale(.98); } to { transform: none; } }
+
+/* ---------- Price history (product page) ---------- */
+.bl-history { background: var(--bl-card); border: 1px solid var(--bl-line); border-radius: var(--bl-r); padding: 16px; }
+.bl-history h2 { margin: 0; }
+.bl-history-summary { margin: 0; font-size: 14px; color: var(--bl-ink-2); }
+.bl-history-summary strong { font-variant-numeric: tabular-nums; color: var(--bl-ink); }
+.bl-history-chart { width: 100%; max-width: 760px; height: auto; display: block; margin-inline: auto; font-family: var(--bl-sans); }
+.bl-history-grid { stroke: var(--bl-line); stroke-width: 1; }
+.bl-history-axis { fill: var(--bl-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.bl-history-line { fill: none; stroke: var(--bl-ink); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.bl-history-dot { fill: var(--bl-ink); stroke: var(--bl-card); stroke-width: 2; }
+.bl-history-dot.is-last { fill: var(--bl-hl); stroke: var(--bl-ink); }
+/* The SVG scales with its width: on phones its 640-unit viewBox is ~350 px wide, so
+   axis text and markers get larger user units to stay ≥ 11 px / ≥ 8 px on screen. */
+@media (max-width: 600px) {
+  .bl-history-axis { font-size: 28px; }
+  .bl-history-dot { r: 9px; }
+  .bl-history-dot.is-last { r: 11px; }
+}
+.bl-history-table summary { cursor: pointer; font-size: 13px; color: var(--bl-ink-2); }
+.bl-history-table summary:focus-visible { outline: none; box-shadow: var(--bl-focus); border-radius: 4px; }
+.bl-history-table table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.bl-history-table th, .bl-history-table td { text-align: start; padding: 6px 4px; border-bottom: 1px solid var(--bl-line); }
+.bl-history-table td[dir="ltr"] { text-align: end; font-variant-numeric: tabular-nums; }

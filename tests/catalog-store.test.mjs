@@ -699,3 +699,18 @@ test("price re-check interval stays well below the daily schedule", async () => 
   // A price checked 17 h before the daily run must be re-checked by it (was skipped at 20 h).
   assert.ok(PIPELINE_POLICY.priceMinAgeHours <= 4, "min age " + PIPELINE_POLICY.priceMinAgeHours);
 });
+
+test("click reports exclude rows flagged as tests; the rows are kept (2026-11-23)", async () => {
+  const { db, rpc } = await freshDb();
+  await db.exec(`insert into dp_products (product_id, title, category_slug, category_label, status)
+    values ('1005000000001', 'TEST FIXTURE', 'tech', 'טכנולוגיה', 'published')`).catch(() => undefined);
+  for (const source of ["catalog", "catalog", "other"]) await rpc("dp_record_click", { product_id: "1005000000001", source, page: "/go" });
+  let dash = await rpc("dp_dashboard", {});
+  assert.equal(dash.clicks_30d.total, 3);
+  await db.exec("update dp_click_events set is_test = true where source = 'other'");
+  dash = await rpc("dp_dashboard", {});
+  assert.equal(dash.clicks_30d.total, 2);
+  assert.deepEqual(dash.clicks_30d.by_source, { catalog: 2 });
+  assert.equal(dash.clicks_30d.top_products[0].clicks, 2);
+  assert.equal((await db.query("select count(*)::int n from dp_click_events")).rows[0].n, 3);
+});

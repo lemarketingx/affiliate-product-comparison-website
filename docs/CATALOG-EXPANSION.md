@@ -89,3 +89,25 @@ Findings:
 - **Not added:** stores whose name is not a recognisable brand ("I LOVE LUO YOO Store", "Sanag", "QOOVI").
 
 **NOT VERIFIED:** how many products the new terms and brands will publish. They run on the next discovery after a merge (daily 02:17 UTC, or "discover" in `/admin/catalog`). Logos for the 7 new brands are not added yet; they show the monogram.
+
+## 2026-11-23 · All terms exhausted; owner: "find more terms"
+**State (live DB, read-only):** 873 published of 4,980 stored. All 57 active terms were exhausted (last page short), so the daily discovery made 0 calls on 22 and 23 Nov. Exhausted terms reset after 7 days, so the oldest come back from 23 Nov.
+
+**Added (branch):**
+- **Model-level terms** for the brands with the most published products and reported sales: Baseus 151, UGREEN 149, ESSAGER 136, Toocki 111, Vention 65, ROCKBROS 60, Ulanzi 43, Naturehike 41, QCY 33, 70mai 19.
+  - Tech: `UGREEN cable/power bank/charger`, `Baseus cable`, `Baseus magnetic power bank`, `ESSAGER charger/cable`, `Toocki charger/cable`, `Vention cable/HDMI`, `Ulanzi tripod/light`, `Moondrop earphones`, `QCY smart watch`, `Haylou smart watch`, `CMF Buds`, `CMF Watch`, `Hagibis`, `Rocoren`.
+  - Car: `70mai dash cam`, `DDPAI dash cam`, `Baseus car vacuum`, `ESSAGER car charger`.
+  - Sport: `ROCKBROS cycling glasses/gloves`, `Naturehike tent/sleeping bag/chair`.
+- **Brands and aliases** from rejected rows in brand-run stores (reason `brand`, more than 500 sales):
+
+  | Change | Evidence |
+  |---|---|
+  | `cmf` alias for Nothing | 10 products above 500 sales from "Nothing Online Store" and "Nothing Flagship Store", titled "CMF Buds/Watch" |
+  | Hagibis (new) | "Hagibis Official Store", 2 products above 500, max 3,480 |
+  | Rocoren (new) | "Rocoren Official Store", 2 products above 500, max 3,100 |
+  | `אולנזי` alias for Ulanzi | 2 products above 500 in "Ulanzi Official Store" with a Hebrew-only title |
+
+- **Not added:** misspelled-title rows ("Ureen", "Pessager", "Tookki"): the title does not name the brand, so the rule correctly rejects them. eufy: its titles name Soundcore/Anker, and its own items have at most 38 sales.
+- **Legacy path:** the no-database live build now uses the first 12 terms per category (`LEGACY_TERMS_PER_CATEGORY`). Production reads the database and searches every term.
+
+**NOT VERIFIED:** yield. The new terms run on the first discovery after a merge (never-run terms go first, 40 calls per day).

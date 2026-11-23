@@ -25,3 +25,12 @@ test("brands added from catalog data need store corroboration like any other (20
   assert.equal(identifyListedBrand({ title: "כבל תואם Vention", shopName: "Stone's Store" }), null);
   assert.equal(identifyListedBrand({ title: "nothing special charger", shopName: "Generic Store" }), null);
 });
+
+test("brands and aliases added 2026-11-23 still need store corroboration", () => {
+  assert.equal(identifyListedBrand({ title: "CMF Buds 2a אוזניות", shopName: "Nothing Online Store" })?.slug, "nothing");
+  assert.equal(identifyListedBrand({ title: "Hagibis כבל USB C", shopName: "Hagibis Official Store" })?.slug, "hagibis");
+  assert.equal(identifyListedBrand({ title: "Rocoren סוללת גיבוי", shopName: "Rocoren Official Store" })?.slug, "rocoren");
+  assert.equal(identifyListedBrand({ title: "אולנזי PK-08 טריפוד", shopName: "Ulanzi Official Store" })?.slug, "ulanzi");
+  assert.equal(identifyListedBrand({ title: "CMF Buds case", shopName: "Generic Store" }), null);
+  assert.equal(identifyListedBrand({ title: "כבל Hagibis תואם", shopName: "Stone's Store" }), null);
+});

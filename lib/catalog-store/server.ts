@@ -164,7 +164,8 @@ export async function runLinkJob(trigger: Trigger, deadlineMs = 50_000) {
   const result = await runLinkCheck({
     rpc,
     trigger,
-    maxChecks: intEnv("DEALPILOT_LINK_CHECKS", 25, 0, 50),
+    // 25 checks took ~20 s live (2026-11-23); 40 stays inside the 50 s deadline, which also stops the loop.
+    maxChecks: intEnv("DEALPILOT_LINK_CHECKS", 40, 0, 50),
     deadlineMs,
     check: (link, id) => checkAffiliateLink(link, id, fetchHop),
   });
