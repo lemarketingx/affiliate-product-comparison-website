@@ -366,3 +366,43 @@ button.bl-cta { color: #fff; } /* globals.css sets button { color: inherit }, wh
   .sr-brand-chip { min-height: 38px; padding: 4px 10px; }
   .bl-catalog .fp-status-line { margin: 6px 0 8px; }
 }
+
+/* ---------- Even brand tiles (home directory + hero wall) ----------
+   Every tile: same height, a fixed logo box centred, the count on one baseline.
+   Mark-type logos sit in a row (small mark + name) so they are as tall as wordmarks. */
+.sr-home .dpb-logo-tile, .sr-wall-tile {
+  display: grid; grid-template-rows: 44px auto; place-items: center; align-content: center; row-gap: 10px;
+  height: 128px; min-height: 0; padding: 14px 12px; aspect-ratio: auto;
+}
+.sr-wall-tile { height: 112px; }
+.sr-home .dpb-logo-tile .dp-brand-lockup, .sr-wall-tile .dp-brand-lockup,
+.sr-wall-tile .dp-brand-lockup:not(.is-wordmark) {
+  flex-direction: row; gap: 8px; height: 44px; min-height: 0; width: auto; max-width: 100%; align-items: center; justify-content: center;
+}
+.sr-home .dpb-logo-tile .dp-brand-mark, .sr-wall-tile .dp-brand-mark { width: 32px; height: 32px; padding: 6px; border-radius: 9px; }
+.sr-home .dpb-logo-tile .dp-brand-name, .sr-wall-tile .dp-brand-lockup .dp-brand-name { font-size: 18px; }
+.sr-home .dpb-logo-tile .dpb-logo img.dp-brand-wordmark, .sr-wall-tile .dpb-logo img.dp-brand-wordmark {
+  width: auto; height: 28px; max-width: min(150px, 100%); object-fit: contain;
+}
+.sr-home .dpb-logo-tile .dp-brand-lockup.is-wordmark, .sr-wall-tile .dp-brand-lockup.is-wordmark { width: 78%; }
+.sr-home .dpb-logo-tile .dp-brand-lockup.is-wordmark img.dp-brand-wordmark, .sr-wall-tile .dp-brand-lockup.is-wordmark img.dp-brand-wordmark { width: 100%; }
+.sr-home .dpb-logo-tile small, .sr-wall-tile small { line-height: 1; }
+.sr-wall-tile:nth-child(3n+2), .sr-wall-tile:nth-child(3n+2):hover { transform: none; } /* no staggered column */
+.sr-wall-tile:hover { transform: translateY(-2px); }
+@media (max-width: 720px) {
+  .sr-home .dpb-logo-tile { height: 104px; grid-template-rows: 36px auto; }
+  .sr-wall-tile { height: 84px; grid-template-rows: 30px auto; row-gap: 6px; padding: 8px 6px; }
+  .sr-wall-tile .dp-brand-lockup { height: 30px; }
+  .sr-home .dpb-logo-tile .dpb-logo img.dp-brand-wordmark { height: 22px; }
+  .sr-wall-tile .dpb-logo img.dp-brand-wordmark { height: 18px; }
+  .sr-home .dpb-logo-tile .dp-brand-name { font-size: 15px; }
+  .sr-wall-tile .dp-brand-lockup .dp-brand-name { font-size: 13px; }
+  .sr-home .dpb-logo-tile .dp-brand-mark { width: 26px; height: 26px; padding: 5px; }
+}
+/* Directory: a full row of six; an incomplete last row is centred, not left hanging. */
+.sr-home .dpb-logo-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.sr-home .dpb-logo-grid > .dpb-logo-tile { flex: 0 0 calc((100% - 50px) / 6); }
+@media (max-width: 1080px) { .sr-home .dpb-logo-grid > .dpb-logo-tile { flex-basis: calc((100% - 30px) / 4); } }
+@media (max-width: 720px) { .sr-home .dpb-logo-grid { gap: 8px; } .sr-home .dpb-logo-grid > .dpb-logo-tile { flex-basis: calc((100% - 16px) / 3); } }
+.sr-home .dpb-logo-tile .dp-brand-monogram, .sr-wall-tile .dp-brand-monogram { font-size: 17px; line-height: 1; display: block; }
+@media (max-width: 720px) { .sr-home .dpb-logo-tile .dp-brand-monogram { font-size: 14px; } }

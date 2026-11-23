@@ -546,3 +546,8 @@ Owner request: a redesign of the public site. Keeps the approved tokens (ink, pa
 - Screenshots: `docs/screenshots/showroom/r2-*`.
 
 **NOT VERIFIED:** real images and data on a Vercel Preview (see below).
+
+## 2026-11-23 (5) · Owner feedback on the Preview
+- Hero facts strip removed (owner: unnecessary; it also showed "0 מחירים עם בדיקה עדכנית" while prices awaited a refresh).
+- Brand tiles (home directory and hero wall) made even: fixed tile height, a fixed logo box, mark-type logos in a row (mark + name) so they match wordmark height, counts on one line; an incomplete last row is centred. Hero wall no longer staggered.
+- Checks: unit 150/150 · e2e 52/52 · axe 0 on home at 375/1440 · no overflow.

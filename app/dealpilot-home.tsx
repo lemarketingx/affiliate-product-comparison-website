@@ -80,8 +80,6 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
     node: <><img src={thumbUrl(p.image!)} alt="" width={64} height={64} loading="lazy" decoding="async" referrerPolicy="no-referrer" /><span><b>{(p.orders ?? 0).toLocaleString("he-IL")}</b> מכירות מדווחות</span></>,
   }));
 
-  const total = snapshot.items.length;
-  const fresh = snapshot.items.filter((p) => p.priceStatus === "current").length;
   // Brand wall (hero) and brand shelves: brands ordered by how many products they have listed.
   const byCount = [...available].sort((a, b) => (brandCounts.get(b.slug) ?? 0) - (brandCounts.get(a.slug) ?? 0));
   const wall = byCount.slice(0, 9);
@@ -118,11 +116,6 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
           </Link>)}
         </nav>}
       </div>
-      {total > 0 && <div className="bl-wrap"><ul className="bl-hero-facts sr-facts" aria-label="נתוני הקטלוג כרגע">
-        <li><b>{total.toLocaleString("he-IL")}</b><span>מוצרים בקטלוג</span></li>
-        <li><b>{available.length.toLocaleString("he-IL")}</b><span>מותגים מזוהים</span></li>
-        {snapshot.source === "store" && <li><b>{fresh.toLocaleString("he-IL")}</b><span>מחירים עם בדיקה עדכנית</span></li>}
-      </ul></div>}
     </section>
     <HomeMarquee label="מותגים ומוצרים נמכרים בקטלוג (נתוני מכירות של הספק)" rows={[{ key: "brands", items: logoItems }, { key: "sellers", items: sellerItems, reverse: true }]}/>
     {shelves.length > 0 && <section className="bl-wrap sr-shelves" aria-labelledby="sr-shelves-title">
