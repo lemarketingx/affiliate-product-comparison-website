@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { siteOrigin } from "../lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
   // Public storefront may be indexed; user accounts, API and tracked
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin/", "/api/", "/sign-in", "/setup", "/reset-password", "/go/", "/r/"],
     },
-    sitemap: "https://affiliate-product-comparison-websit.vercel.app/sitemap.xml",
+    sitemap: siteOrigin() + "/sitemap.xml",
   };
 }

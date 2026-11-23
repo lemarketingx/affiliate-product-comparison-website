@@ -75,6 +75,16 @@ Status: `todo` · `doing` · `done` · `blocked (reason)`. Order = business impa
 | Second daily price-refresh window | done in effect: the 4-hourly GitHub schedule runs (≥ 4 price runs/day observed) |
 | Exclude test click rows 2–3 from reports | done: `is_test` flag (rows kept), live migration applied, rows 2–3 flagged |
 
+## Growth (2026-11-23, owner approved)
+| Task | Status |
+|---|---|
+| Canonical/OG used the deployment URL (VERCEL_URL) | done: `lib/site-url.ts` |
+| Product + breadcrumb + item-list JSON-LD | done |
+| Channel post drafts (admin, copy only) | done: `/admin/channels` |
+| Google Search Console: verify and submit sitemap | todo (owner) |
+| Own domain; then set `DEALPILOT_SITE_URL` | todo (owner) |
+| Hebrew buying guides per product type (sourced, no invented claims) | todo |
+
 ## Phase 3 — competitive edge
 Israel vs abroad comparison (needs permitted Israeli price sources), import-cost calculator with sourced, dated tax rules, deal detection from stored price history (needs ≥ 30 days of history). todo
 

@@ -45,6 +45,30 @@ test("product page charts stored prices of the shown variant and currency only",
   await expect(page.getByRole("region", { name: "היסטוריית המחיר שבדקנו" })).toHaveCount(0);
 });
 
+test("product JSON-LD offers a price only when it is current; canonical uses the public origin", async ({ page }) => {
+  await page.goto(BASE + "/products/1005000000888");
+  const ld = JSON.parse((await page.locator('script[type="application/ld+json"]').first().textContent())!);
+  const product = ld.find((x: { "@type": string }) => x["@type"] === "Product");
+  expect(product.offers).toEqual({ "@type": "Offer", url: expect.stringMatching(/\/products\/1005000000888$/), price: "48.90", priceCurrency: "ILS" });
+  expect(product.aggregateRating).toBeUndefined();
+  expect(await page.locator('link[rel="canonical"]').getAttribute("href")).not.toContain("127.0.0.1");
+  await page.goto(BASE + "/products/1005000000777");
+  const stale = JSON.parse((await page.locator('script[type="application/ld+json"]').first().textContent())!);
+  expect(stale.find((x: { "@type": string }) => x["@type"] === "Product").offers).toBeUndefined();
+});
+
+test("admin channels page drafts posts with check time and disclosure; nothing is sent", async ({ page, context }) => {
+  await asAdmin(context);
+  await page.goto(BASE + "/admin/channels");
+  const drafts = page.getByRole("textbox", { name: /טיוטה למוצר/ });
+  await expect(drafts.first()).toBeVisible();
+  const text = await drafts.first().inputValue();
+  expect(text).toMatch(/נבדק .*ייתכן שהשתנה/);
+  expect(text).toContain("קישור שותפים");
+  expect(text).toMatch(/\/products\/\d+\?utm_source=telegram/);
+  expect(text).not.toContain("77.70"); // the withheld stale price
+});
+
 test("cron rejects a wrong secret and runs the import with the right one", async ({ request }) => {
   expect((await request.get(BASE + "/api/cron/catalog", { headers: { authorization: "Bearer wrong" } })).status()).toBe(401);
   const res = await request.get(BASE + "/api/cron/catalog", { headers: AUTH, timeout: 60000 });

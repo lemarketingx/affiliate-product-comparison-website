@@ -18,6 +18,8 @@ import { estimateIsraelTotal } from "../../../lib/preflight/tax-estimate";
 import { freshnessLabel, priceAgeHours, priceHistorySeries, PRICE_WARN_AGE_HOURS } from "../../../lib/catalog-store/price-view";
 import { storedPriceHistory } from "../../../lib/catalog-store/server";
 import { PriceHistoryChart } from "../../price-history";
+import { breadcrumbJsonLd, jsonLdString, productJsonLd } from "../../../lib/seo/structured-data";
+import { siteOrigin } from "../../../lib/site-url";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -98,6 +100,19 @@ export default async function Product({
   return (
     <PublicShell>
       <main id="main" className="bl-page bl-product">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdString([
+              productJsonLd(p, siteOrigin(), brand?.name ?? null),
+              breadcrumbJsonLd(siteOrigin(), [
+                { name: "בית", path: "/" },
+                { name: p.category, path: "/categories/" + p.categorySlug },
+                { name: p.title, path: "/products/" + p.id },
+              ]),
+            ]),
+          }}
+        />
         <nav className="bl-crumbs" aria-label="מיקום">
           <Link href="/">בית</Link>
           <span aria-hidden="true">/</span>

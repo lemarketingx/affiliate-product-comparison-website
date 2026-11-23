@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ConsentBasedAnalytics } from "./consent-based-analytics";
+import { siteOrigin } from "../lib/site-url";
 import "./globals.css";
 import "./dealpilot.css";
 import "./welcoming.css";
@@ -10,12 +11,7 @@ export const metadata: Metadata = {
   title: "DealPilot | מוצרי מותגים מ־AliExpress, עם מחיר שנבדק",
   description:
     "מגלים מוצרי מותגים מ־AliExpress: מחירים בשקלים עם זמן בדיקה, נתוני מכירות ספק ואומדן מסי יבוא לישראל. המחיר הסופי נקבע בקופה.",
-  metadataBase: new URL(
-    process.env.DEALPILOT_SITE_URL ||
-      (process.env.VERCEL_URL
-        ? "https://" + process.env.VERCEL_URL
-        : "http://localhost:3100"),
-  ),
+  metadataBase: new URL(siteOrigin()),
   openGraph: {
     title: "DealPilot | מגלים מותגים מוכרים",
     description: "מותגים מוכרים ומוצרים מזוהים ב־AliExpress במקום אחד, עם כלים לקנייה חכמה לישראל.",

@@ -5,7 +5,7 @@ import { liveCategorySlugs } from "../lib/dealpilot/categories";
 
 export const dynamic = "force-dynamic";
 
-const ORIGIN = "https://affiliate-product-comparison-websit.vercel.app";
+import { siteOrigin } from "../lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = new Set(["/", "/brands", "/deals", "/categories", "/guides", "/about", "/disclosure"]);
@@ -23,8 +23,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {
     // A temporary catalog outage must not break the sitemap endpoint.
   }
+  const origin = siteOrigin();
   return [...paths].map(path => ({
-    url: ORIGIN + path,
+    url: origin + path,
     // Do not claim each URL was modified on every sitemap request.
     // Add lastModified only when a verified per-item timestamp is available.
     changeFrequency: path === "/" || path === "/deals" ? "daily" as const : "weekly" as const,

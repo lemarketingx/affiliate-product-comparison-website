@@ -32,3 +32,14 @@ test("marketing copy avoids promising exact checkout price or universally verifi
   assert.doesNotMatch(product, /הקישור נבדק ומוביל לאותו מוצר/);
   assert.doesNotMatch(shell, /קישורים שנבדקו ·/);
 });
+
+test("one public origin for canonicals, robots and sitemap; never a deployment URL", async () => {
+  const { siteOrigin, PRODUCTION_ORIGIN } = await import("../lib/site-url.ts");
+  assert.equal(siteOrigin({}), PRODUCTION_ORIGIN);
+  assert.equal(siteOrigin({ VERCEL_URL: "x-13yelf8q1.vercel.app" }), PRODUCTION_ORIGIN);
+  assert.equal(siteOrigin({ DEALPILOT_SITE_URL: "https://dealpilot.example/" }), "https://dealpilot.example");
+  assert.equal(siteOrigin({ DEALPILOT_SITE_URL: "http://insecure.example" }), PRODUCTION_ORIGIN);
+  assert.equal(siteOrigin({ DEALPILOT_SITE_URL: "https://x.example/path" }), PRODUCTION_ORIGIN);
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(layout, /VERCEL_URL/);
+});

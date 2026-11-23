@@ -7,6 +7,8 @@ import { PublicShell } from "../../public-shell";
 import { ProductCard } from "../../product-card";
 import BrandLogo from "../../brand-logo";
 import { ShieldAlert } from "lucide-react";
+import { breadcrumbJsonLd, itemListJsonLd, jsonLdString } from "../../../lib/seo/structured-data";
+import { siteOrigin } from "../../../lib/site-url";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,7 +21,11 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
   if (!brand) notFound();
   const [snap, rate] = await Promise.all([getCatalog(), getUsdRate()]);
   const items = snap.items.filter(x => identifyListedBrand(x)?.slug === slug);
+  const origin = siteOrigin();
+  const ld = [breadcrumbJsonLd(origin, [{ name: "בית", path: "/" }, { name: "מותגים", path: "/brands" }, { name: brand.name, path: "/brands/" + slug }]),
+    ...(items.length ? [itemListJsonLd(origin, items.map(i => i.id))] : [])];
   return <PublicShell><main id="main" className="fp-wrap fp-section fp-brands-page">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(ld) }} />
     <nav className="fp-crumbs"><Link href="/">בית</Link> / <Link href="/brands">מותגים</Link> / <span dir="ltr">{brand.name}</span></nav>
     <span className="fp-kicker">מותג מזוהה · נתוני ספק מוצלבים</span>
     <h1 className="fp-catalog-title dp-brand-heading"><BrandLogo slug={brand.slug} name={brand.name}/></h1>

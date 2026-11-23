@@ -1,5 +1,9 @@
 import { Send, Radio, Camera, Pin, Video, Play } from "lucide-react";
 import { requireAdmin } from "../../../../lib/dealpilot/auth";
+import { getCatalog } from "../../../../lib/aliexpress/catalog";
+import { identifyListedBrand } from "../../../../lib/dealpilot/brands";
+import { postDrafts, type Channel } from "../../../../lib/marketing/post-drafts";
+import { siteOrigin } from "../../../../lib/site-url";
 const channels = [
   ["Telegram", Send, "Bot API רשמי, הרשאת מנהל לערוץ ואישור לפני שליחה"],
   ["Facebook", Radio, "הרשאות Meta לעמוד, אסימון תקף ואישור תוכן"],
@@ -8,8 +12,15 @@ const channels = [
   ["TikTok", Video, "הרשאת Content Posting API ובדיקת אפליקציה"],
   ["YouTube Shorts", Play, "הרשאת ערוץ דרך API רשמי ושירות וידאו"],
 ] as const;
+const DRAFT_CHANNELS: [Channel, string][] = [["telegram", "Telegram / WhatsApp"], ["facebook", "Facebook"], ["instagram", "Instagram"]];
 export default async function ChannelsPage() {
   await requireAdmin();
+  // Cached catalog only: no provider call. Drafts are text to copy; nothing is sent.
+  const snapshot = await getCatalog({ waitMs: 0 });
+  const brandOf = (i: { title: string }) => identifyListedBrand(i as Parameters<typeof identifyListedBrand>[0])?.name ?? null;
+  const drafts = DRAFT_CHANNELS.map(([channel, label]) => ({
+    channel, label, items: postDrafts(snapshot.items, { origin: siteOrigin(), channel, brandOf, count: 5 }),
+  }));
   return (
     <>
       <header className="dp-page-title">
@@ -32,6 +43,21 @@ export default async function ChannelsPage() {
           </section>
         ))}
       </div>
+      <section className="dp-panel" aria-labelledby="dp-drafts">
+        <h2 id="dp-drafts">טיוטות פוסטים להיום</h2>
+        <p className="dp-muted">
+          5 מוצרים ממותגים עם מחיר עדכני, מתחלפים כל יום. העתיקו והדביקו בערוץ. המחיר מוצג עם זמן הבדיקה שלו, כי פוסט נשאר
+          בערוץ אחרי שהמחיר משתנה. הקישור מוביל לעמוד המוצר באתר, עם תיוג ערוץ לסטטיסטיקה.
+        </p>
+        {drafts.map((d) => (
+          <div key={d.channel}>
+            <h3 dir="ltr">{d.label}</h3>
+            {d.items.length ? d.items.map((x) => (
+              <textarea key={x.id} readOnly rows={6} defaultValue={x.text} aria-label={"טיוטה למוצר " + x.id} style={{ width: "100%", marginBottom: 8 }} />
+            )) : <p className="dp-muted">אין כרגע מוצרים עם מחיר עדכני.</p>}
+          </div>
+        ))}
+      </section>
       <div className="dp-notice">
         לא נשלחות הודעות או בקשות פרסום. חיבור ערוץ דורש הגדרה מאובטחת, בדיקת
         הרשאות ואישור בעל המערכת.
