@@ -87,16 +87,17 @@ test("price check and import run as separate jobs", async ({ request }) => {
 });
 
 test("link check job follows affiliate links to the same product", async ({ request }) => {
+  test.setTimeout(90_000); // 40 paced checks (~0.8 s each) outlast the 30 s default
   const res = await request.get(BASE + "/api/cron/catalog?job=links", { headers: AUTH, timeout: 60000 });
   expect(res.status()).toBe(200);
   const body = await res.json();
   expect(body.discovery).toBeNull();
   expect(body.prices).toBeNull();
-  // 25 links per run since 2026-11-17 (was 8): 315 new products need checking within days.
-  expect(body.links.stats.checked).toBe(25);
-  // The seeded stale product's link has no fixture redirect: unverifiable, not unpublished.
-  expect(body.links.stats.ok + body.links.stats.broken).toBe(25);
-  expect(body.links.stats.ok).toBeGreaterThanOrEqual(24);
+  // 40 links per run since 2026-11-23 (25 before, 8 before that): 311 live links were unchecked.
+  expect(body.links.stats.checked).toBe(40);
+  // The seeded products' links (777, 888) have no fixture redirect: unverifiable, not unpublished.
+  expect(body.links.stats.ok + body.links.stats.broken).toBe(40);
+  expect(body.links.stats.ok).toBeGreaterThanOrEqual(38);
   expect(body.links.stats.withAffParams).toBe(body.links.stats.ok);
   expect(body.links.stats.unpublished).toBe(0);
 });

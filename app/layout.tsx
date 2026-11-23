@@ -21,7 +21,9 @@ export const metadata: Metadata = {
     description: "מותגים מוכרים ומוצרים מזוהים ב־AliExpress במקום אחד, עם כלים לקנייה חכמה לישראל.",
     locale: "he_IL",
     type: "website",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "DealPilot: מותגים שאתם מכירים. בודקים לפני שקונים." }],
   },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
   robots: { index: true, follow: true },
   verification: { google: "uHRr4qQiJ7sZvzp_X-cN0OzNIMyoXDHVKwsb_76xjdc" },
 };

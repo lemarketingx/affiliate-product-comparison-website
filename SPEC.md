@@ -22,8 +22,8 @@ Milestone 1 (persistent catalog, prices, links) is complete and merged; its spec
 ## Acceptance criteria
 | # | Criterion | Status |
 |---|---|---|
-| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 3: מחיר אמת withdrawn; no strong winner (סופית first, תחתית alternative); trademarks and `.co.il` NOT CHECKED; **awaiting owner** |
-| 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and tokens (`app/bottomline.css`) done; OG image todo (waits for the name) |
+| 1 | Name shortlist with evidence; working name chosen; no rename shipped without approval | round 3: מחיר אמת withdrawn; no strong winner (סופית first, תחתית alternative); trademarks and `.co.il` NOT CHECKED; **owner decision 2026-11-23: keep DealPilot** |
+| 2 | Symbol, favicon, light/dark lockup, OG image, tokens | symbol, favicon and tokens (`app/bottomline.css`) done; OG image done (`public/og.png`) |
 | 3 | 3 directions + incumbent scored with screenshots; one chosen | done: `docs/DESIGN-DIRECTIONS.md`; **A chosen** |
 | 4 | Product card, product page, home, deals/search/category, loading/error/404 in one system | done (screenshots `docs/screenshots/phase2/`) |
 | 5 | No horizontal scroll at 320/375/390/768/1024/1440/1920; prefers-reduced-motion respected; text contrast ≥ 4.5:1 | done: 8 pages × 7 widths clean; axe WCAG 2.1 AA 0 violations (16 checks) |

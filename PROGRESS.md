@@ -487,3 +487,23 @@ Report: `docs/TRIAL-READINESS.md`. Production actions: `docs/CATALOG-ACTIONS.md`
 - No measurable cost; the differences are within run-to-run noise.
 - **Caught and fixed on Preview:** the first Preview build had home CLS 0.121. Brand logos loading after first paint widened the moving row. Fixed with a fixed pill width (commit 90022fe).
 - The remaining home shift is the hero reflow that Production already has.
+
+## 2026-11-23 · Owner answers and the open list
+Owner: keep the name DealPilot; find more terms; env vars are set; test clicks are my decision; the portal check is theirs.
+
+- **Name:** DealPilot stays. The OG image is `public/og.png` (1200×630), wired into `openGraph` and `twitter`.
+- **Env vars:** verified from the live DB, not from Vercel. Discovery runs daily, prices and links every ~4 h, and every run since 21 Nov succeeded. 873 products are published, and 138 have a seller video (the video host allowlist works: 0 rejected hosts).
+- **Search terms:** all 57 were exhausted. 32 terms and 2 brands added from data (`docs/CATALOG-EXPANSION.md`).
+- **Price history:** a chart on the product page from `dp_price_history`.
+  - Pure `priceHistorySeries()` keeps only the shown currency and variant (sku). Mixing them would draw changes that never happened.
+  - At least two observations, or no chart. No chart when the price is withheld.
+  - Server-rendered SVG, a native tooltip per point and a table view. It states "not a complete history".
+  - Screenshots: `docs/screenshots/price-history/` (320–1440, no overflow).
+- **Test clicks:** kept, not deleted. Migration `20261123000000_click_test_flag.sql` (additive) adds `is_test`, and `dp_dashboard` skips flagged rows.
+  - Before applying it live, the live `dp_dashboard` was compared with the repository: same logic, without the SQL comments.
+  - Applied to `kjkkuhqebtyfohhvwnfs`; rows 2 and 3 are flagged.
+- **Link checks:** 40 per run (was 25). 311 of 873 published links had never been checked.
+- **Home hero:** the dated 11.11 slide ended on 19 Nov and left the hero empty whenever no category was live. 9 e2e tests failed on `main` for this reason. An evergreen catalog slide (no offer or price claim) now shows when there is no other slide.
+- **Tests:** unit 141/141 · e2e 49/49 (local, preinstalled Chromium) · typecheck and build OK.
+
+**NOT VERIFIED:** how many products the new terms publish (next discovery after merge).
