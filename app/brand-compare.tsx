@@ -4,6 +4,7 @@ import { formatMoney } from "../lib/dealpilot/urls";
 import { brandCompareRows } from "../lib/dealpilot/brand-compare";
 export { brandCompareRows };
 import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../lib/catalog-store/price-view";
+import { productDisplayTitle } from "../lib/dealpilot/product-titles";
 
 /** Comparison table: provider price with its check time, and reported sales.
  * No ranking, no "best" label: the table only lays out facts side by side. */
@@ -32,8 +33,8 @@ export function BrandCompare({ rows, currentId, brandName, brandSlug }: { rows: 
                 <tr key={p.id} className={isCurrent ? "is-current" : undefined} aria-current={isCurrent ? "page" : undefined}>
                   <th scope="row">
                     {isCurrent ? <span className="sr-compare-this">המוצר הזה</span> : null}
-                    {isCurrent ? <span className="sr-compare-name" dir="auto">{p.title}</span>
-                      : <Link className="sr-compare-name" href={"/products/" + p.id} dir="auto">{p.title}</Link>}
+                    {isCurrent ? <span className="sr-compare-name" dir="auto">{productDisplayTitle(p.title, brandName)}</span>
+                      : <Link className="sr-compare-name" href={"/products/" + p.id} dir="auto">{productDisplayTitle(p.title, brandName)}</Link>}
                   </th>
                   <td data-label="מחיר מדווח">
                     {p.price ? <strong dir="ltr">{formatMoney(p.price, p.currency)}</strong> : <span className="bl-muted">אין מחיר עדכני</span>}
