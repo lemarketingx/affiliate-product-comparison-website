@@ -220,8 +220,8 @@ export default function CatalogBrowser({
         </nav>
       )}
       <p className="fp-fine">
-        קישורי שותפים עשויים לזכות אותנו בעמלה. איננו מוכרים את המוצרים; המחיר הסופי, תנאי המשלוח והזמינות נקבעים
-        ב־AliExpress. <Link href="/disclosure">לגילוי המלא</Link> · <Link href="/catalog-status">איך נבנה הקטלוג</Link>
+        חלק מקישורי הקנייה עשויים לזכות אותנו בעמלה. איננו מוכרים את המוצרים; המחיר הסופי, תנאי המשלוח והזמינות נקבעים
+        ב־AliExpress. <Link href="/disclosure">גילוי נאות</Link> · <Link href="/about">איך אנחנו עובדים</Link>
       </p>
       <p className="fp-tax-note">
         {usdRate ? (

@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "גילוי שותפים | DealPilot",
+  title: "גילוי נאות | DealPilot",
   alternates: { canonical: "/disclosure" },
 };
 import { PublicShell } from "../public-shell";
@@ -10,9 +10,9 @@ export default function Disclosure() {
         <article className="fp-prose">
           <h1>גילוי נאות: קישורי שותפים</h1>
           <p>
-            חלק מהקישורים באתר הם קישורי קידום שהתקבלו מ־AliExpress. אם תרכשו
-            לאחר מעבר דרכם, ייתכן ש־DealPilot יקבל עמלה, בהתאם לתנאי תוכנית
-            השותפים. עצם המעבר אינו מוכיח שהעסקה תזכה אותנו בעמלה.
+            חלק מקישורי הקנייה שמובילים ל־AliExpress הם קישורים מסחריים (קישורי שותפים).
+            רכישה לאחר מעבר דרך קישור כזה עשויה לזכות את DealPilot בעמלה.
+            המחיר הסופי ותנאי הרכישה מוצגים ב־AliExpress.
           </p>
           <h2>על הנתונים</h2>
           <p>

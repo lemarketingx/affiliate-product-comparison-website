@@ -108,7 +108,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
           </div>}
           <div className="bl-hero-cta">
             <Link className="bl-cta" href="/deals">גלו מוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
-            <Link className="bl-cta is-ghost" href="/catalog-status">איך אנחנו בודקים?</Link>
+            <Link className="bl-cta is-ghost" href="/about">איך אנחנו עובדים?</Link>
           </div>
         </div>
         {wall.length > 0 && <nav className="sr-wall" aria-label="המותגים עם הכי הרבה מוצרים בקטלוג">
@@ -178,6 +178,6 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
         </ol>
       </div>
     </section>
-    <section className="bl-wrap bl-trust"><ShieldCheck size={20} aria-hidden="true"/><p>{BRAND.name} הוא אתר שותפים עצמאי. זיהוי מותג אינו אימות מקוריות. בדקו את החנות, הביקורות, השילוח והמחיר בקופה לפני כל רכישה.</p><Link href="/disclosure">גילוי נאות <ArrowLeft size={15} aria-hidden="true"/></Link></section>
+    <section className="bl-wrap bl-trust"><ShieldCheck size={20} aria-hidden="true"/><p>{BRAND.name} הוא אתר עצמאי להצגת מידע על מוצרים. זיהוי מותג אינו אימות מקוריות. בדקו את החנות, הביקורות, השילוח והמחיר בקופה לפני כל רכישה.</p><Link href="/disclosure">גילוי נאות <ArrowLeft size={15} aria-hidden="true"/></Link></section>
   </main></PublicShell>;
 }
