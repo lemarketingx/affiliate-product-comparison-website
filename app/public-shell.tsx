@@ -4,6 +4,7 @@ import { categories } from "../lib/dealpilot/categories";
 import { BRAND } from "../lib/brand";
 import NavLinks from "./nav-links";
 import BrandLogo from "./brand-logo";
+import { productsCount } from "../lib/dealpilot/copy";
 
 /** The symbol: a price tag with a check, over the "bottom line" bar. Name-neutral. */
 export function BrandSymbol({ size = 34, inverted = false }: { size?: number; inverted?: boolean }) {
@@ -38,7 +39,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       </a>
       <div className="bl-topline">
         <div className="bl-wrap">
-          <span>מחירים עם זמן בדיקה · עלות יבוא משוערת · גילוי שותפים שקוף</span>
+          <span>מחיר בשקלים · בדיקות מחיר לאורך זמן · הערכת מסי יבוא</span>
           <Link href="/disclosure">
             האתר משתמש בקישורי שותפים <ArrowUpLeft size={12} aria-hidden="true" />
           </Link>
@@ -120,7 +121,7 @@ export function CategoryLinks({ live, info }: { live: Set<string>; info?: Map<st
             <p>{c.description}</p>
             {info?.get(c.slug) && (
               <span className="sr-cat-meta">
-                <span className="sr-cat-count">{info.get(c.slug)!.count.toLocaleString("he-IL")} מוצרים</span>
+                <span className="sr-cat-count">{productsCount(info.get(c.slug)!.count)}</span>
                 <span className="sr-cat-brands">
                   {info.get(c.slug)!.brands.slice(0, 4).map((b) => <BrandLogo key={b.slug} slug={b.slug} name={b.name} compact />)}
                 </span>
