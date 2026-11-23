@@ -6,7 +6,7 @@ import { productsCount, identifiedProductsCount } from "../lib/dealpilot/copy.ts
 test("short Hebrew titles retain only explicitly stated attributes", () => {
   assert.equal(productDisplayTitle("מנהל כבלים Toocki Wire Winder מנהל כבל USB מגן אוזניות עכבר חוטים", "Toocki"), "מארגן כבלים Toocki");
   assert.equal(productDisplayTitle("כבל Baseus מסוג USB-C ל-USB-C, טעינה מהירה 100W/5A לאייפון", "Baseus"), "כבל Baseus USB-C 100W");
-  assert.equal(productDisplayTitle("מטען UGREEN Nexode Air 65W GaN", "UGREEN"), "מטען UGREEN Nexode Air USB-C".replace(" USB-C", "") + " 65W");
+  assert.equal(productDisplayTitle("מטען UGREEN Nexode Air 65W GaN", "UGREEN"), "מטען UGREEN Nexode Air 65W");
   assert.equal(productDisplayTitle("אוזניות Baseus EP10 Bluetooth ANC", "Baseus"), "אוזניות Baseus ANC");
 });
 
