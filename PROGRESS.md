@@ -554,7 +554,8 @@ Owner request: a redesign of the public site. Keeps the approved tokens (ink, pa
 
 ## 2026-11-23 (6) · Missing prices
 Owner: some products show no price. Findings (live DB `kjkkuhqebtyfohhvwnfs`, read-only queries):
-- All 873 published rows had a stored price observed within 30 h, but the Preview counted **0** prices as current. With the code default (30 h) that is impossible, so `DEALPILOT_PRICE_MAX_AGE_HOURS` on Vercel is almost certainly set below ~8 h. NOT VERIFIED: the Vercel connector cannot read this project's env vars. Owner to check it in Vercel (Production and Preview) and set 30, or remove it.
+- All 873 published rows had a stored price observed within 30 h, but the Preview counted **0** prices as current. A first guess (a low `DEALPILOT_PRICE_MAX_AGE_HOURS`) was wrong: the owner confirmed the variable does not exist.
+- Live check after the manual refresh (13:10 UTC): **Production `/deals` shows a price on every card** ("המחיר נבדק בשעה האחרונה"). **Preview `/deals` shows none** ("אין מחיר עדכני" on every card, provider data "מ־16.11.2026"). Same code path, same database, so the gap is the Preview deployment's data, most likely its Supabase variables not being enabled for the Preview environment and an old cached catalog being served. NOT VERIFIED: Vercel env scopes are not readable from the session. Production is not affected.
 - The "every 4 h" refresh actually ran 8–12 h apart (GitHub delays scheduled runs), ~400–500 products per run.
 - Done now: two manual runs of the refresh workflow (workflow_dispatch, normal budgeted job): 872 of 873 published prices observed within the last hour.
 - Workflow change (takes effect after merge, schedules run from `main`): every 2 h, two price passes per run (covers the whole catalog).
