@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { unstable_cache } from "next/cache";
 import type { UsdRate } from "../preflight/tax-estimate";
 
@@ -22,10 +23,20 @@ const cached = unstable_cache(
   { revalidate: 21600 },
 );
 
+/** A slow central-bank response must not block every public page for 2.5 s.
+ * Continue the cached lookup after the response so the next request can use it.
+ * Never use an invented or stale fallback exchange rate. */
 export async function getUsdRate(): Promise<UsdRate | null> {
+  const pending = cached().catch(() => null);
+  const outcome = await Promise.race([
+    pending.then((value) => ({ completed: true as const, value })),
+    new Promise<{ completed: false }>((resolve) => setTimeout(() => resolve({ completed: false }), 700)),
+  ]);
+  if (outcome.completed) return outcome.value;
   try {
-    return await Promise.race([cached(), new Promise<null>((r) => setTimeout(() => r(null), 2500))]);
+    after(() => pending.then(() => undefined));
   } catch {
-    return null;
+    // Fetch may finish naturally outside a request scope.
   }
+  return null;
 }

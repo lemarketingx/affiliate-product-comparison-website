@@ -8,8 +8,9 @@ import { useState, type ReactNode } from "react";
 
 export type MarqueeItem = { key: string; href: string; label: string; node: ReactNode };
 
-/** Each track must be wider than a 1920px screen, or the loop shows a gap: short lists repeat. */
-const MIN_PER_TRACK = 16;
+/** Seller pills have a 64px image and text, so 12 span a full desktop width.
+ * Avoid doubling the image-heavy sellers row when exactly 12 items exist. */
+const MIN_PER_TRACK = 12;
 
 function Track({ items, copy }: { items: MarqueeItem[]; copy?: boolean }) {
   const reps = Math.max(1, Math.ceil(MIN_PER_TRACK / items.length));

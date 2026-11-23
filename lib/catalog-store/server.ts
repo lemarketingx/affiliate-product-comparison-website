@@ -1,4 +1,6 @@
 import "server-only";
+import { cache } from "react";
+import { encodeCatalogCache, decodeCatalogCache } from "./cache-codec";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { unknownQuality } from "../aliexpress/quality";
@@ -94,20 +96,24 @@ export function rowToItem(r: Row, now = new Date()): CatalogItem {
 }
 
 const STORE_TAG = "dealpilot-store-catalog";
-const cachedRows = unstable_cache(async () => (await rpc("dp_catalog", { limit: 1200 })) as Row[], ["dp-store-catalog-v1", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"], {
-  revalidate: 300,
-  tags: [STORE_TAG],
-});
+// A complete catalog exceeded Next/Vercel\'s 2 MB Data Cache item limit.
+// Preserve every row/field; gzip the cached representation rather than trimming
+// product galleries or re-querying Supabase on every page request.
+const cachedRows = unstable_cache(
+  async () => encodeCatalogCache((await rpc("dp_catalog", { limit: 1200 })) as Row[]),
+  ["dp-store-catalog-gzip-v2", process.env.DEALPILOT_CACHE_NAMESPACE ?? "default"],
+  { revalidate: 300, tags: [STORE_TAG] },
+);
 
 /** Published catalog from the database (cached 5 minutes, invalidated after each job). */
-export async function getStoredSnapshot(): Promise<CatalogSnapshot> {
-  const rows = await cachedRows();
+export const getStoredSnapshot = cache(async (): Promise<CatalogSnapshot> => {
+  const rows = decodeCatalogCache<Row[]>(await cachedRows());
   // Rules tightened after a row was published still apply: a row whose brand
   // no longer verifies (e.g. a multi-brand parts store) is not listed.
   const items = rows.map((r) => rowToItem(r)).filter((i) => identifyListedBrand(i) !== null);
   const seen = rows.map((r) => r.last_seen_at).sort();
   return { items, fetchedAt: seen[0] ?? null, available: true, partial: false, qualityFiltered: false, source: "store" };
-}
+});
 
 type HistoryRow = { observed_at: string; method: "search" | "detail"; price: number; currency: string; price_field: string | null; sku_id: string | null };
 // Cached per product under the store tag (invalidated after every job), so page

@@ -311,7 +311,7 @@ function categoryFallbacks(): Banner[] {
  * active right now. Expired campaigns disappear; if none remain, regular
  * category banners take their place (internal links, no affiliate claim).
  */
-export async function getPublicBanners(now = Date.now(), waitMs = 1500): Promise<{ banners: Banner[]; campaigns: CampaignRecord[]; attributionConfirmed: boolean }> {
+export async function getPublicBanners(now = Date.now(), waitMs = 650): Promise<{ banners: Banner[]; campaigns: CampaignRecord[]; attributionConfirmed: boolean }> {
   let live: Banner[] = [];
   let campaigns: CampaignRecord[] = [];
   try {
