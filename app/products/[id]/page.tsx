@@ -20,6 +20,7 @@ import { storedPriceHistory } from "../../../lib/catalog-store/server";
 import { PriceHistoryChart } from "../../price-history";
 import { breadcrumbJsonLd, jsonLdString, productJsonLd } from "../../../lib/seo/structured-data";
 import { siteOrigin } from "../../../lib/site-url";
+import { safeSource } from "../../../lib/dealpilot/tracking";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -35,10 +36,17 @@ export async function generateMetadata({
 }
 export default async function Product({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ utm_source?: string | string[] }>;
 }) {
   const { id } = await params;
+  // A visitor who came from a channel post (utm_source) is credited to that channel
+  // on the affiliate click; anything else stays "catalog". Only safeSource values pass.
+  const utm = (await searchParams).utm_source;
+  const channel = safeSource(typeof utm === "string" ? utm : null);
+  const clickSource = channel === "other" ? "catalog" : channel;
   if (!/^\d{4,24}$/.test(id)) notFound();
   const [snapshot, usdRate] = await Promise.all([getCatalog(), getUsdRate()]);
   const p = snapshot.items.find((p) => p.id === id);
@@ -87,7 +95,7 @@ export default async function Product({
   const total = estimateIsraelTotal(p.currency === "ILS" && p.price ? Number(p.price) : null, usdRate, IMPORT_TAX);
   const hasLink = validAffiliateUrl(p.affiliateUrl, p.productUrl);
   const cta = hasLink ? (
-    <a className="bl-cta" href={"/go/" + p.id + "?source=catalog"} rel="sponsored noopener noreferrer" target="_blank">
+    <a className="bl-cta" href={"/go/" + p.id + "?source=" + clickSource} rel="sponsored noopener noreferrer" target="_blank">
       לבדיקת המוצר ב־AliExpress <ExternalLink size={18} aria-hidden="true" />
     </a>
   ) : p.productUrl ? (
@@ -234,7 +242,7 @@ export default async function Product({
         {hasLink && (
           <div className="bl-buybar" aria-hidden="true">
             <strong dir="ltr">{p.price ? formatMoney(p.price, p.currency) : "אין מחיר עדכני"}</strong>
-            <a className="bl-cta" href={"/go/" + p.id + "?source=catalog"} rel="sponsored noopener noreferrer" target="_blank" tabIndex={-1}>
+            <a className="bl-cta" href={"/go/" + p.id + "?source=" + clickSource} rel="sponsored noopener noreferrer" target="_blank" tabIndex={-1}>
               ל־AliExpress
             </a>
           </div>
