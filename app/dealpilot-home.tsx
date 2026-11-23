@@ -16,6 +16,8 @@ import { BRAND } from "../lib/brand";
 import ProductImage from "./product-image";
 import { formatMoney } from "../lib/dealpilot/urls";
 import { freshnessLabel } from "../lib/catalog-store/price-view";
+import { productDisplayTitle } from "../lib/dealpilot/product-titles";
+import { productsCount } from "../lib/dealpilot/copy";
 
 function imageOf(p: CatalogItem) { return p.image ?? null; }
 function brandOf(p: CatalogItem) { return identifyListedBrand(p); }
@@ -75,7 +77,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
   }));
   const sellerItems: MarqueeItem[] = ranked.filter((p) => p.image && (p.orders ?? 0) > 0).slice(0, 12).map((p) => ({
     key: p.id, href: "/products/" + p.id,
-    label: p.title + " · " + (p.orders ?? 0).toLocaleString("he-IL") + " מכירות מדווחות לפי הספק",
+    label: productDisplayTitle(p.title, brandOf(p)?.name ?? null) + " · " + (p.orders ?? 0).toLocaleString("he-IL") + " מכירות מדווחות לפי הספק",
     // eslint-disable-next-line @next/next/no-img-element
     node: <><img src={thumbUrl(p.image!)} alt="" width={64} height={64} loading="lazy" decoding="async" referrerPolicy="no-referrer" /><span><b>{(p.orders ?? 0).toLocaleString("he-IL")}</b> מכירות מדווחות</span></>,
   }));
@@ -93,8 +95,8 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
       <div className="bl-wrap sr-hero-grid">
         <div className="sr-hero-copy">
           <p className="sr-eyebrow">קטלוג מותגים בעברית, לקונים בישראל</p>
-          <h1 id="bl-hero-title">מותגים מוכרים מ־AliExpress. <mark>קונים עם יותר מידע.</mark></h1>
-          <p className="sr-hero-lead">מוצרים מזוהים של מותגים מוכרים, עם מחיר בשקלים וזמן הבדיקה שלו, נתוני מכירות של הספק ואומדן מסי יבוא לישראל. המחיר הסופי נקבע בקופה.</p>
+          <h1 id="bl-hero-title">מותגים מוכרים. <mark>מחירים שנבדקו.</mark> קונים עם יותר מידע.</h1>
+          <p className="sr-hero-lead">מגלים מוצרים של מותגים מוכרים, רואים מחירים בשקלים ובדיקות מחיר קודמות כשיש, ומעריכים מסי יבוא לישראל. לפני התשלום בודקים את המוכר, המשלוח והמחיר הסופי בקופה.</p>
           <form action="/search" className="sr-hero-search" role="search" aria-label="חיפוש בקטלוג">
             <Search size={20} aria-hidden="true"/>
             <input name="q" maxLength={80} placeholder="איזה מותג או מוצר מחפשים?" aria-label="חיפוש מותג או מוצר בקטלוג"/>
@@ -105,14 +107,14 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
             {quick.map((b) => <Link key={b.slug} href={"/brands/" + b.slug} dir="ltr">{b.name}</Link>)}
           </div>}
           <div className="bl-hero-cta">
-            <Link className="bl-cta" href="/deals">לכל המוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
-            <Link className="bl-cta is-ghost" href="/brands">בחירה לפי מותג</Link>
+            <Link className="bl-cta" href="/deals">גלו מוצרים <ArrowUpLeft size={17} aria-hidden="true"/></Link>
+            <Link className="bl-cta is-ghost" href="/catalog-status">איך אנחנו בודקים?</Link>
           </div>
         </div>
         {wall.length > 0 && <nav className="sr-wall" aria-label="המותגים עם הכי הרבה מוצרים בקטלוג">
-          {wall.map((b) => <Link key={b.slug} href={"/brands/" + b.slug} className="sr-wall-tile" aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}>
+          {wall.map((b) => <Link key={b.slug} href={"/brands/" + b.slug} className="sr-wall-tile" aria-label={b.name + " - " + productsCount(brandCounts.get(b.slug) ?? 0)}>
             <BrandLogo slug={b.slug} name={b.name}/>
-            <small>{(brandCounts.get(b.slug) ?? 0).toLocaleString("he-IL")} מוצרים</small>
+            <small>{productsCount(brandCounts.get(b.slug) ?? 0)}</small>
           </Link>)}
         </nav>}
       </div>
@@ -123,13 +125,13 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
       <div className="sr-shelf-list">{shelves.map(({ brand, items }) => <article className="sr-shelf" key={brand.slug} aria-label={"מוצרי " + brand.name}>
         <header className="sr-shelf-head">
           <span className="sr-shelf-logo"><BrandLogo slug={brand.slug} name={brand.name}/></span>
-          <span className="sr-shelf-count">{(brandCounts.get(brand.slug) ?? 0).toLocaleString("he-IL")} מוצרים בקטלוג</span>
+          <span className="sr-shelf-count">{productsCount(brandCounts.get(brand.slug) ?? 0)} בקטלוג</span>
           <Link className="sr-shelf-all" href={"/brands/" + brand.slug}>לכל מוצרי <span dir="ltr">{brand.name}</span> <ArrowUpLeft size={15} aria-hidden="true"/></Link>
         </header>
         <ul className="sr-shelf-items">{items.map((p) => <li key={p.id}>
           <Link href={"/products/" + p.id} className="sr-mini">
             <span className="sr-mini-media"><ProductImage src={p.image} alt="" thumb lazy label={brand.name}/></span>
-            <span className="sr-mini-title" dir="auto">{p.title}</span>
+            <span className="sr-mini-title" dir="auto">{productDisplayTitle(p.title, brandOf(p)?.name ?? null)}</span>
             {p.price ? <strong dir="ltr">{formatMoney(p.price, p.currency)}</strong> : <strong className="is-none">אין מחיר עדכני</strong>}
             {p.price && <small className={freshnessLabel(p.priceObservedAt) ? undefined : "is-unknown"}>{freshnessLabel(p.priceObservedAt) ?? "זמן הבדיקה אינו ידוע"} · סופי בקופה</small>}
           </Link>
@@ -140,7 +142,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
     <section className="bl-wrap dpb-brands" aria-labelledby="dpb-brands-title">
       <div className="bl-section-head"><div><p className="sr-eyebrow">מדריך המותגים</p><h2 id="dpb-brands-title">המותגים שאתם מכירים</h2><p>מוצרים שמזוהים עם מותגים מוכרים ב־AliExpress. מוכר מורשה ומקוריות טרם אומתו.</p></div><Link href="/brands" className="bl-more">לעמוד המותגים <ArrowUpLeft size={16} aria-hidden="true"/></Link></div>
       {available.length ? <div className="dpb-logo-grid">{available.slice(0,12).map(b =>
-        <Link className="dpb-logo-tile" key={b.slug} href={"/brands/"+b.slug} aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}><BrandLogo slug={b.slug} name={b.name}/><small aria-hidden="true">{brandCounts.get(b.slug)} מוצרים</small></Link>
+        <Link className="dpb-logo-tile" key={b.slug} href={"/brands/"+b.slug} aria-label={b.name + " - " + productsCount(brandCounts.get(b.slug) ?? 0)}><BrandLogo slug={b.slug} name={b.name}/><small aria-hidden="true">{productsCount(brandCounts.get(b.slug) ?? 0)}</small></Link>
       )}</div> : <div className="bl-empty-note">הקטלוג הממותג מתרענן. נציג רק מוצרים שעברו סינון.</div>}
     </section>
     <section className="bl-wrap sr-cats-wrap" aria-labelledby="sr-cats-title">
@@ -168,7 +170,7 @@ export default function DealPilotHome({ snapshot, banners, usdRate = null }: {
     </section>
     <section className="sr-how-band" aria-labelledby="bl-how-title">
       <div className="bl-wrap bl-how">
-        <h2 id="bl-how-title">איך מגיעים לשורה התחתונה</h2>
+        <h2 id="bl-how-title">שלושה צעדים לקנייה עם יותר מידע</h2>
         <ol>
           <li><Search size={22} aria-hidden="true"/><strong>מוצאים מותג</strong><span>רק מוצרים שהמותג שלהם זוהה גם בשם וגם בחנות.</span></li>
           <li><Calculator size={22} aria-hidden="true"/><strong>רואים מחיר עם זמן בדיקה</strong><span>מחיר מדווח בשקלים עם זמן הבדיקה, ואומדן מסים לישראל.</span></li>
