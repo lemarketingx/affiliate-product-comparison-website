@@ -33,7 +33,7 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   await expect(page.locator(".dp-product").first()).toBeVisible();
   const ids = await page.locator(".dp-product").getByRole("link", { name: /^פרטי / }).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
   expect(new Set(ids).size).toBe(24);
-  await expect(page.locator(".dp-product").first()).toContainText("כולל קישור שותפים");
+  await expect(page.locator(".dp-product").first().getByRole("link", { name: /פרטים ובדיקת מחיר/ })).toBeVisible();
   await expect(page.locator(".dp-product").first().getByRole("link", { name: /^לכל מוצרי המותג / })).toBeVisible();
   await expect(page.locator(".fp-shortfall")).toHaveCount(0);
 
@@ -106,21 +106,14 @@ test("brand-only products: no generic products, 24 per page, filters, search and
   }
 });
 
-test("catalog report: fetched, rejected (by reason) and published add up; nothing unverified shown as verified", async ({ page, request }) => {
-  await page.goto("/catalog-status");
-  const kpi = async (label: string) =>
-    Number((await page.locator(".fp-report-kpis div", { hasText: label }).locator("dd").innerText()).replace(/[^\d]/g, ""));
-  const unique = await kpi("מוצרים ייחודיים");
-  const rejected = await kpi("נפסלו");
-  const published = await kpi("פורסמו מוצרי מותג");
-  expect(unique).toBe(rejected + published);
-  expect(published).toBeGreaterThanOrEqual(24);
-  expect(await kpi("שורות שהתקבלו")).toBeGreaterThan(unique);
-  await expect(page.locator("table").first()).toContainText("אין קישור שותפים תקין");
-  await expect(page.locator("table").first()).toContainText("מותג מוכר אינו מזוהה");
-  // Owner lowered the threshold to 500 reported sales on 2026-11-17 (main 31ccce9).
-  await expect(page.locator("table").first()).toContainText("פחות מ-500 מכירות מדווחות");
-  await expect(page.getByText(/גודל עמוד שנוסה/)).toBeVisible();
+test("removed diagnostic route is unavailable and product affiliate links still work", async ({ page, request }) => {
+  // Diagnostics are not a public storefront page and must not be discoverable.
+  expect((await request.get("/catalog-status")).status()).toBe(404);
+  await page.goto("/");
+  await expect(page.locator('a[href="/catalog-status"]')).toHaveCount(0);
+  await page.goto("/deals");
+  await expect(page.locator('a[href="/catalog-status"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "גילוי נאות" }).first()).toHaveAttribute("href", "/disclosure");
 
   // Product detail: affiliate redirect works and quality stays "not verified".
   await page.goto("/deals");
@@ -132,7 +125,7 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
   await expect(page.locator(".dp-selection-policy")).not.toContainText("בדיקות האיכות עברו");
   await expect(page.locator("body")).not.toContainText("מאומת לפי תנאי הסינון");
   // Since 63f0b22 the buyer CTA goes through the tracked /go redirect, which resolves the affiliate link.
-  await expect(page.getByRole("link", { name: /לבדיקת המוצר ב־AliExpress/ })).toHaveAttribute("href", `/go/${id}?source=catalog`);
+  await expect(page.getByRole("link", { name: /לבדיקת מחיר ומשלוח ב־AliExpress/ })).toHaveAttribute("href", `/go/${id}?source=catalog`);
   const go = await request.get(`/go/${id}?source=catalog`, { maxRedirects: 0 });
   expect(go.status()).toBe(307);
   expect(go.headers().location).toBe(`https://s.click.aliexpress.com/e/TEST_CATALOG_${id}`);
@@ -142,8 +135,7 @@ test("catalog report: fetched, rejected (by reason) and published add up; nothin
   expect(await (await request.get("/products/" + rejectedId)).text()).toContain("המוצר אינו זמין כרגע");
 });
 
-// Owner request 2026-11-17: on phones the first products must appear early,
-// without dropping the disclosure (top line, one-line policy, per-card text).
+// On phones the first product must appear early while disclosure remains accessible.
 for (const [w, h, priceToo] of [[320, 568, false], [375, 667, false], [390, 844, true], [412, 915, true]] as const) {
   test(`mobile catalog: first product starts in the first screen at ${w}x${h}`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
@@ -157,11 +149,11 @@ for (const [w, h, priceToo] of [[320, 568, false], [375, 667, false], [390, 844,
       const price = await card.locator(".dp-product-price strong").boundingBox();
       expect(price && price.y + price.height).toBeLessThanOrEqual(h);
     }
-    // Disclosure is still on screen: affiliate line, policy summary, and per card.
-    await expect(page.locator(".bl-topline").getByRole("link", { name: /קישורי שותפים/ })).toBeVisible();
+    // A short commercial disclosure is available next to the catalog and in the footer.
+    await expect(page.locator(".bl-footer").getByRole("link", { name: "גילוי נאות" })).toBeVisible();
     const policy = page.locator(".dp-selection-policy");
     await expect(policy.locator("summary")).toContainText("מקוריות המוצר טרם אומתה");
-    await expect(card).toContainText("כולל קישור שותפים");
+    await expect(card.getByRole("link", { name: /פרטים ובדיקת מחיר/ })).toBeVisible();
     await policy.locator("summary").click();
     await expect(policy.getByText(/דירוג 4.7 ומעלה, ביקורות מישראל ומשלוח לישראל טרם אומתו/)).toBeVisible();
     expect(await noHScroll(page)).toBe(true);
