@@ -29,6 +29,22 @@ test("a stored product with a 5-day-old price is listed without a price", async 
   await expect(page.getByText("77.70")).toHaveCount(0);
 });
 
+test("product page charts stored prices of the shown variant and currency only", async ({ page }) => {
+  await page.goto(BASE + "/products/1005000000888");
+  const section = page.getByRole("region", { name: "היסטוריית המחיר שבדקנו" });
+  await expect(section).toBeVisible();
+  await expect(section.getByText(/3 בדיקות מאז/)).toBeVisible();
+  await expect(section.locator(".bl-history-dot")).toHaveCount(3);
+  await expect(section.getByRole("img", { name: /3 בדיקות/ })).toBeVisible();
+  await section.getByText("כל הבדיקות בטבלה").click();
+  await expect(section.getByRole("row")).toHaveCount(4); // header + 3 observations
+  await expect(section.getByText("99.00")).toHaveCount(0); // other SKU
+  await expect(section.getByText(/\$/)).toHaveCount(0); // USD observation
+  // A product whose price is withheld gets no chart.
+  await page.goto(BASE + "/products/1005000000777");
+  await expect(page.getByRole("region", { name: "היסטוריית המחיר שבדקנו" })).toHaveCount(0);
+});
+
 test("cron rejects a wrong secret and runs the import with the right one", async ({ request }) => {
   expect((await request.get(BASE + "/api/cron/catalog", { headers: { authorization: "Bearer wrong" } })).status()).toBe(401);
   const res = await request.get(BASE + "/api/cron/catalog", { headers: AUTH, timeout: 60000 });
