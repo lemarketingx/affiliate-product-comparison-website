@@ -8,6 +8,8 @@ import { ProductCard } from "./product-card";
 import SortSelect from "./sort-select";
 import { IMPORT_TAX } from "../lib/preflight/import-tax";
 import { estimateImportTax, type UsdRate } from "../lib/preflight/tax-estimate";
+import { BRANDS, identifyListedBrand } from "../lib/dealpilot/brands";
+import BrandLogo from "./brand-logo";
 
 const fmt = (n: number) => n.toLocaleString("he-IL");
 
@@ -22,6 +24,9 @@ export default function CatalogBrowser({
   lockedCategory,
   title,
   usdRate = null,
+  lockedBrand,
+  brandFilter = false,
+  hideHead = false,
 }: {
   snapshot: CatalogSnapshot;
   params: ViewParams;
@@ -29,20 +34,33 @@ export default function CatalogBrowser({
   lockedCategory?: string;
   title?: string;
   usdRate?: UsdRate | null;
+  /** Brand page: every view is limited to this brand slug. */
+  lockedBrand?: string;
+  /** Show the row of brand logos to filter by brand (?brand=slug). */
+  brandFilter?: boolean;
+  /** The page renders its own h1 and notices (brand page). */
+  hideHead?: boolean;
 }) {
   const exemptOnly = params.tax === "exempt" && usdRate !== null;
+  const brandSlug = lockedBrand ?? params.brand ?? "";
+  const slugOf = (p: CatalogSnapshot["items"][number]) => identifyListedBrand(p)?.slug ?? null;
+  // Brand counts are taken before the brand filter, so every chip shows its full size.
+  const brandCounts = new Map<string, number>();
+  if (brandFilter) for (const p of snapshot.items) { const b = slugOf(p); if (b) brandCounts.set(b, (brandCounts.get(b) ?? 0) + 1); }
+  const brandChips = brandFilter ? BRANDS.filter((b) => (brandCounts.get(b.slug) ?? 0) > 0).sort((a, b) => (brandCounts.get(b.slug) ?? 0) - (brandCounts.get(a.slug) ?? 0)) : [];
+  const branded = brandSlug ? snapshot.items.filter((p) => slugOf(p) === brandSlug) : snapshot.items;
   const pool = exemptOnly
-    ? snapshot.items.filter((p) => estimateImportTax(p.currency === "ILS" ? Number(p.price) : null, usdRate, IMPORT_TAX).status === "exempt")
-    : snapshot.items;
+    ? branded.filter((p) => estimateImportTax(p.currency === "ILS" ? Number(p.price) : null, usdRate, IMPORT_TAX).status === "exempt")
+    : branded;
   const view = filterCatalog(pool, { ...params, cat: lockedCategory ?? params.cat });
-  const published = snapshot.items.length;
+  const published = branded.length;
   const report = snapshot.report;
   const href = (p: Partial<ViewParams>) => viewHref(base, { ...params, ...p }, Boolean(lockedCategory));
   const activeCat = lockedCategory ?? params.cat;
-  const filtered = Boolean(params.q || activeCat || exemptOnly);
+  const filtered = Boolean(params.q || activeCat || exemptOnly || (params.brand && !lockedBrand));
   return (
     <section className="fp-section fp-wrap fp-catalog bl-catalog" id="products">
-      <div className="fp-section-head">
+      {!hideHead && <><div className="fp-section-head">
         <div>
           <span className="fp-kicker">קטלוג מותגים מוכרים</span>
           <h1 className="fp-catalog-title">{title ?? "גלו מוצרים של מותגים מוכרים."}</h1>
@@ -66,22 +84,38 @@ export default function CatalogBrowser({
           </p>
           <small>מכירות מדווחות הן נתון של הספק לתקופה אחרונה, לא בדיקת איכות. בדקו דירוג, ביקורות ומשלוח ב־AliExpress לפני רכישה.</small>
         </div>
-      </details>
+      </details></>}
+
+      {brandChips.length > 0 && (
+        <nav className="sr-brand-filter" aria-label="סינון לפי מותג">
+          <Link href={viewHref(base, { q: params.q, sort: params.sort, cat: params.cat, tax: params.tax })} aria-current={!params.brand ? "page" : undefined} className="sr-brand-chip is-all">
+            כל המותגים
+          </Link>
+          {brandChips.map((b) => (
+            <Link key={b.slug} className="sr-brand-chip" href={viewHref(base, { q: params.q, sort: params.sort, cat: params.cat, tax: params.tax, brand: b.slug })}
+              aria-current={params.brand === b.slug ? "page" : undefined} aria-label={b.name + " - " + brandCounts.get(b.slug) + " מוצרים"}>
+              <BrandLogo slug={b.slug} name={b.name} compact />
+              <small aria-hidden="true">{brandCounts.get(b.slug)}</small>
+            </Link>
+          ))}
+        </nav>
+      )}
 
       <form className="fp-filters" action={base} method="get" role="search" aria-label="סינון הקטלוג">
         {!lockedCategory && (
           <nav className="fp-tabs" aria-label="קטגוריות">
-            <Link href={viewHref(base, { q: params.q, sort: params.sort, tax: params.tax })} aria-current={!activeCat ? "page" : undefined}>
+            <Link href={viewHref(base, { q: params.q, sort: params.sort, tax: params.tax, brand: params.brand })} aria-current={!activeCat ? "page" : undefined}>
               הכול
             </Link>
-            {categories.filter((c) => liveCategorySlugs(snapshot.items).has(c.slug)).map((c) => (
-              <Link key={c.slug} href={viewHref(base, { q: params.q, sort: params.sort, cat: c.slug, tax: params.tax })} aria-current={activeCat === c.slug ? "page" : undefined}>
+            {categories.filter((c) => liveCategorySlugs(branded).has(c.slug)).map((c) => (
+              <Link key={c.slug} href={viewHref(base, { q: params.q, sort: params.sort, cat: c.slug, tax: params.tax, brand: params.brand })} aria-current={activeCat === c.slug ? "page" : undefined}>
                 {c.label}
               </Link>
             ))}
           </nav>
         )}
         {params.cat && !lockedCategory && <input type="hidden" name="cat" value={params.cat} />}
+        {params.brand && !lockedBrand && <input type="hidden" name="brand" value={params.brand} />}
         <div className="fp-filter-inputs">
           <label className="fp-field">
             <Search size={18} aria-hidden="true" />

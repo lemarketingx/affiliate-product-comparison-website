@@ -534,3 +534,15 @@ Owner request: a redesign of the public site. Keeps the approved tokens (ink, pa
 - Screenshots (fixture catalog, placeholder images): `docs/screenshots/showroom/`.
 
 **NOT VERIFIED:** real product images and live data (sandbox cannot reach AliExpress CDNs or the Vercel deployment). Mobile LCP not re-measured; the hero h1 is still the LCP candidate and no hero image was added.
+
+## 2026-11-23 (4) · Showroom round 2 (owner approved all six improvements)
+- **Product page:** brand logo chip; larger receipt and CTA; three short assurance lines under the CTA (price check time, import-tax estimate, payment on AliExpress); sticky gallery on desktop; mobile buy bar with price, "reported · final at checkout" and a yellow CTA. Still exactly one "לבדיקת המוצר" link (the buy bar stays `aria-hidden`, `tabindex=-1`).
+- **Same-brand comparison:** "דגמים של X באותה קטגוריה" table (current product first, then up to 5 peers by ILS price). Shows only the provider price with its check time and reported sales; no ranking. Cards on phones. Pure helper `lib/dealpilot/brand-compare.ts` + `tests/brand-compare.test.mjs`.
+- **More from the brand:** up to 4 products of the same brand in other categories; "similar in category" no longer repeats them.
+- **Brand page:** uses `CatalogBrowser` (`lockedBrand`, `hideHead`): 24 per page, category tabs limited to the brand, search, sort, tax filter, pager.
+- **Brand filter on /deals and /search:** row of brand logo chips with counts, `?brand=slug` (only known slugs pass `parseViewParams`; kept by every tab, sort and page link). Compact on phones so the first product still starts in the first screen at 320×568 (owner rule 2026-11-17).
+- **Polish:** current section marked in the header (`aria-current`); categories page shows product counts and brands per category; 404/error as cards (also fixed an invisible "חיפוש" label on the 404 page, `button { color: inherit }` from globals.css); loading skeleton matches the cards.
+- **Checks:** typecheck and build OK · unit 150/150 · e2e 52/52 · no overflow at 320–1920 · axe WCAG 2.1 AA 0 violations on 9 pages at 375 and 1440 (two brand-accent contrast issues found and fixed).
+- Screenshots: `docs/screenshots/showroom/r2-*`.
+
+**NOT VERIFIED:** real images and data on a Vercel Preview (see below).

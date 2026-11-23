@@ -183,7 +183,8 @@
 .fp-brands-page .fp-brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
 .fp-brands-page .fp-brand-card { border-radius: var(--sr-r); background: var(--sr-card); box-shadow: var(--sr-shadow); min-height: 150px; }
 .fp-brands-page .fp-brand-card:hover { border-color: var(--sr-ink); box-shadow: inset 0 -5px 0 var(--sr-hl), var(--sr-shadow); }
-.fp-brands-page .fp-grid { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.fp-brands-page .fp-grid, .bl-catalog .fp-grid { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bl-catalog .fp-status-line { margin: 10px 0 14px; }
 .sr-brand-band { background: var(--sr-card); border: 1px solid var(--sr-line); border-radius: 24px; padding: clamp(20px, 3vw, 34px); box-shadow: var(--sr-shadow); display: grid; gap: 12px; margin-bottom: 20px; }
 .sr-brand-band .dp-brand-heading { margin: 0; }
 .sr-brand-band .dp-brand-wordmark { max-height: 44px; width: auto; }
@@ -193,7 +194,7 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1080px) {
-  .bl-grid, .fp-brands-page .fp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bl-grid, .fp-brands-page .fp-grid, .bl-catalog .fp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sr-shelf-list { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
@@ -204,7 +205,7 @@
   .sr-home .dpb-categories { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
-  .bl-grid, .fp-brands-page .fp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .bl-grid, .fp-brands-page .fp-grid, .bl-catalog .fp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   /* One swipeable row per brand keeps the page short on phones. */
   .sr-shelf-items { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 10px; gap: 8px; overscroll-behavior-x: contain; scrollbar-width: thin; }
   .sr-shelf-items > li { flex: 0 0 42%; scroll-snap-align: start; }
@@ -240,3 +241,128 @@
 .sr-wall-tile .dpb-logo img.dp-brand-wordmark { width: 100%; height: 24px; max-width: 100%; max-height: none; }
 @media (max-width: 720px) { .sr-wall-tile .dpb-logo img.dp-brand-wordmark { height: 17px; } }
 .sr-shelf-logo .dpb-logo img.dp-brand-wordmark { height: 24px; max-width: 160px; }
+
+/* ---------- Product page ---------- */
+.bl-product .bl-product-media { border-radius: 22px; border-color: var(--sr-line); box-shadow: var(--sr-shadow); }
+@media (min-width: 900px) {
+  .bl-product .bl-product-grid { gap: 36px; }
+  .bl-product .bl-product-media { position: sticky; top: 96px; }
+}
+.bl-product .bl-product-side h1 { font-size: clamp(22px, 2.4vw, 32px); letter-spacing: -0.015em; line-height: 1.25; margin: 0; }
+.sr-product-brand { padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--sr-card); border: 1px solid var(--sr-line); }
+a.sr-product-brand:hover { background: var(--sr-card); border-color: var(--sr-ink); }
+.bl-product .bl-receipt { border-radius: 22px; padding: clamp(16px, 2vw, 24px); gap: 12px; box-shadow: var(--sr-shadow); border-color: var(--sr-line); }
+.bl-product .bl-receipt-price strong { font-size: clamp(32px, 4vw, 44px); }
+.bl-product .bl-receipt-total { border-top-width: 3px; }
+.bl-product .bl-receipt-total .bl-total { background: var(--sr-hl); color: var(--sr-ink); padding: 2px 10px; border-radius: 6px; }
+.bl-product .bl-receipt .bl-cta { min-height: 56px; font-size: 17px; border-radius: 14px; }
+.bl-product .bl-receipt a.bl-cta:not(.is-ghost) { background: var(--sr-ink); box-shadow: 0 0 0 0 var(--sr-hl); transition: box-shadow .15s ease; }
+.bl-product .bl-receipt a.bl-cta:not(.is-ghost):hover { box-shadow: 0 0 0 4px var(--sr-hl); }
+.sr-assure { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--sr-muted); }
+.sr-assure li { display: inline-flex; align-items: center; gap: 5px; }
+.sr-assure svg { color: var(--sr-ok); flex: none; }
+.bl-product .bl-policy { border-radius: 16px; }
+.bl-product .bl-section { margin-top: clamp(32px, 4vw, 56px); }
+.bl-product .bl-section h2 { font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -0.015em; }
+
+/* Same-brand comparison */
+.sr-compare-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 14px; }
+.sr-compare-head h2 { margin: 0 0 4px; }
+.sr-compare-head .bl-fine { margin: 0; }
+.sr-compare-scroll { overflow-x: auto; border: 1px solid var(--sr-line); border-radius: var(--sr-r); background: var(--sr-card); box-shadow: var(--sr-shadow); }
+.sr-compare-scroll:focus-visible { outline: none; box-shadow: var(--bl-focus); }
+.sr-compare-table { width: 100%; border-collapse: collapse; min-width: 520px; font-size: 14px; white-space: normal; text-align: start; }
+.sr-compare-table th, .sr-compare-table td { color: var(--sr-ink); font-size: 14px; white-space: normal; border-block: 0; }
+.sr-compare-table th, .sr-compare-table td { text-align: start; padding: 12px 16px; border-bottom: 1px solid var(--sr-line); vertical-align: top; }
+.sr-compare-table thead th { font-size: 12px !important; color: var(--sr-muted); font-weight: 700; background: #fbfaf7; }
+.sr-compare-table tbody tr:last-child > * { border-bottom: 0; }
+.sr-compare-table tbody th { font-weight: 500; width: 55%; }
+.sr-compare-table tr.is-current { background: #fff8d6; }
+.sr-compare-this { display: inline-block; margin-bottom: 4px; font-size: 11px; font-weight: 700; background: var(--sr-ink); color: #fff; padding: 2px 8px; border-radius: 999px; }
+.sr-compare-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; color: var(--sr-ink); line-height: 1.4; }
+a.sr-compare-name { text-decoration: underline; text-decoration-color: var(--sr-line); text-underline-offset: 3px; }
+a.sr-compare-name:hover { text-decoration-color: var(--sr-ink); }
+.sr-compare-table td strong { display: block; font: 700 17px/1.2 var(--bl-mono); }
+.sr-compare-table td small { display: block; font-size: 11px; color: var(--sr-ok); margin-top: 3px; }
+.sr-compare-table td small.is-unknown { color: var(--sr-muted); }
+.sr-compare-table td small.is-old { color: var(--bl-wait); }
+.sr-compare-table td:last-child { font-family: var(--bl-mono); }
+
+/* Mobile buy bar */
+@media (max-width: 899px) {
+  .bl-product { padding-bottom: 92px; }
+  .bl-buybar { background: #fffffff2; backdrop-filter: blur(8px); border-top: 1px solid var(--sr-line); }
+  .sr-buybar-price { display: grid; gap: 2px; }
+  .sr-buybar-price small { font-size: 11px; color: var(--sr-muted); }
+  .bl-buybar a.bl-cta { background: var(--sr-hl); color: var(--sr-ink); border-color: var(--sr-hl); border-radius: 12px; font-weight: 700; min-width: 140px; justify-content: center; }
+}
+
+/* ---------- Catalog inside the brand page ---------- */
+.fp-brands-page .bl-catalog { width: auto; padding: 0; margin: 0; }
+
+/* ---------- Brand filter row (deals, search) ---------- */
+.sr-brand-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+.sr-brand-chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 12px;
+  background: var(--sr-card); border: 1px solid var(--sr-line); border-radius: 999px; text-decoration: none; color: var(--sr-ink);
+  font-size: 13px; font-weight: 700; transition: border-color .15s ease;
+}
+.sr-brand-chip:hover { border-color: var(--sr-ink); }
+.sr-brand-chip:focus-visible { outline: none; box-shadow: var(--bl-focus); }
+.sr-brand-chip small { font: 600 11px var(--bl-mono); color: var(--sr-muted); background: var(--sr-tile); border-radius: 999px; padding: 2px 7px; }
+.sr-brand-chip[aria-current="page"] { border-color: var(--sr-ink); box-shadow: inset 0 -3px 0 var(--sr-hl); background: #fffdf3; }
+.sr-brand-chip.is-all[aria-current="page"] { background: var(--sr-ink); color: #fff; box-shadow: none; }
+@media (max-width: 720px) {
+  .sr-brand-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding: 2px 16px 6px; scroll-padding-inline: 16px; }
+  .sr-brand-filter::-webkit-scrollbar { display: none; }
+  .sr-brand-chip { flex: none; }
+}
+@media (prefers-reduced-motion: reduce) { .sr-brand-chip { transition: none; } }
+.sr-compare-table tbody th { background: transparent; }
+.sr-compare-table td strong { color: var(--sr-ink); font-weight: 700; }
+.sr-compare-table tr.is-current > * { background: #fff8d6; }
+.sr-compare-table tbody tr:hover { background: transparent; }
+@media (max-width: 720px) {
+  /* Phones: each model is a small card (name, then price and sales side by side). */
+  .sr-compare-scroll { overflow: visible; border: 0; background: none; box-shadow: none; }
+  .sr-compare-table { min-width: 0; }
+  .sr-compare-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .sr-compare-table, .sr-compare-table tbody { display: block; }
+  .sr-compare-table tr { display: grid; grid-template-columns: 1fr 1fr; background: var(--sr-card); border: 1px solid var(--sr-line); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+  .sr-compare-table tbody th { grid-column: 1 / -1; width: auto; border-bottom: 1px dashed var(--sr-line) !important; padding: 12px 14px; }
+  .sr-compare-table td { border: 0 !important; padding: 10px 14px !important; }
+  .sr-compare-table td::before { content: attr(data-label); display: block; font: 600 11px var(--bl-sans); color: var(--sr-muted); margin-bottom: 3px; }
+}
+.sr-compare-table td strong { width: fit-content; }
+
+/* ---------- Header: current section ---------- */
+.bl-nav a[aria-current="page"]::after { transform: scaleX(1); }
+.bl-menu nav a[aria-current="page"] { font-weight: 700; box-shadow: inset -4px 0 0 var(--sr-hl); }
+
+/* ---------- Categories page ---------- */
+.sr-cats-page .bl-page-title { font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.02em; }
+.sr-cats-page .bl-cats { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 14px; }
+.sr-cats-page .bl-cat { border-radius: var(--sr-r); padding: 22px; gap: 8px; box-shadow: var(--sr-shadow); }
+.sr-cats-page .bl-cat > svg:first-child { color: var(--sr-ink); background: var(--sr-hl); border-radius: 12px; padding: 8px; width: 42px; height: 42px; }
+.sr-cats-page .bl-cat strong { font-size: 20px; }
+.sr-cat-meta { display: grid; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px dashed var(--sr-line); }
+.sr-cat-count { font: 600 13px var(--bl-mono); color: var(--sr-muted); }
+.sr-cat-brands { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sr-cat-brands .dp-brand-lockup { background: #fbfaf7; border: 1px solid var(--sr-line); border-radius: 999px; padding: 3px 9px; }
+.sr-cats-page .bl-cat:hover { box-shadow: inset 0 -4px 0 var(--sr-hl), var(--sr-shadow); }
+
+/* ---------- 404 / error ---------- */
+.bl-state-card { background: var(--sr-card); border: 1px solid var(--sr-line); border-radius: 24px; box-shadow: var(--sr-shadow); padding: clamp(24px, 4vw, 44px); width: min(560px, 100%); }
+.bl-state-mark { background: var(--sr-ink); color: var(--sr-hl) !important; border-radius: 18px; padding: 6px 18px; }
+
+/* ---------- Loading skeleton ---------- */
+.bl-loading .bl-skel-card { border-radius: var(--sr-r); background: var(--sr-card); border: 1px solid var(--sr-line); padding: 8px; }
+.bl-loading .bl-skel-img { border-radius: 13px; }
+.sr-cats-page .bl-page-lead { margin-bottom: 22px; }
+button.bl-cta { color: #fff; } /* globals.css sets button { color: inherit }, which hid the 404 search label */
+@media (max-width: 720px) {
+  /* Keep the first product in the first screen on small phones (owner request 2026-11-17). */
+  .sr-brand-filter { margin-top: 0; margin-bottom: 4px; padding-bottom: 4px; }
+  .sr-brand-chip { min-height: 38px; padding: 4px 10px; }
+  .bl-catalog .fp-status-line { margin: 6px 0 8px; }
+}

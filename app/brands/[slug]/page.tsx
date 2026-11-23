@@ -4,7 +4,9 @@ import { BRANDS, identifyListedBrand } from "../../../lib/dealpilot/brands";
 import { getCatalog } from "../../../lib/aliexpress/catalog";
 import { getUsdRate } from "../../../lib/dealpilot/fx";
 import { PublicShell } from "../../public-shell";
-import { ProductCard } from "../../product-card";
+import CatalogBrowser from "../../catalog-browser";
+import { parseViewParams } from "../../../lib/aliexpress/catalog-view";
+import { categories } from "../../../lib/dealpilot/categories";
 import BrandLogo from "../../brand-logo";
 import { ShieldAlert } from "lucide-react";
 import { breadcrumbJsonLd, itemListJsonLd, jsonLdString } from "../../../lib/seo/structured-data";
@@ -15,8 +17,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const b = BRANDS.find(x => x.slug === slug);
   return { title: (b?.name ?? "מותגים") + " ב־AliExpress | DealPilot", description: b ? `מוצרי ${b.name} ב־AliExpress: מחירים בשקלים, זמן בדיקה, נתוני מכירות ספק ומידע לקנייה לישראל.` : "מוצרי מותגים ב־AliExpress", alternates: { canonical: "/brands/" + slug } };
 }
-export default async function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BrandPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const view = parseViewParams(await searchParams, categories.map((c) => c.slug));
   const brand = BRANDS.find(x => x.slug === slug);
   if (!brand) notFound();
   const [snap, rate] = await Promise.all([getCatalog(), getUsdRate()]);
@@ -38,7 +41,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
     <p className="fp-lead">מוצרי {brand.name} שאותרו ב־AliExpress וסוננו לפי נתוני המוצר והחנות. השוו מחיר בשקלים, בדקו מכירות מדווחות ובחרו את הדגם המתאים. זיהוי מותג אינו אישור מקוריות או מוכר מורשה.</p>
     </header>
     <p className="fp-notice is-wait"><ShieldAlert size={18} aria-hidden="true" /> בדקו את שם המוכר, ביקורות הקונים ותנאי משלוח לישראל לפני תשלום.</p>
-    {items.length ? <div className="fp-grid">{items.map(item => <ProductCard key={item.id} item={item} usdRate={rate} />)}</div>
+    {items.length ? <CatalogBrowser snapshot={snap} usdRate={rate} params={view} base={"/brands/" + slug} lockedBrand={slug} hideHead />
       : <div className="fp-empty"><h2>לא נמצאו כרגע מוצרים שעברו את בדיקת המותג</h2><p>לא נציג מוצרים ממוכרים לא מזוהים רק כדי למלא את העמוד.</p><Link href="/brands">לכל המותגים</Link></div>}
   </main></PublicShell>;
 }
