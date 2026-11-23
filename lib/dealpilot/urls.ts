@@ -19,20 +19,36 @@ export function safeAliUrl(raw: unknown, image = false): string | null {
     return null;
   }
 }
-export function formatMoney(price: string | null, currency: string | null) {
+// Explicit prefix instead of Intl's he-IL currency style, which inserts
+// bidi marks and renders the shekel symbol after the number in RTL layouts.
+const shekelNumber = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: true,
+});
+export function formatShekels(amount: number): string {
+  return Number.isFinite(amount)
+    ? "₪\u00a0" + shekelNumber.format(amount)
+    : "מחיר אינו זמין";
+}
+export function formatMoney(price: string | number | null, currency: string | null): string {
   if (
-    !price ||
+    price === null ||
+    price === "" ||
     !currency ||
     !Number.isFinite(Number(price)) ||
     Number(price) <= 0
-  )
-    return "מחיר אינו זמין";
+  ) return "מחיר אינו זמין";
+  const n = Number(price);
+  if (currency === "ILS") return formatShekels(n);
   try {
-    return new Intl.NumberFormat("he-IL", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
-    }).format(Number(price));
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
   } catch {
-    return `${price} ${currency}`;
+    return shekelNumber.format(n) + " " + currency;
   }
 }
