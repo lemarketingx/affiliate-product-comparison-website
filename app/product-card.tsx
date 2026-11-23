@@ -10,12 +10,14 @@ import { estimateIsraelTotal } from "../lib/preflight/tax-estimate";
 import { identifyListedBrand } from "../lib/dealpilot/brands";
 import { freshnessLabel, priceAgeHours, PRICE_WARN_AGE_HOURS } from "../lib/catalog-store/price-view";
 import type { UsdRate } from "../lib/preflight/tax-estimate";
+import { productDisplayTitle } from "../lib/dealpilot/product-titles";
 
 /* "השורה התחתונה" card: brand, title, the price as a receipt line, and when
    that price was last checked. The whole card links to the product page. */
 export function ProductCard({ item, eager = false, usdRate = null }: { item: CatalogItem; eager?: boolean; usdRate?: UsdRate | null }) {
   const verified = evaluateEligibility(item).eligible;
   const brand = identifyListedBrand(item);
+  const displayTitle = productDisplayTitle(item.title, brand?.name ?? null);
   const fresh = freshnessLabel(item.priceObservedAt);
   const israel = estimateIsraelTotal(item.currency === "ILS" && item.price ? Number(item.price) : null, usdRate, IMPORT_TAX);
   return (
@@ -35,12 +37,12 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
           <span className="bl-card-cat">{item.category}</span>
         </div>
         <h3 dir="auto">
-          <Link href={"/products/" + item.id} aria-label={"פרטי " + item.title}>
-            {item.title}
+          <Link href={"/products/" + item.id} aria-label={"פרטי " + displayTitle}>
+            {displayTitle}
           </Link>
         </h3>
         <div className="dp-product-price">
-          <span>מחיר מדווח מ־AliExpress</span>
+          <span>מחיר שדווח מ־AliExpress</span>
           {item.price ? (
             <strong dir="ltr">{formatMoney(item.price, item.currency)}</strong>
           ) : (
@@ -69,8 +71,7 @@ export function ProductCard({ item, eager = false, usdRate = null }: { item: Cat
           </p>
         )}
         <div className="bl-card-foot">
-          <span className={"bl-chip " + (verified ? "is-go" : "is-wait")}>{verified ? "בדיקות איכות עברו" : "איכות ומקוריות טרם אומתו"}</span>
-          <span>{item.affiliateUrl ? "כולל קישור שותפים" : "קישור שותפים אינו זמין"}</span>
+          <Link className="bl-card-action" href={"/products/" + item.id}>פרטים ובדיקת מחיר ←</Link>
         </div>
       </div>
     </article>
