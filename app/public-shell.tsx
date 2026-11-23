@@ -40,8 +40,8 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       <div className="bl-topline">
         <div className="bl-wrap">
           <span>מחיר בשקלים · בדיקות מחיר לאורך זמן · הערכת מסי יבוא</span>
-          <Link href="/disclosure">
-            האתר משתמש בקישורי שותפים <ArrowUpLeft size={12} aria-hidden="true" />
+          <Link href="/about">
+            איך אנחנו עובדים <ArrowUpLeft size={12} aria-hidden="true" />
           </Link>
         </div>
       </div>
@@ -86,13 +86,13 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
             <div>
               <strong>טוב לדעת</strong>
               <Link href="/about">אודות {BRAND.name}</Link>
-              <Link href="/disclosure">גילוי שותפים</Link>
+              <Link href="/disclosure">גילוי נאות</Link>
               <Link href="/privacy">פרטיות</Link>
               <Link href="/terms">תנאי שימוש</Link>
             </div>
             <div className="bl-footer-note">
               <strong>השורה התחתונה על השקיפות</strong>
-              <p>ייתכן שנקבל עמלה מקישורים באתר, בלי עלות נוספת לכם. המחיר, המשלוח והתשלום נקבעים ב־AliExpress.</p>
+              <p>חלק מקישורי הקנייה עשויים לזכות אותנו בעמלה. המחיר הסופי ותנאי הרכישה נקבעים ב־AliExpress.</p>
             </div>
           </div>
           <div className="bl-footer-bottom">
