@@ -4,8 +4,9 @@ import { Calculator, AlertTriangle, ExternalLink, CheckCircle2 } from "lucide-re
 import { IMPORT_TAX } from "../lib/preflight/import-tax";
 import { calculateBasketCost } from "../lib/preflight/basket-cost";
 import type { UsdRate } from "../lib/preflight/tax-estimate";
+import { formatShekels } from "../lib/dealpilot/urls";
 
-const money = (n: number) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 2 }).format(n);
+const money = formatShekels;
 const asNum = (s: string): number | null => s.trim() === "" ? null : Number(s);
 export default function ProductCostCalculator({ priceILS, usdRate }: { priceILS: number; usdRate: UsdRate | null }) {
   const [price, setPrice] = useState(String(priceILS));
@@ -62,10 +63,10 @@ export default function ProductCostCalculator({ priceILS, usdRate }: { priceILS:
       <p className="fp-cost-fx">{usdRate ? `שער יציג מבנק ישראל: ${usdRate.rate} ₪ ל־$1 (תאריך ${new Date(usdRate.date).toLocaleDateString("he-IL")}). שער המכס עשוי להיות שונה.` : "השער היציג אינו זמין, הזינו שער ידוע. שער המכס בפועל עשוי להיות שונה."}</p>
       <label className="fp-cost-checked"><input type="checkbox" checked={feeIncluded} onChange={e => setFeeIncluded(e.target.checked)}/>הסכום שהזנתי כבר כולל מע״מ שנגבה בקופה</label>
       <div className="fp-cost-result" aria-live="polite" aria-atomic="true">
-        {result.goodsILS !== null && <div className="fp-cost-line"><span>מוצרים לאחר הנחה, כולל פריטים נוספים</span><strong>{money(result.goodsILS)}</strong></div>}
+        {result.goodsILS !== null && <div className="fp-cost-line"><span>מוצרים לאחר הנחה, כולל פריטים נוספים</span><strong dir="ltr">{money(result.goodsILS)}</strong></div>}
         {result.thresholdUSD !== null && <div className="fp-cost-line"><span>שווי מוצרים למבחן הפטור</span><strong dir="ltr">${result.thresholdUSD.toFixed(2)}$</strong></div>}
-        {result.estimatedVAT !== null && <div className="fp-cost-line"><span>מע״מ משוער {feeIncluded ? "(כלול בסכומים שהוזנו)" : "(נוסף לסכומים שהוזנו)"}</span><strong>{money(result.estimatedVAT)}</strong></div>}
-        {complete && <div className="fp-cost-total"><span>{feeIncluded ? "עלות משוערת, מע״מ כבר כלול בקופה" : "עלות כוללת משוערת"}</span><strong>{money(shownTotal!)}</strong></div>}
+        {result.estimatedVAT !== null && <div className="fp-cost-line"><span>מע״מ משוער {feeIncluded ? "(כלול בסכומים שהוזנו)" : "(נוסף לסכומים שהוזנו)"}</span><strong dir="ltr">{money(result.estimatedVAT)}</strong></div>}
+        {complete && <div className="fp-cost-total"><span>{feeIncluded ? "עלות משוערת, מע״מ כבר כלול בקופה" : "עלות כוללת משוערת"}</span><strong dir="ltr">{money(shownTotal!)}</strong></div>}
         {!complete && <div className="fp-cost-pending"><AlertTriangle size={19} aria-hidden="true" /><span>החישוב אינו שלם. לא מציגים מחיר סופי לא מבוסס.</span></div>}
         <p className="fp-cost-message">{result.status === "exempt" ? <CheckCircle2 size={17} aria-hidden="true" /> : <AlertTriangle size={17} aria-hidden="true" />}{result.message}</p>
       </div>
