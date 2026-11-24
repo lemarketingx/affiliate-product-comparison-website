@@ -49,9 +49,10 @@ export async function proxy(request: NextRequest) {
       headers: { "Retry-After": "60" },
     });
   const response = NextResponse.next();
-  if (path.startsWith("/admin") || path.startsWith("/api/"))
+  if (path === "/admin" || path.startsWith("/admin/") || path === "/api" || path.startsWith("/api/") || path === "/go" || path.startsWith("/go/")) {
     response.headers.set("Cache-Control", "private, no-store");
-  response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
   return response;
 }
 export const config = {
