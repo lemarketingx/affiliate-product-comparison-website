@@ -10,6 +10,7 @@ const MEASUREMENT_ID = "G-0X26MGR3RJ";
 
 type AnalyticsWindow = Window & {
   dataLayer?: unknown[][];
+  "ga-disable-G-0X26MGR3RJ"?: boolean;
   gtag?: (...args: unknown[]) => void;
 };
 
@@ -23,10 +24,25 @@ export function ConsentBasedAnalytics() {
     setReady(true);
   }, []);
   function choose(v: "yes" | "no") {
-    try { localStorage.setItem("dealpilot_analytics_choice_v2", v); } catch {}
-    if (v === "no") (window as AnalyticsWindow).gtag?.("consent", "update", { analytics_storage: "denied" });
+    const w = window as AnalyticsWindow;
+    w["ga-disable-G-0X26MGR3RJ"] = v === "no";
+    try { localStorage.setItem("dealpilot_analytics_choice_v2", v); } catch {
+      try { localStorage.removeItem("dealpilot_analytics_choice_v2"); } catch {}
+    }
+    if (v === "no") {
+      w.gtag?.("consent", "update", { analytics_storage: "denied" });
+      for (const cookie of document.cookie.split(";")) {
+        const name = cookie.split("=")[0].trim();
+        if (name === "_ga" || name.startsWith("_ga_")) {
+          document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+          document.cookie = `${name}=; Max-Age=0; Path=/; Domain=${location.hostname}; SameSite=Lax`;
+        }
+      }
+    } else if (initialized.current) {
+      w.gtag?.("consent", "update", { analytics_storage: "granted" });
+      lastPageView.current = null;
+    }
     setChoice(v);
-    if (v === "no" && initialized.current) window.location.reload();
   }
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const initialized = useRef(false);
